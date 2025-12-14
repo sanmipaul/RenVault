@@ -1,6 +1,6 @@
 [project]
 name = "ren-vault"
-description = "A Clarity 4 micro-savings vault with commitment points and protocol fees"
+description = "A comprehensive Clarity 4 DeFi protocol with micro-savings, governance, and rewards"
 authors = ["RenVault Team"]
 telemetry = false
 cache_dir = "./.cache"
@@ -14,6 +14,61 @@ epoch = "2.4"
 
 [contracts.vault-trait]
 path = "contracts/traits/vault-trait.clar"
+clarity_version = 2
+epoch = "2.4"
+
+[contracts.vault-factory]
+path = "contracts/vault-factory.clar"
+clarity_version = 2
+epoch = "2.4"
+
+[contracts.governance]
+path = "contracts/governance.clar"
+clarity_version = 2
+epoch = "2.4"
+
+[contracts.rewards]
+path = "contracts/rewards.clar"
+clarity_version = 2
+epoch = "2.4"
+
+[contracts.analytics]
+path = "contracts/analytics.clar"
+clarity_version = 2
+epoch = "2.4"
+
+[contracts.sip009-nft-trait]
+path = "contracts/sip009-nft-trait.clar"
+clarity_version = 2
+epoch = "2.4"
+
+[contracts.nft-badges]
+path = "contracts/nft-badges.clar"
+clarity_version = 2
+epoch = "2.4"
+
+[contracts.oracle]
+path = "contracts/oracle.clar"
+clarity_version = 2
+epoch = "2.4"
+
+[contracts.timelock]
+path = "contracts/timelock.clar"
+clarity_version = 2
+epoch = "2.4"
+
+[contracts.emergency]
+path = "contracts/emergency.clar"
+clarity_version = 2
+epoch = "2.4"
+
+[contracts.staking]
+path = "contracts/staking.clar"
+clarity_version = 2
+epoch = "2.4"
+
+[contracts.referral]
+path = "contracts/referral.clar"
 clarity_version = 2
 epoch = "2.4"
 
