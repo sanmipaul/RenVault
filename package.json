@@ -1,0 +1,39 @@
+{
+  "name": "ren-vault",
+  "version": "1.0.0",
+  "description": "Clarity 4 DeFi protocol with micro-savings and governance",
+  "main": "scripts/interact.js",
+  "scripts": {
+    "deploy": "node scripts/deploy-helper.js",
+    "interact": "node scripts/interact.js",
+    "analytics": "node scripts/analytics.js",
+    "test": "clarinet test",
+    "check": "clarinet check",
+    "frontend": "cd frontend && npm start",
+    "build-frontend": "cd frontend && npm run build"
+  },
+  "keywords": [
+    "stacks",
+    "clarity",
+    "defi",
+    "blockchain",
+    "savings",
+    "vault"
+  ],
+  "author": "RenVault Protocol",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sanmipaul/RenVault"
+  },
+  "dependencies": {
+    "@stacks/transactions": "^6.5.4",
+    "@stacks/network": "^6.5.4"
+  },
+  "devDependencies": {
+    "@hirosystems/clarinet": "^1.7.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
