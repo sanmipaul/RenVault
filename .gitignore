@@ -1,0 +1,10 @@
+node_modules/
+.env
+.env.local
+.env.production
+settings/Mainnet.toml
+settings/Testnet.toml
+*.log
+.cache/
+deployments/*.yaml
+!deployments/default.devnet-plan.yaml
