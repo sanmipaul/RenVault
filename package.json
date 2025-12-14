@@ -32,8 +32,5 @@
   },
   "devDependencies": {
     "@hirosystems/clarinet": "^1.7.1"
-  },
-  "engines": {
-    "node": ">=18.0.0"
   }
 }
