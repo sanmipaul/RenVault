@@ -1,33 +1,26 @@
 const fs = require('fs');
 const path = require('path');
 
-const contractsDir = 'contracts';
-const contracts = [
-  'sip009-nft-trait.clar',
-  'traits/vault-trait.clar', 
-  'oracle.clar',
-  'emergency.clar',
-  'analytics.clar',
-  'governance.clar',
-  'rewards.clar',
-  'timelock.clar',
-  'nft-badges.clar',
-  'staking.clar',
-  'referral.clar',
-  'vault-factory.clar',
-  'ren-vault.clar'
-];
+function validateContracts() {
+  const contractsDir = path.join(__dirname, '..', 'contracts');
+  const contracts = fs.readdirSync(contractsDir)
+    .filter(file => file.endsWith('.clar'));
 
-console.log('Validating contract files...');
+  console.log('Contract Validation Report');
+  console.log('=========================');
+  
+  contracts.forEach(contract => {
+    const contractPath = path.join(contractsDir, contract);
+    const content = fs.readFileSync(contractPath, 'utf8');
+    
+    const hasDefinePublic = content.includes('define-public');
+    const hasDefineReadOnly = content.includes('define-read-only');
+    const hasErrorHandling = content.includes('asserts!');
+    
+    console.log(`${contract}: ${hasDefinePublic ? '✓' : '✗'} ${hasDefineReadOnly ? '✓' : '✗'} ${hasErrorHandling ? '✓' : '✗'}`);
+  });
+  
+  return contracts.length;
+}
 
-contracts.forEach(contract => {
-  const filePath = path.join(contractsDir, contract);
-  if (fs.existsSync(filePath)) {
-    const content = fs.readFileSync(filePath, 'utf8');
-    console.log(`✅ ${contract} - ${content.length} bytes`);
-  } else {
-    console.log(`❌ ${contract} - File not found`);
-  }
-});
-
-console.log('\nContract validation complete!');
+module.exports = { validateContracts };

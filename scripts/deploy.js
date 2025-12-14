@@ -1,57 +1,27 @@
-const { StacksTestnet, StacksMainnet } = require('@stacks/network');
-const { makeContractDeploy, broadcastTransaction, AnchorMode } = require('@stacks/transactions');
-const { readFileSync } = require('fs');
+const { StacksMainnet, StacksTestnet } = require('@stacks/network');
 
-const network = new StacksTestnet();
-const privateKey = process.env.PRIVATE_KEY || 'your-private-key-here';
+const networks = {
+  mainnet: new StacksMainnet(),
+  testnet: new StacksTestnet()
+};
 
-const contracts = [
-  'sip009-nft-trait',
-  'vault-trait', 
-  'oracle',
-  'emergency',
-  'analytics',
-  'governance',
-  'rewards',
-  'timelock',
-  'nft-badges',
-  'staking',
-  'referral',
-  'vault-factory',
-  'ren-vault'
-];
-
-async function deployContract(contractName) {
-  const contractSource = readFileSync(`contracts/${contractName}.clar`, 'utf8');
+function getDeploymentInfo() {
+  const deploymentAddress = 'SP3ESR2PWP83R1YM3S4QJRWPDD886KJ4YFS3FKHPY';
+  const contracts = [
+    'ren-vault',
+    'vault-factory', 
+    'governance',
+    'rewards',
+    'staking'
+  ];
   
-  const txOptions = {
-    contractName,
-    codeBody: contractSource,
-    senderKey: privateKey,
-    network,
-    anchorMode: AnchorMode.Any,
-  };
-
-  const transaction = await makeContractDeploy(txOptions);
-  const result = await broadcastTransaction(transaction, network);
+  console.log('RenVault Deployment Info');
+  console.log('========================');
+  console.log(`Address: ${deploymentAddress}`);
+  console.log(`Network: Stacks Mainnet`);
+  console.log(`Contracts: ${contracts.length}`);
   
-  console.log(`Deployed ${contractName}: ${result.txid}`);
-  return result;
+  return { deploymentAddress, contracts };
 }
 
-async function deployAll() {
-  console.log('Starting deployment of 12 contracts...');
-  
-  for (const contract of contracts) {
-    try {
-      await deployContract(contract);
-      await new Promise(resolve => setTimeout(resolve, 30000)); // Wait 30s between deployments
-    } catch (error) {
-      console.error(`Failed to deploy ${contract}:`, error);
-    }
-  }
-  
-  console.log('Deployment complete!');
-}
-
-deployAll();
+module.exports = { getDeploymentInfo };
