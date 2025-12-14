@@ -398,6 +398,29 @@ Phase 3: 🎯 Community engagement + growth
 - 🧪 **Test Coverage**: 100%
 - 📝 **Documentation**: Comprehensive
 - 🤝 **Community**: Issues, PRs, commits
+- 🚀 **Mainnet Deployment**: Complete
+
+### Deployed Contracts (Mainnet)
+
+The following contracts have been successfully deployed on the Stacks mainnet:
+
+| Contract | Address |
+|----------|---------|
+| **sip009-nft-trait** | `4ff361957c004ab8bae4d86693b1a0b15037977ca07da6cdf78f27e0e253a857` |
+| **vault-trait** | `fc207e148e5d78f9088200fca7c2a72e0b5f85da198f340fe8286951f61fe10c` |
+| **oracle** | `cdb28a9e882038b380d05d122f1873a432f795ee2b25630b300b61a46b506ea1` |
+| **emergency** | `b28b87785d9c3e4dd4eece38832a8e8a914d94d53563a05dd88d278765e074a3` |
+| **analytics** | `e83c411ed171881f91b0e47faea45e6ebca98f5706811a533d18b6f513d0930b` |
+| **governance** | `e4d921bb76407afede7cb4944594d0aedf6913c32707ad38ecfdecf333aca3fd` |
+| **rewards** | `d5160cf6b815643e133ee0fddb51d9ba399eb541ff4d437ee485e2b84f878ba6` |
+| **timelock** | `5aa6941bec249d6d90426979978ceb3b22bfd6171baaf29817a5a1190b74401e` |
+| **nft-badges** | `a5ca45c70890ec456e4a6e178cc29e05f8c9c41fe84634a781a39c974ed3f6ba` |
+| **staking** | `de2d247d28bf99616055c63ce21daa8dfc812155b9768c714190dfdd9dfa471f` |
+| **referral** | `39a70fed3b29db4e6f034ba1fd53200ad24ff14d9075bdfb119c16e6b0003477` |
+| **vault-factory** | `9d70122721013f489e106b65b52819188123129dd280edc70615567e671e935d` |
+| **ren-vault** | `d394b1524ede3faf45ebf63a3013b5ac6c38de5b5a5f3a3f70d8958879e3edb1` |
+
+**Deployment Address**: `SP3ESR2PWP83R1YM3S4QJRWPDD886KJ4YFS3FKHPY`
 
 ### Tracking Progress
 
