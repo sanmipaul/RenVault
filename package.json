@@ -10,7 +10,7 @@
     "check": "clarinet check"
   },
   "dependencies": {
-    "@stacks/transactions": "^6.5.4",
+    "@stacks/transactions": "^7.3.0",
     "@stacks/network": "^6.5.4"
   },
   "devDependencies": {
