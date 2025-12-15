@@ -1,0 +1,16 @@
+{
+  "name": "renvault-monitoring",
+  "version": "1.0.0",
+  "description": "RenVault protocol monitoring and analytics",
+  "main": "monitor.js",
+  "scripts": {
+    "start": "node monitor.js",
+    "api": "node api.js",
+    "dashboard": "node api.js"
+  },
+  "dependencies": {
+    "@stacks/transactions": "^6.5.4",
+    "@stacks/network": "^6.5.4",
+    "express": "^4.18.0"
+  }
+}
