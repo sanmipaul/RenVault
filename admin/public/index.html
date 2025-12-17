@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RenVault Admin Dashboard</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f5f5f5; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        .header { background: #2c3e50; color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .metric-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .metric-value { font-size: 2rem; font-weight: bold; color: #3498db; }
+        .metric-label { color: #666; margin-top: 5px; }
+        .services { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .service-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee; }
+        .service-status { padding: 4px 12px; border-radius: 4px; color: white; font-size: 0.8rem; }
+        .status-running { background: #27ae60; }
+        .status-stopped { background: #e74c3c; }
+        .btn { padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; }
+        .btn-primary { background: #3498db; color: white; }
+        .btn-danger { background: #e74c3c; color: white; }
+        .login-form { max-width: 400px; margin: 100px auto; background: white; padding: 30px; border-radius: 8px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 5px; }
+        .form-group input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
+        .hidden { display: none; }
+        .logs { background: #2c3e50; color: #ecf0f1; padding: 20px; border-radius: 8px; font-family: monospace; height: 200px; overflow-y: auto; }
+    </style>
+</head>
+<body>
+    <div id="loginForm" class="login-form">
+        <h2>Admin Login</h2>
+        <div class="form-group">
+            <label>Username:</label>
+            <input type="text" id="username" value="admin">
+        </div>
+        <div class="form-group">
+            <label>Password:</label>
+            <input type="password" id="password" value="renvault2024">
+        </div>
+        <button class="btn btn-primary" onclick="login()">Login</button>
+    </div>
+
+    <div id="dashboard" class="container hidden">
+        <div class="header">
+            <h1>🔧 RenVault Admin Dashboard</h1>
+            <p>System monitoring and control panel</p>
+        </div>
+
+        <div class="metrics">
+            <div class="metric-card">
+                <div class="metric-value" id="totalUsers">0</div>
+                <div class="metric-label">Total Users</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="totalDeposits">0</div>
+                <div class="metric-label">Total Deposits (STX)</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="totalFees">0</div>
+                <div class="metric-label">Protocol Fees (STX)</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="activeUsers">0</div>
+                <div class="metric-label">Active Users (24h)</div>
+            </div>
+        </div>
+
+        <div class="services">
+            <h3>System Services</h3>
+            <div class="service-item">
+                <span>Frontend</span>
+                <div>
+                    <span class="service-status status-running">Running</span>
+                    <button class="btn btn-danger" onclick="restartService('frontend')">Restart</button>
+                </div>
+            </div>
+            <div class="service-item">
+                <span>Mobile App</span>
+                <div>
+                    <span class="service-status status-running">Running</span>
+                    <button class="btn btn-danger" onclick="restartService('mobile')">Restart</button>
+                </div>
+            </div>
+            <div class="service-item">
+                <span>Monitoring</span>
+                <div>
+                    <span class="service-status status-running">Running</span>
+                    <button class="btn btn-danger" onclick="restartService('monitoring')">Restart</button>
+                </div>
+            </div>
+            <div class="service-item">
+                <span>Notifications</span>
+                <div>
+                    <span class="service-status status-running">Running</span>
+                    <button class="btn btn-danger" onclick="restartService('notifications')">Restart</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="logs">
+            <div id="logOutput">System ready...</div>
+        </div>
+    </div>
+
+    <script>
+        let token = localStorage.getItem('adminToken');
+        let socket;
+
+        if (token) {
+            showDashboard();
+        }
+
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            fetch('/api/admin/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.token) {
+                    token = data.token;
+                    localStorage.setItem('adminToken', token);
+                    showDashboard();
+                } else {
+                    alert('Login failed');
+                }
+            });
+        }
+
+        function showDashboard() {
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('dashboard').classList.remove('hidden');
+            
+            loadMetrics();
+            connectSocket();
+            setInterval(loadMetrics, 30000);
+        }
+
+        function loadMetrics() {
+            fetch('/api/admin/metrics', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('totalUsers').textContent = data.totalUsers;
+                document.getElementById('totalDeposits').textContent = data.totalDeposits;
+                document.getElementById('totalFees').textContent = data.totalFees;
+                document.getElementById('activeUsers').textContent = data.activeUsers24h;
+            });
+        }
+
+        function restartService(service) {
+            fetch(`/api/admin/services/${service}/restart`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            .then(res => res.json())
+            .then(data => {
+                addLog(`Restarting ${service}...`);
+            });
+        }
+
+        function connectSocket() {
+            socket = io();
+            
+            socket.on('metricsUpdate', (data) => {
+                document.getElementById('activeUsers').textContent = data.activeUsers;
+                addLog(`Active users: ${data.activeUsers}`);
+            });
+
+            socket.on('serviceRestarted', (data) => {
+                addLog(`Service ${data.service} restarted successfully`);
+            });
+        }
+
+        function addLog(message) {
+            const logOutput = document.getElementById('logOutput');
+            const timestamp = new Date().toLocaleTimeString();
+            logOutput.innerHTML += `\n[${timestamp}] ${message}`;
+            logOutput.scrollTop = logOutput.scrollHeight;
+        }
+    </script>
+</body>
+</html>
