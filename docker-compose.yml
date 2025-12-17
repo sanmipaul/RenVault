@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  gateway:
+    build: ./gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      - monitoring
+      - leaderboard
+      - notifications
+      - backup
+      - admin
+
+  monitoring:
+    build: ./monitoring
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+
+  leaderboard:
+    build: ./leaderboard
+    ports:
+      - "3002:3002"
+    environment:
+      - NODE_ENV=production
+
+  notifications:
+    build: ./notifications
+    ports:
+      - "3003:3003"
+    environment:
+      - NODE_ENV=production
+
+  backup:
+    build: ./backup
+    ports:
+      - "3004:3004"
+    environment:
+      - NODE_ENV=production
+
+  admin:
+    build: ./admin
+    ports:
+      - "3005:3005"
+    environment:
+      - NODE_ENV=production
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:8080
+
+networks:
+  default:
+    name: renvault-network
