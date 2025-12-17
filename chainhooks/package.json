@@ -1,0 +1,15 @@
+{
+  "name": "renvault-chainhooks",
+  "version": "1.0.0",
+  "description": "RenVault Chainhooks Integration",
+  "main": "client.js",
+  "scripts": {
+    "start": "node client.js",
+    "monitor": "node monitor.js"
+  },
+  "dependencies": {
+    "@hirosystems/chainhooks-client": "^1.0.0",
+    "express": "^4.18.0",
+    "ws": "^8.14.0"
+  }
+}
