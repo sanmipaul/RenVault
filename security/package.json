@@ -1,0 +1,18 @@
+{
+  "name": "renvault-security-audit",
+  "version": "1.0.0",
+  "description": "Security audit tools for RenVault protocol",
+  "main": "auditRunner.js",
+  "scripts": {
+    "audit": "node auditRunner.js",
+    "pentest": "node penetrationTest.js",
+    "report": "node securityReport.js"
+  },
+  "dependencies": {
+    "@stacks/transactions": "^6.5.0",
+    "chalk": "^4.1.2"
+  },
+  "keywords": ["security", "audit", "clarity", "stacks"],
+  "author": "RenVault Security Team",
+  "license": "MIT"
+}
