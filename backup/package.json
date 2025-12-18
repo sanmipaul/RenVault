@@ -1,0 +1,16 @@
+{
+  "name": "renvault-backup",
+  "version": "1.0.0",
+  "description": "RenVault backup and recovery system",
+  "main": "api.js",
+  "scripts": {
+    "start": "node api.js",
+    "backup": "node scripts/create-backup.js",
+    "scheduler": "node scripts/start-scheduler.js"
+  },
+  "dependencies": {
+    "@stacks/transactions": "^6.5.4",
+    "@stacks/network": "^6.5.4",
+    "express": "^4.18.0"
+  }
+}
