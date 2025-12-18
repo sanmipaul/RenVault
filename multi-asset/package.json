@@ -1,0 +1,21 @@
+{
+  "name": "renvault-multi-asset",
+  "version": "1.0.0",
+  "description": "Multi-asset support for RenVault protocol",
+  "main": "vaultManager.js",
+  "scripts": {
+    "test": "jest",
+    "start": "node vaultManager.js"
+  },
+  "dependencies": {
+    "@stacks/transactions": "^6.5.0",
+    "@stacks/network": "^6.5.0",
+    "@stacks/auth": "^6.5.0"
+  },
+  "devDependencies": {
+    "jest": "^29.0.0"
+  },
+  "keywords": ["stacks", "defi", "multi-asset", "vault"],
+  "author": "RenVault Team",
+  "license": "MIT"
+}
