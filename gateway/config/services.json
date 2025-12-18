@@ -1,0 +1,36 @@
+{
+  "services": {
+    "monitoring": {
+      "name": "Monitoring Service",
+      "url": "http://localhost:3001",
+      "timeout": 5000
+    },
+    "leaderboard": {
+      "name": "Leaderboard Service", 
+      "url": "http://localhost:3002",
+      "timeout": 5000
+    },
+    "notifications": {
+      "name": "Notification Service",
+      "url": "http://localhost:3003", 
+      "timeout": 5000
+    },
+    "backup": {
+      "name": "Backup Service",
+      "url": "http://localhost:3004",
+      "timeout": 5000
+    },
+    "admin": {
+      "name": "Admin Dashboard",
+      "url": "http://localhost:3005",
+      "timeout": 5000
+    }
+  },
+  "gateway": {
+    "port": 8080,
+    "rateLimit": {
+      "windowMs": 900000,
+      "max": 100
+    }
+  }
+}

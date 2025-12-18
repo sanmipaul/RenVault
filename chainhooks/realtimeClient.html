@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RenVault Real-time Events</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .status { padding: 10px; border-radius: 5px; margin: 10px 0; }
+        .connected { background: #d4edda; color: #155724; }
+        .disconnected { background: #f8d7da; color: #721c24; }
+        .event { background: white; padding: 15px; margin: 10px 0; border-radius: 5px; border-left: 4px solid #007bff; }
+        .deposit { border-left-color: #28a745; }
+        .withdrawal { border-left-color: #dc3545; }
+        .events { max-height: 400px; overflow-y: auto; }
+        .controls { margin: 20px 0; }
+        button { padding: 10px 15px; margin: 5px; border: none; border-radius: 5px; cursor: pointer; }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-danger { background: #dc3545; color: white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔗 RenVault Real-time Events</h1>
+        
+        <div id="status" class="status disconnected">
+            Disconnected
+        </div>
+        
+        <div class="controls">
+            <button class="btn-primary" onclick="connect()">Connect</button>
+            <button class="btn-danger" onclick="disconnect()">Disconnect</button>
+            <button class="btn-success" onclick="clearEvents()">Clear Events</button>
+        </div>
+        
+        <div class="events" id="events">
+            <p>No events yet. Connect to start receiving real-time blockchain events.</p>
+        </div>
+    </div>
+
+    <script>
+        let ws = null;
+        let eventCount = 0;
+
+        function connect() {
+            if (ws) return;
+            
+            ws = new WebSocket('ws://localhost:3007');
+            
+            ws.onopen = function() {
+                updateStatus('Connected to RenVault real-time events', true);
+                
+                // Subscribe to all events
+                ws.send(JSON.stringify({
+                    type: 'subscribe',
+                    events: ['deposit', 'withdrawal']
+                }));
+            };
+            
+            ws.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                handleMessage(data);
+            };
+            
+            ws.onclose = function() {
+                updateStatus('Disconnected', false);
+                ws = null;
+            };
+            
+            ws.onerror = function(error) {
+                updateStatus('Connection error', false);
+                console.error('WebSocket error:', error);
+            };
+        }
+
+        function disconnect() {
+            if (ws) {
+                ws.close();
+            }
+        }
+
+        function handleMessage(data) {
+            switch (data.type) {
+                case 'connection':
+                    console.log('Connected with ID:', data.clientId);
+                    break;
+                case 'event':
+                    addEvent(data.eventType, data.data);
+                    break;
+                case 'subscribed':
+                    console.log('Subscribed to events:', data.events);
+                    break;
+            }
+        }
+
+        function addEvent(eventType, data) {
+            eventCount++;
+            const eventsDiv = document.getElementById('events');
+            
+            if (eventCount === 1) {
+                eventsDiv.innerHTML = '';
+            }
+            
+            const eventDiv = document.createElement('div');
+            eventDiv.className = `event ${eventType}`;
+            eventDiv.innerHTML = `
+                <strong>${eventType.toUpperCase()}</strong><br>
+                <small>TX: ${data.txid}</small><br>
+                <small>User: ${data.sender}</small><br>
+                <small>Time: ${new Date(data.timestamp).toLocaleTimeString()}</small>
+            `;
+            
+            eventsDiv.insertBefore(eventDiv, eventsDiv.firstChild);
+            
+            // Keep only last 50 events
+            while (eventsDiv.children.length > 50) {
+                eventsDiv.removeChild(eventsDiv.lastChild);
+            }
+        }
+
+        function updateStatus(message, connected) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${connected ? 'connected' : 'disconnected'}`;
+        }
+
+        function clearEvents() {
+            document.getElementById('events').innerHTML = '<p>Events cleared.</p>';
+            eventCount = 0;
+        }
+
+        // Auto-connect on page load
+        window.onload = function() {
+            connect();
+        };
+    </script>
+</body>
+</html>

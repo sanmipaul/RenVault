@@ -13,19 +13,32 @@ Showcasing advanced Clarity 4 features and generating real on-chain activity.
 
 ## 🎯 Quick Start
 
+### Smart Contract
 ```bash
 # Clone and setup
-git clone https://github.com/your-username/RenVault
+git clone https://github.com/sanmipaul/RenVault
 cd RenVault
 npm install -g @hirosystems/clarinet
 clarinet test
 ```
+
+### Frontend Application
+```bash
+# Start the React frontend
+cd frontend
+npm install
+npm start
+```
+
+**Live App**: Connect your Stacks wallet and start saving!
 
 ## 📊 Key Features
 
 - ✅ **Clarity 4 Features**: 6+ advanced features implemented
 - ✅ **On-chain Activity**: Fee generation on every deposit
 - ✅ **User Engagement**: Simple deposit/withdraw flow
+- ✅ **React Frontend**: Complete web interface with wallet integration
+- ✅ **Mainnet Deployed**: Live contracts ready for interaction
 - ✅ **Open Source**: Comprehensive documentation & tests
 
 ---
@@ -170,9 +183,15 @@ RenVault/
 │   └── workflows/
 │       ├── test.yml                # Automated testing
 │       └── deploy.yml              # Deployment pipeline
-├── 🎨 frontend/                    # Optional UI (future)
-│   ├── components/
-│   └── pages/
+├── 🎨 frontend/                    # React web application
+│   ├── src/
+│   │   ├── App.js                  # Main application component
+│   │   ├── index.js                # React entry point
+│   │   └── index.css               # Application styles
+│   ├── public/
+│   │   └── index.html              # HTML template
+│   ├── package.json                # Frontend dependencies
+│   └── README.md                   # Frontend setup guide
 └── 📊 analytics/
     └── activity-tracker.js         # Challenge metrics
 ```
@@ -361,11 +380,13 @@ git push origin feature/clarity4-enhancement
 - ✅ On-chain activity generation
 - 🔄 Community engagement growth
 
-### Phase 2: User Experience (Q1 2024)
-- 🎨 **Web UI Dashboard**: React + Stacks.js integration
-- 📊 **Real-time Analytics**: Deposit/withdrawal tracking
-- 🏆 **Leaderboard System**: Commitment point rankings
-- 📱 **Mobile Responsive**: Cross-device compatibility
+### Phase 2: User Experience (Completed)
+- ✅ **Web UI Dashboard**: React + Stacks.js integration
+- ✅ **Real-time Balance**: Live vault balance and points display
+- ✅ **Wallet Integration**: Connect any Stacks wallet
+- ✅ **Mobile Responsive**: Cross-device compatibility
+- 🔄 **Analytics Dashboard**: Advanced metrics tracking
+- 🔄 **Leaderboard System**: Commitment point rankings
 
 ### Phase 3: Advanced Features (Q2 2024)
 - 🏅 **NFT Reward Tiers**: Milestone achievements
@@ -397,19 +418,66 @@ Phase 3: 🎯 Community engagement + growth
 - 📊 **On-chain Activity**: Fee generation active
 - 🧪 **Test Coverage**: 100%
 - 📝 **Documentation**: Comprehensive
+- 🎨 **Frontend**: React app deployed
+- 🚀 **Mainnet Status**: All contracts live
 - 🤝 **Community**: Issues, PRs, commits
+- 🚀 **Mainnet Deployment**: Complete
+
+### Deployed Contracts (Mainnet)
+
+The following contracts have been successfully deployed on the Stacks mainnet:
+
+| Contract | Address |
+|----------|---------|
+| **sip009-nft-trait** | `4ff361957c004ab8bae4d86693b1a0b15037977ca07da6cdf78f27e0e253a857` |
+| **vault-trait** | `fc207e148e5d78f9088200fca7c2a72e0b5f85da198f340fe8286951f61fe10c` |
+| **oracle** | `cdb28a9e882038b380d05d122f1873a432f795ee2b25630b300b61a46b506ea1` |
+| **emergency** | `b28b87785d9c3e4dd4eece38832a8e8a914d94d53563a05dd88d278765e074a3` |
+| **analytics** | `e83c411ed171881f91b0e47faea45e6ebca98f5706811a533d18b6f513d0930b` |
+| **governance** | `e4d921bb76407afede7cb4944594d0aedf6913c32707ad38ecfdecf333aca3fd` |
+| **rewards** | `d5160cf6b815643e133ee0fddb51d9ba399eb541ff4d437ee485e2b84f878ba6` |
+| **timelock** | `5aa6941bec249d6d90426979978ceb3b22bfd6171baaf29817a5a1190b74401e` |
+| **nft-badges** | `a5ca45c70890ec456e4a6e178cc29e05f8c9c41fe84634a781a39c974ed3f6ba` |
+| **staking** | `de2d247d28bf99616055c63ce21daa8dfc812155b9768c714190dfdd9dfa471f` |
+| **referral** | `39a70fed3b29db4e6f034ba1fd53200ad24ff14d9075bdfb119c16e6b0003477` |
+| **vault-factory** | `9d70122721013f489e106b65b52819188123129dd280edc70615567e671e935d` |
+| **ren-vault** | `d394b1524ede3faf45ebf63a3013b5ac6c38de5b5a5f3a3f70d8958879e3edb1` |
+
+**Deployment Address**: `SP3ESR2PWP83R1YM3S4QJRWPDD886KJ4YFS3FKHPY`
+
+### Deployed Contracts (Mainnet)
+
+The following contracts have been successfully deployed on the Stacks mainnet:
+
+| Contract | Address |
+|----------|----------|
+| **sip009-nft-trait** | `4ff361957c004ab8bae4d86693b1a0b15037977ca07da6cdf78f27e0e253a857` |
+| **vault-trait** | `fc207e148e5d78f9088200fca7c2a72e0b5f85da198f340fe8286951f61fe10c` |
+| **oracle** | `cdb28a9e882038b380d05d122f1873a432f795ee2b25630b300b61a46b506ea1` |
+| **emergency** | `b28b87785d9c3e4dd4eece38832a8e8a914d94d53563a05dd88d278765e074a3` |
+| **analytics** | `e83c411ed171881f91b0e47faea45e6ebca98f5706811a533d18b6f513d0930b` |
+| **governance** | `e4d921bb76407afede7cb4944594d0aedf6913c32707ad38ecfdecf333aca3fd` |
+| **rewards** | `d5160cf6b815643e133ee0fddb51d9ba399eb541ff4d437ee485e2b84f878ba6` |
+| **timelock** | `5aa6941bec249d6d90426979978ceb3b22bfd6171baaf29817a5a1190b74401e` |
+| **nft-badges** | `a5ca45c70890ec456e4a6e178cc29e05f8c9c41fe84634a781a39c974ed3f6ba` |
+| **staking** | `de2d247d28bf99616055c63ce21daa8dfc812155b9768c714190dfdd9dfa471f` |
+| **referral** | `39a70fed3b29db4e6f034ba1fd53200ad24ff14d9075bdfb119c16e6b0003477` |
+| **vault-factory** | `9d70122721013f489e106b65b52819188123129dd280edc70615567e671e935d` |
+| **ren-vault** | `d394b1524ede3faf45ebf63a3013b5ac6c38de5b5a5f3a3f70d8958879e3edb1` |
+
+**Deployment Address**: `SP3ESR2PWP83R1YM3S4QJRWPDD886KJ4YFS3FKHPY`
 
 ### Tracking Progress
 
 ```bash
 # Monitor contract activity
-stx-cli balance ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ren-vault
+stx-cli balance SP3ESR2PWP83R1YM3S4QJRWPDD886KJ4YFS3FKHPY.ren-vault
 
 # Check deployment status
-clarinet deployments apply --network testnet
+clarinet deployments apply --network mainnet
 
 # View transaction history
-stx-cli transactions ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+stx-cli transactions SP3ESR2PWP83R1YM3S4QJRWPDD886KJ4YFS3FKHPY
 ```
 
 ---
