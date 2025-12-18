@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>RenVault Deposit Confirmation</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 8px; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; }
+        .content { padding: 30px; }
+        .amount { font-size: 24px; font-weight: bold; color: #667eea; text-align: center; margin: 20px 0; }
+        .footer { background: #f8f9fa; padding: 20px; text-align: center; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏦 RenVault</h1>
+            <h2>Deposit Confirmed!</h2>
+        </div>
+        <div class="content">
+            <p>Your STX deposit has been successfully processed.</p>
+            <div class="amount">{{amount}} STX</div>
+            <p><strong>New Vault Balance:</strong> {{balance}} STX</p>
+            <p><strong>Commitment Points:</strong> +1</p>
+        </div>
+        <div class="footer">
+            <p>RenVault - Clarity 4 Micro-Savings Protocol</p>
+        </div>
+    </div>
+</body>
+</html>
