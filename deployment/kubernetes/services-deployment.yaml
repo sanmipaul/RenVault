@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: monitoring
+  namespace: renvault
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: monitoring
+  template:
+    metadata:
+      labels:
+        app: monitoring
+    spec:
+      containers:
+      - name: monitoring
+        image: renvault/monitoring:latest
+        ports:
+        - containerPort: 3001
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: leaderboard
+  namespace: renvault
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: leaderboard
+  template:
+    metadata:
+      labels:
+        app: leaderboard
+    spec:
+      containers:
+      - name: leaderboard
+        image: renvault/leaderboard:latest
+        ports:
+        - containerPort: 3002
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: monitoring-service
+  namespace: renvault
+spec:
+  selector:
+    app: monitoring
+  ports:
+  - port: 3001
+    targetPort: 3001
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: leaderboard-service
+  namespace: renvault
+spec:
+  selector:
+    app: leaderboard
+  ports:
+  - port: 3002
+    targetPort: 3002
