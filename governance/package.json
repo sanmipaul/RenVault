@@ -1,0 +1,15 @@
+{
+  "name": "renvault-governance",
+  "version": "1.0.0",
+  "description": "Governance system for RenVault DAO",
+  "main": "governanceAPI.js",
+  "scripts": {
+    "start": "node governanceAPI.js"
+  },
+  "dependencies": {
+    "express": "^4.18.0"
+  },
+  "keywords": ["governance", "dao", "voting", "proposals"],
+  "author": "RenVault Team",
+  "license": "MIT"
+}
