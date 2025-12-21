@@ -1,0 +1,17 @@
+{
+  "name": "renvault-yield",
+  "version": "1.0.0",
+  "description": "Automated yield strategies for RenVault protocol",
+  "main": "yieldAPI.js",
+  "scripts": {
+    "start": "node yieldAPI.js",
+    "compound": "node autoCompounder.js"
+  },
+  "dependencies": {
+    "express": "^4.18.0",
+    "node-cron": "^3.0.0"
+  },
+  "keywords": ["yield", "defi", "farming", "staking"],
+  "author": "RenVault Team",
+  "license": "MIT"
+}
