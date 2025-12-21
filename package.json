@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@stacks/transactions": "^6.5.4",
-    "@stacks/network": "^6.5.4"
+    "@stacks/network": "^7.3.1"
   },
   "devDependencies": {
     "@hirosystems/clarinet": "^1.7.1",
