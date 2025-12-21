@@ -1,0 +1,20 @@
+{
+  "name": "renvault-analytics",
+  "version": "1.0.0",
+  "description": "Analytics dashboard for RenVault protocol",
+  "main": "dashboardServer.js",
+  "scripts": {
+    "start": "node dashboardServer.js",
+    "dev": "nodemon dashboardServer.js"
+  },
+  "dependencies": {
+    "express": "^4.18.0",
+    "chart.js": "^4.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.0"
+  },
+  "keywords": ["analytics", "dashboard", "defi", "stacks"],
+  "author": "RenVault Team",
+  "license": "MIT"
+}
