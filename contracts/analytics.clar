@@ -1,53 +1,57 @@
-;; Analytics Contract - Tracks protocol metrics and statistics
-(define-data-var total-deposits uint u0)
-(define-data-var total-withdrawals uint u0)
-(define-data-var unique-users uint u0)
-(define-data-var total-volume uint u0)
+;; Analytics Contract
+(define-constant contract-owner tx-sender)
 
-(define-map daily-stats uint {deposits: uint, withdrawals: uint, volume: uint})
-(define-map user-activity principal {deposits: uint, withdrawals: uint, last-activity: uint})
+;; Analytics data maps
+(define-map daily-stats uint {deposits: uint, withdrawals: uint, users: uint})
+(define-map user-activity principal {deposits: uint, withdrawals: uint, last-active: uint})
 
+;; Current day counter
+(define-data-var current-day uint u0)
+
+;; Record deposit analytics
 (define-public (record-deposit (user principal) (amount uint))
-  (let (
-    (current-activity (default-to {deposits: u0, withdrawals: u0, last-activity: u0} (map-get? user-activity user)))
-    (block-height (unwrap-panic (get-block-info? height (- block-height u1))))
-  )
-    (var-set total-deposits (+ (var-get total-deposits) u1))
-    (var-set total-volume (+ (var-get total-volume) amount))
-    
-    (map-set user-activity user {
-      deposits: (+ (get deposits current-activity) u1),
-      withdrawals: (get withdrawals current-activity),
-      last-activity: block-height
-    })
-    (ok true)
-  )
-)
+  (begin
+    (asserts! (is-eq tx-sender contract-owner) (err u401))
+    (update-daily-deposits amount)
+    (update-user-activity user amount true)
+    (ok true)))
 
+;; Record withdrawal analytics  
 (define-public (record-withdrawal (user principal) (amount uint))
-  (let (
-    (current-activity (default-to {deposits: u0, withdrawals: u0, last-activity: u0} (map-get? user-activity user)))
-    (block-height (unwrap-panic (get-block-info? height (- block-height u1))))
-  )
-    (var-set total-withdrawals (+ (var-get total-withdrawals) u1))
-    
-    (map-set user-activity user {
-      deposits: (get deposits current-activity),
-      withdrawals: (+ (get withdrawals current-activity) u1),
-      last-activity: block-height
-    })
-    (ok true)
-  )
-)
+  (begin
+    (asserts! (is-eq tx-sender contract-owner) (err u401))
+    (update-daily-withdrawals amount)
+    (update-user-activity user amount false)
+    (ok true)))
 
-(define-read-only (get-protocol-stats)
-  (ok {
-    total-deposits: (var-get total-deposits),
-    total-withdrawals: (var-get total-withdrawals),
-    unique-users: (var-get unique-users),
-    total-volume: (var-get total-volume)
-  })
-)
+(define-private (update-daily-deposits (amount uint))
+  (let ((day (var-get current-day))
+        (stats (default-to {deposits: u0, withdrawals: u0, users: u0} 
+                           (map-get? daily-stats day))))
+    (map-set daily-stats day 
+             {deposits: (+ (get deposits stats) amount),
+              withdrawals: (get withdrawals stats),
+              users: (get users stats)})))
+
+(define-private (update-daily-withdrawals (amount uint))
+  (let ((day (var-get current-day))
+        (stats (default-to {deposits: u0, withdrawals: u0, users: u0} 
+                           (map-get? daily-stats day))))
+    (map-set daily-stats day 
+             {deposits: (get deposits stats),
+              withdrawals: (+ (get withdrawals stats) amount),
+              users: (get users stats)})))
+
+(define-private (update-user-activity (user principal) (amount uint) (is-deposit bool))
+  (let ((activity (default-to {deposits: u0, withdrawals: u0, last-active: u0}
+                              (map-get? user-activity user))))
+    (map-set user-activity user
+             {deposits: (if is-deposit (+ (get deposits activity) amount) (get deposits activity)),
+              withdrawals: (if is-deposit (get withdrawals activity) (+ (get withdrawals activity) amount)),
+              last-active: block-height})))
+
+(define-read-only (get-daily-stats (day uint))
+  (map-get? daily-stats day))
 
 (define-read-only (get-user-activity (user principal))
-  (ok (map-get? user-activity user)))
+  (map-get? user-activity user))
