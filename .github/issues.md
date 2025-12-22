@@ -27,6 +27,11 @@
 **Priority**: Low  
 **Description**: Add automated yield farming and staking strategies for deposited assets.
 
+### Issue #6: Advanced Governance System
+**Status**: Completed ✅
+**Priority**: Medium
+**Description**: Implement DAO governance with proposals, voting, delegation, and treasury management.
+
 ## Closed Issues
 
 None yet.
