@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RenVault Analytics Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+        .metric-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .metric-value { font-size: 2rem; font-weight: bold; color: #667eea; }
+        .metric-label { color: #666; margin-top: 5px; }
+        .chart { background: white; padding: 20px; border-radius: 8px; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>RenVault Analytics Dashboard</h1>
+            <p>Real-time protocol metrics and statistics</p>
+        </div>
+        
+        <div class="metrics">
+            <div class="metric-card">
+                <div class="metric-value" id="totalFees">0</div>
+                <div class="metric-label">Total Fees Collected (STX)</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="totalUsers">0</div>
+                <div class="metric-label">Active Users</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="totalDeposits">0</div>
+                <div class="metric-label">Total Deposits</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value" id="avgBalance">0</div>
+                <div class="metric-label">Average Balance (STX)</div>
+            </div>
+        </div>
+        
+        <div class="chart">
+            <h3>Protocol Activity</h3>
+            <p>Contract: SP3ESR2PWP83R1YM3S4QJRWPDD886KJ4YFS3FKHPY.ren-vault</p>
+            <p>Network: Stacks Mainnet</p>
+            <p>Last Updated: <span id="lastUpdate">Never</span></p>
+        </div>
+    </div>
+
+    <script>
+        function updateMetrics() {
+            document.getElementById('lastUpdate').textContent = new Date().toLocaleString();
+        }
+        
+        setInterval(updateMetrics, 30000);
+        updateMetrics();
+    </script>
+</body>
+</html>
