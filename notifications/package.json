@@ -1,0 +1,15 @@
+{
+  "name": "renvault-notifications",
+  "version": "1.0.0",
+  "description": "RenVault notification system",
+  "main": "api.js",
+  "scripts": {
+    "start": "node api.js",
+    "test": "node test.js"
+  },
+  "dependencies": {
+    "express": "^4.18.0",
+    "nodemailer": "^6.9.0",
+    "web-push": "^3.6.0"
+  }
+}
