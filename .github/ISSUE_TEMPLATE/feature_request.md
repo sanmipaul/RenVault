@@ -1,19 +1,25 @@
 ---
 name: Feature request
-about: Suggest an idea for RenVault
-title: ''
-labels: 'enhancement'
+about: Suggest an idea for this project
+title: '[FEATURE] '
+labels: enhancement
 assignees: ''
 ---
 
-**Is your feature request related to a problem? Please describe.**
-A clear and concise description of what the problem is.
+## Feature Description
+A clear description of what you want to happen.
 
-**Describe the solution you'd like**
-A clear and concise description of what you want to happen.
+## Problem Statement
+What problem does this feature solve?
 
-**Describe alternatives you've considered**
-A clear and concise description of any alternative solutions or features you've considered.
+## Proposed Solution
+Describe the solution you'd like.
 
-**Additional context**
+## Alternatives Considered
+Describe any alternative solutions you've considered.
+
+## Implementation Notes
+Any technical considerations or requirements.
+
+## Additional Context
 Add any other context or screenshots about the feature request here.
