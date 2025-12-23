@@ -1,0 +1,15 @@
+{
+  "name": "renvault-leaderboard",
+  "version": "1.0.0",
+  "description": "RenVault leaderboard and gamification system",
+  "main": "api.js",
+  "scripts": {
+    "start": "node api.js",
+    "scheduler": "node scheduler.js"
+  },
+  "dependencies": {
+    "@stacks/transactions": "^6.5.4",
+    "@stacks/network": "^6.5.4",
+    "express": "^4.18.0"
+  }
+}

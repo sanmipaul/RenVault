@@ -1,0 +1,48 @@
+MAINNET DEPLOYMENT - Copy each contract below to https://explorer.stacks.co/sandbox/deploy
+
+=== CONTRACT 1: sip009-nft-trait ===
+;; SIP009 NFT Trait - Standard NFT interface
+(define-trait nft-trait
+  (
+    (get-last-token-id () (response uint uint))
+    (get-token-uri (uint) (response (optional (string-ascii 256)) uint))
+    (get-owner (uint) (response (optional principal) uint))
+    (transfer (uint principal principal) (response bool uint))
+  )
+)
+
+=== CONTRACT 2: vault-trait ===
+;; Vault Trait - Interface definition for vault contracts
+;; Defines standard functions that vault implementations should provide
+
+(define-trait vault-trait
+  (
+    ;; Core vault operations
+    (deposit (uint) (response {deposited: uint, fee: uint, new-balance: uint, commitment-points: uint} uint))
+    (withdraw (uint) (response bool uint))
+    
+    ;; Read-only functions
+    (get-balance (principal) (response uint uint))
+    (get-points (principal) (response uint uint))
+    (get-fees-collected () (response uint uint))
+    (get-contract-owner () (response principal uint))
+  )
+)
+
+=== DEPLOY REMAINING 11 CONTRACTS IN ORDER ===
+3. oracle
+4. emergency  
+5. analytics
+6. governance
+7. rewards
+8. timelock
+9. nft-badges
+10. staking
+11. referral
+12. vault-factory
+13. ren-vault
+
+Go to: https://explorer.stacks.co/sandbox/deploy
+Connect wallet with your mnemonic
+Set fee: 0.5 STX per contract
+Deploy in order above
