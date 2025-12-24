@@ -1,0 +1,16 @@
+{
+  "name": "renvault-oracle",
+  "version": "1.0.0",
+  "description": "Oracle price feeds for RenVault protocol",
+  "main": "oracleAPI.js",
+  "scripts": {
+    "start": "node oracleAPI.js"
+  },
+  "dependencies": {
+    "express": "^4.18.0",
+    "axios": "^1.6.0"
+  },
+  "keywords": ["oracle", "price-feeds", "defi", "aggregator"],
+  "author": "RenVault Team",
+  "license": "MIT"
+}
