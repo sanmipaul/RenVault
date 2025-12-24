@@ -10,7 +10,7 @@
     "@stacks/transactions": "^6.5.4",
     "@walletconnect/core": "^2.0.0",
     "@walletconnect/utils": "^2.0.0",
-    "react": "^18.2.0",
+    "react": "^19.2.3",
     "react-dom": "^18.2.0",
     "react-scripts": "5.0.1",
     "typescript": "^5.0.0"
