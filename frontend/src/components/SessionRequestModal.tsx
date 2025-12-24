@@ -3,6 +3,7 @@ import { WalletKitTypes } from '@reown/walletkit';
 import { getSdkError } from '@walletconnect/utils';
 import { WalletKitService } from '../services/walletkit-service';
 import { logger } from '../utils/logger';
+import { handleRedirect } from '../utils/walletkit-helpers';
 
 interface Props {
   request: WalletKitTypes.SessionRequest | null;
@@ -28,6 +29,12 @@ export const SessionRequestModal: React.FC<Props> = ({ request, onClose }) => {
       
       await service.respondSessionRequest(topic, id, result);
       logger.info('Session request approved');
+      
+      const session = service.getSession(topic);
+      if (session) {
+        handleRedirect(session.peer.metadata);
+      }
+      
       onClose();
     } catch (error) {
       logger.error('Request approval failed:', error as Error);

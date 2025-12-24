@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { WalletKitTypes } from '@reown/walletkit';
 import { WalletKitService } from '../services/walletkit-service';
 import { logger } from '../utils/logger';
+import { handleRedirect } from '../utils/walletkit-helpers';
 
 interface Props {
   proposal: WalletKitTypes.SessionProposal | null;
@@ -29,6 +30,7 @@ export const SessionProposalModal: React.FC<Props> = ({ proposal, onClose }) => 
       
       await service.approveSession(proposal, supportedNamespaces);
       logger.info('Session approved successfully');
+      handleRedirect(proposal.params.proposer.metadata);
       onClose();
     } catch (error) {
       logger.error('Approval failed:', error as Error);

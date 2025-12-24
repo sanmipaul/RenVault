@@ -16,15 +16,15 @@ export const isNativeApp = (metadata: any): boolean => {
 };
 
 export const handleRedirect = (metadata: any) => {
-  if (isNativeApp(metadata)) {
-    if (metadata.redirect) {
-      window.location.href = metadata.redirect;
-    }
-  } else {
-    if (window.opener) {
-      window.opener.location.href = metadata.url;
-      window.close();
-    }
+  if (!metadata?.redirect) return;
+
+  const { native, universal } = metadata.redirect;
+
+  if (native) {
+    // Check if we are on mobile or if the scheme is supported
+    window.location.href = native;
+  } else if (universal) {
+    window.open(universal, '_blank');
   }
 };
 
