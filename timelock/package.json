@@ -1,0 +1,16 @@
+{
+  "name": "renvault-timelock",
+  "version": "1.0.0",
+  "description": "Timelock system for RenVault protocol",
+  "main": "timelockAPI.js",
+  "scripts": {
+    "start": "node timelockAPI.js"
+  },
+  "dependencies": {
+    "express": "^4.18.0",
+    "node-cron": "^3.0.0"
+  },
+  "keywords": ["timelock", "delayed-execution", "governance", "security"],
+  "author": "RenVault Team",
+  "license": "MIT"
+}
