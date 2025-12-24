@@ -1,16 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { WalletKit } from '@reown/walletkit';
-import { Core } from '@walletconnect/core';
+import React from 'react';
 import { useWalletKit } from './hooks/useWalletKit';
-import { WalletKitProvider } from './context/WalletKitProvider';
+import { WalletKitProvider, useWalletKitContext } from './context/WalletKitProvider';
 import { WalletConnect } from './components/WalletConnect';
-import walletKitConfig from './lib/walletkit-config';
 import './App.css';
 
 const AppContent: React.FC = () => {
-  const { walletKit, loading, error } = useWalletKit();
+  const { isLoading, error } = useWalletKitContext();
 
-  if (loading) return <div className='loading'>Initializing WalletKit...</div>;
+  if (isLoading) return <div className='loading'>Initializing WalletKit...</div>;
   if (error) return <div className='error'>Error: {error.message}</div>;
 
   return (
