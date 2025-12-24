@@ -2,9 +2,17 @@ import React, { useState } from 'react';
 import { useWalletKitContext } from '../context/WalletKitProvider';
 import { getWalletConnectUri } from '../utils/walletkit-helpers';
 import { SessionProposalModal } from './SessionProposalModal';
+import { SessionRequestModal } from './SessionRequestModal';
 
 export const WalletConnect: React.FC = () => {
-  const { walletKit, isLoading, sessionProposal, setSessionProposal } = useWalletKitContext();
+  const { 
+    walletKit, 
+    isLoading, 
+    sessionProposal, 
+    setSessionProposal,
+    sessionRequest,
+    setSessionRequest
+  } = useWalletKitContext();
   const [uri, setUri] = useState('');
   const [manualUri, setManualUri] = useState('');
 
@@ -66,6 +74,13 @@ export const WalletConnect: React.FC = () => {
         <SessionProposalModal
           proposal={sessionProposal}
           onClose={() => setSessionProposal(null)}
+        />
+      )}
+
+      {sessionRequest && (
+        <SessionRequestModal
+          request={sessionRequest}
+          onClose={() => setSessionRequest(null)}
         />
       )}
     </div>

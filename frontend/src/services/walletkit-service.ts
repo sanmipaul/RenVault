@@ -97,6 +97,27 @@ export class WalletKitService {
     }
   }
 
+  async rejectSessionRequest(
+    topic: string,
+    id: number,
+    error: { code: number; message: string }
+  ) {
+    try {
+      const response = {
+        id,
+        jsonrpc: '2.0',
+        error,
+      };
+
+      return await this.walletKit.respondSessionRequest({
+        topic,
+        response,
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
+
   getActiveSessions() {
     return this.walletKit.getActiveSessions();
   }
