@@ -8,6 +8,8 @@ interface WalletKitContextType {
   error: Error | null;
   sessionProposal: WalletKitTypes.SessionProposal | null;
   setSessionProposal: (proposal: WalletKitTypes.SessionProposal | null) => void;
+  sessionRequest: WalletKitTypes.SessionRequest | null;
+  setSessionRequest: (request: WalletKitTypes.SessionRequest | null) => void;
 }
 
 const WalletKitContext = createContext<WalletKitContextType | undefined>(undefined);
@@ -21,6 +23,7 @@ export const WalletKitProvider: React.FC<{
   };
 }> = ({ children, value }) => {
   const [sessionProposal, setSessionProposal] = useState<WalletKitTypes.SessionProposal | null>(null);
+  const [sessionRequest, setSessionRequest] = useState<WalletKitTypes.SessionRequest | null>(null);
 
   useEffect(() => {
     if (!value.walletKit) return;
@@ -30,10 +33,17 @@ export const WalletKitProvider: React.FC<{
       setSessionProposal(proposal);
     };
 
+    const onSessionRequest = (requestEvent: WalletKitTypes.SessionRequest) => {
+      logger.info('Received session request', requestEvent);
+      setSessionRequest(requestEvent);
+    };
+
     value.walletKit.on('session_proposal', onSessionProposal);
+    value.walletKit.on('session_request', onSessionRequest);
 
     return () => {
       value.walletKit?.off('session_proposal', onSessionProposal);
+      value.walletKit?.off('session_request', onSessionRequest);
     };
   }, [value.walletKit]);
 
@@ -41,6 +51,8 @@ export const WalletKitProvider: React.FC<{
     ...value,
     sessionProposal,
     setSessionProposal,
+    sessionRequest,
+    setSessionRequest,
   };
 
   return (
