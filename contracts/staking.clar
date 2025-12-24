@@ -1,57 +1,89 @@
-;; Staking Contract - Stake commitment points for additional rewards
-(define-constant err-insufficient-points (err u900))
-(define-constant err-not-staked (err u901))
+;; Staking Rewards Contract
+(define-constant contract-owner tx-sender)
+(define-constant err-unauthorized (err u401))
+(define-constant err-insufficient-balance (err u402))
+(define-constant err-no-stake (err u403))
 
+;; Staking data
+(define-map user-stakes principal uint)
+(define-map user-rewards principal uint)
+(define-map stake-timestamps principal uint)
+
+;; Staking parameters
 (define-data-var total-staked uint u0)
-(define-data-var reward-rate uint u5) ;; 5% APY
+(define-data-var reward-rate uint u100) ;; 1% per epoch
+(define-data-var min-stake uint u1000000) ;; 1 STX minimum
+(define-data-var lock-period uint u144) ;; 1 day in blocks
 
-(define-map staked-points principal uint)
-(define-map stake-timestamp principal uint)
-(define-map earned-rewards principal uint)
-
-(define-public (stake-points (points uint))
-  (let (
-    (current-staked (default-to u0 (map-get? staked-points tx-sender)))
-  )
-    (map-set staked-points tx-sender (+ current-staked points))
-    (map-set stake-timestamp tx-sender block-height)
-    (var-set total-staked (+ (var-get total-staked) points))
-    (ok true)
-  )
-)
-
-(define-public (unstake-points (points uint))
-  (let (
-    (current-staked (default-to u0 (map-get? staked-points tx-sender)))
-  )
-    (asserts! (>= current-staked points) err-insufficient-points)
+;; Stake STX
+(define-public (stake (amount uint))
+  (begin
+    (asserts! (>= amount (var-get min-stake)) (err u404))
+    (try! (stx-transfer? amount tx-sender (as-contract tx-sender)))
     
-    (map-set staked-points tx-sender (- current-staked points))
-    (var-set total-staked (- (var-get total-staked) points))
-    (ok true)
-  )
-)
+    (let ((current-stake (default-to u0 (map-get? user-stakes tx-sender))))
+      (map-set user-stakes tx-sender (+ current-stake amount))
+      (map-set stake-timestamps tx-sender block-height)
+      (var-set total-staked (+ (var-get total-staked) amount))
+      (ok amount))))
 
-(define-public (claim-staking-rewards)
-  (let (
-    (staked (default-to u0 (map-get? staked-points tx-sender)))
-    (stake-time (default-to u0 (map-get? stake-timestamp tx-sender)))
-    (blocks-staked (- block-height stake-time))
-    (rewards (/ (* staked blocks-staked (var-get reward-rate)) u52560)) ;; Approximate blocks per year
-  )
-    (asserts! (> staked u0) err-not-staked)
+;; Unstake STX
+(define-public (unstake (amount uint))
+  (let ((current-stake (default-to u0 (map-get? user-stakes tx-sender)))
+        (stake-time (default-to u0 (map-get? stake-timestamps tx-sender))))
+    (asserts! (>= current-stake amount) err-insufficient-balance)
+    (asserts! (>= (- block-height stake-time) (var-get lock-period)) (err u405))
     
-    (map-set earned-rewards tx-sender rewards)
-    (map-set stake-timestamp tx-sender block-height)
-    (ok rewards)
-  )
-)
+    (try! (as-contract (stx-transfer? amount tx-sender tx-sender)))
+    (map-set user-stakes tx-sender (- current-stake amount))
+    (var-set total-staked (- (var-get total-staked) amount))
+    (ok amount)))
 
-(define-read-only (get-staked-points (user principal))
-  (ok (default-to u0 (map-get? staked-points user))))
+;; Calculate rewards
+(define-public (calculate-rewards (user principal))
+  (let ((stake (default-to u0 (map-get? user-stakes user)))
+        (stake-time (default-to u0 (map-get? stake-timestamps user))))
+    (if (> stake u0)
+      (let ((epochs-staked (/ (- block-height stake-time) u144))
+            (reward (/ (* stake (var-get reward-rate) epochs-staked) u10000)))
+        (ok reward))
+      (ok u0))))
 
-(define-read-only (get-earned-rewards (user principal))
-  (ok (default-to u0 (map-get? earned-rewards user))))
+;; Claim rewards
+(define-public (claim-rewards)
+  (let ((rewards-result (unwrap! (calculate-rewards tx-sender) (err u406))))
+    (asserts! (> rewards-result u0) (err u407))
+    (map-set user-rewards tx-sender (+ (default-to u0 (map-get? user-rewards tx-sender)) rewards-result))
+    (map-set stake-timestamps tx-sender block-height)
+    (ok rewards-result)))
+
+;; Set staking parameters
+(define-public (set-reward-rate (rate uint))
+  (begin
+    (asserts! (is-eq tx-sender contract-owner) err-unauthorized)
+    (var-set reward-rate rate)
+    (ok true)))
+
+(define-public (set-min-stake (amount uint))
+  (begin
+    (asserts! (is-eq tx-sender contract-owner) err-unauthorized)
+    (var-set min-stake amount)
+    (ok true)))
+
+;; Read functions
+(define-read-only (get-user-stake (user principal))
+  (default-to u0 (map-get? user-stakes user)))
+
+(define-read-only (get-user-rewards (user principal))
+  (default-to u0 (map-get? user-rewards user)))
 
 (define-read-only (get-total-staked)
-  (ok (var-get total-staked)))
+  (var-get total-staked))
+
+(define-read-only (get-staking-info)
+  {
+    total-staked: (var-get total-staked),
+    reward-rate: (var-get reward-rate),
+    min-stake: (var-get min-stake),
+    lock-period: (var-get lock-period)
+  })
