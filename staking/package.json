@@ -1,0 +1,15 @@
+{
+  "name": "renvault-staking",
+  "version": "1.0.0",
+  "description": "Staking rewards system for RenVault protocol",
+  "main": "stakingAPI.js",
+  "scripts": {
+    "start": "node stakingAPI.js"
+  },
+  "dependencies": {
+    "express": "^4.18.0"
+  },
+  "keywords": ["staking", "rewards", "yield", "defi"],
+  "author": "RenVault Team",
+  "license": "MIT"
+}
