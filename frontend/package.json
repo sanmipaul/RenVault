@@ -1,56 +1,27 @@
 {
-  "name": "renvault-wallet",
+  "name": "renvault-frontend",
   "version": "1.0.0",
   "description": "RenVault Web Wallet with WalletConnect integration",
-  "main": "index.js",
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint . --ext .ts,.tsx",
-    "type-check": "tsc --noEmit",
-    "test": "jest",
-    "test:watch": "jest --watch"
-  },
+  "private": true,
   "dependencies": {
     "@reown/walletkit": "^1.0.0",
+    "@stacks/connect": "^7.8.1",
+    "@stacks/network": "^6.5.4",
+    "@stacks/transactions": "^6.5.4",
     "@walletconnect/core": "^2.0.0",
     "@walletconnect/utils": "^2.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "next": "^14.0.0",
+    "react-scripts": "5.0.1",
     "typescript": "^5.0.0"
-  },
-  "devDependencies": {
-    "@types/node": "^20.0.0",
-    "@types/react": "^18.0.0",
-    "@types/react-dom": "^18.0.0",
-    "jest": "^29.0.0",
-    "ts-jest": "^29.0.0",
-    "eslint": "^8.0.0",
-    "@typescript-eslint/eslint-plugin": "^6.0.0",
-    "@typescript-eslint/parser": "^6.0.0"
-  },
-  "keywords": ["wallet", "walletconnect", "web3", "stacks", "renvault"],
-  "author": "RenVault Team",
-  "license": "MIT"
-}
-  "name": "renvault-frontend",
-  "version": "1.0.0",
-  "private": true,
-  "dependencies": {
-    "@stacks/connect": "^7.8.1",
-    "@stacks/transactions": "^6.5.4",
-    "@stacks/network": "^6.5.4",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-scripts": "5.0.1"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "lint": "eslint . --ext .ts,.tsx",
+    "type-check": "tsc --noEmit"
   },
   "eslintConfig": {
     "extends": [
@@ -68,5 +39,25 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  }
+  },
+  "devDependencies": {
+    "@types/jest": "^29.0.0",
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "jest": "^29.0.0",
+    "ts-jest": "^29.0.0"
+  },
+  "keywords": [
+    "wallet",
+    "walletconnect",
+    "web3",
+    "stacks",
+    "renvault"
+  ],
+  "author": "RenVault Team",
+  "license": "MIT"
 }

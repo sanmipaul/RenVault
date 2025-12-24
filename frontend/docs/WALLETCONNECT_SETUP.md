@@ -34,11 +34,11 @@ This guide walks you through creating a WalletConnect project and obtaining your
 Create `.env.local` in the `frontend/` directory:
 
 ```env
-VITE_WALLETCONNECT_PROJECT_ID=your_project_id_here
-VITE_APP_NAME=RenVault Wallet
-VITE_APP_DESCRIPTION=RenVault Web Wallet with WalletConnect
-VITE_APP_URL=http://localhost:3000
-VITE_APP_ICON=http://localhost:3000/logo.png
+REACT_APP_WALLETCONNECT_PROJECT_ID=your_project_id_here
+REACT_APP_NAME=RenVault Wallet
+REACT_APP_DESCRIPTION=RenVault Web Wallet with WalletConnect
+REACT_APP_URL=http://localhost:3000
+REACT_APP_ICON=http://localhost:3000/logo.png
 ```
 
 ## Step 5: Verify Configuration
@@ -46,7 +46,7 @@ VITE_APP_ICON=http://localhost:3000/logo.png
 Run the development server to verify:
 
 ```bash
-npm run dev
+npm start
 ```
 
 Check browser console for any WalletConnect errors.

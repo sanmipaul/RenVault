@@ -1,0 +1,15 @@
+{
+  "name": "renvault-emergency",
+  "version": "1.0.0",
+  "description": "Emergency pause system for RenVault protocol",
+  "main": "emergencyAPI.js",
+  "scripts": {
+    "start": "node emergencyAPI.js"
+  },
+  "dependencies": {
+    "express": "^4.18.0"
+  },
+  "keywords": ["emergency", "pause", "security", "circuit-breaker"],
+  "author": "RenVault Team",
+  "license": "MIT"
+}
