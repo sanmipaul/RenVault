@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useWalletKitContext } from '../context/WalletKitProvider';
 import { getWalletConnectUri } from '../utils/walletkit-helpers';
+import { SessionProposalModal } from './SessionProposalModal';
 
 export const WalletConnect: React.FC = () => {
-  const { walletKit, isLoading } = useWalletKitContext();
+  const { walletKit, isLoading, sessionProposal, setSessionProposal } = useWalletKitContext();
   const [uri, setUri] = useState('');
   const [manualUri, setManualUri] = useState('');
 
@@ -60,6 +61,13 @@ export const WalletConnect: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {sessionProposal && (
+        <SessionProposalModal
+          proposal={sessionProposal}
+          onClose={() => setSessionProposal(null)}
+        />
+      )}
     </div>
   );
 };

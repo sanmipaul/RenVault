@@ -137,3 +137,36 @@ main {
   justify-content: center;
   margin-top: 20px;
 }
+
+.dapp-info {
+  margin: 20px 0;
+  text-align: center;
+}
+
+.dapp-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  object-fit: cover;
+}
+
+.dapp-info h3 {
+  margin: 10px 0 5px;
+  font-size: 1.2rem;
+}
+
+.dapp-info p {
+  color: #666;
+  margin: 0 0 10px;
+}
+
+.dapp-info a {
+  color: #1976d2;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.dapp-info a:hover {
+  text-decoration: underline;
+}
