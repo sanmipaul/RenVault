@@ -1,9 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useWalletKitContext } from '../context/WalletKitProvider';
 import { getWalletConnectUri } from '../utils/walletkit-helpers';
+import { SessionProposalModal } from './SessionProposalModal';
+import { SessionRequestModal } from './SessionRequestModal';
 
 export const WalletConnect: React.FC = () => {
-  const { walletKit, isLoading } = useWalletKitContext();
+  const { 
+    walletKit, 
+    isLoading, 
+    sessionProposal, 
+    setSessionProposal,
+    sessionRequest,
+    setSessionRequest
+  } = useWalletKitContext();
   const [uri, setUri] = useState('');
   const [manualUri, setManualUri] = useState('');
 
@@ -11,17 +20,23 @@ export const WalletConnect: React.FC = () => {
     if (!walletKit) return;
     try {
       await walletKit.pair({ uri: connectUri });
+      // Clear URL param after successful pairing attempt to avoid re-pairing on refresh
+      const url = new URL(window.location.href);
+      url.searchParams.delete('uri');
+      window.history.replaceState({}, '', url.toString());
     } catch (error) {
       console.error('Failed to pair:', error);
     }
   };
 
-  const handleQrScan = async () => {
-    const wcUri = getWalletConnectUri();
-    if (wcUri) {
-      await handleConnectWithUri(wcUri);
+  useEffect(() => {
+    if (walletKit) {
+      const wcUri = getWalletConnectUri();
+      if (wcUri) {
+        handleConnectWithUri(wcUri);
+      }
     }
-  };
+  }, [walletKit]);
 
   const handleManualInput = async () => {
     if (manualUri) {
@@ -39,14 +54,19 @@ export const WalletConnect: React.FC = () => {
       <h2>WalletConnect Integration</h2>
 
       <div className='connect-methods'>
-        <button onClick={handleQrScan} className='btn btn-primary'>
-          Connect via QR Code
-        </button>
+        <div className='scan-instructions'>
+          <p>To connect a dApp:</p>
+          <ol>
+            <li>Scan the QR code with your camera app (if supported)</li>
+            <li>Or copy the WalletConnect URI from the dApp</li>
+            <li>Paste it below:</li>
+          </ol>
+        </div>
 
         <div className='manual-input'>
           <input
             type='text'
-            placeholder='Paste WalletConnect URI'
+            placeholder='wc:...'
             value={manualUri}
             onChange={(e) => setManualUri(e.target.value)}
             className='input-field'
@@ -60,6 +80,20 @@ export const WalletConnect: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {sessionProposal && (
+        <SessionProposalModal
+          proposal={sessionProposal}
+          onClose={() => setSessionProposal(null)}
+        />
+      )}
+
+      {sessionRequest && (
+        <SessionRequestModal
+          request={sessionRequest}
+          onClose={() => setSessionRequest(null)}
+        />
+      )}
     </div>
   );
 };
