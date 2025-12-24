@@ -121,4 +121,9 @@ export class WalletKitService {
   getActiveSessions() {
     return this.walletKit.getActiveSessions();
   }
+
+  getSession(topic: string) {
+    const sessions = this.getActiveSessions();
+    return sessions[topic];
+  }
 }
