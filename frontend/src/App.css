@@ -214,3 +214,21 @@ main {
   font-size: 0.85rem;
   margin-top: 5px;
 }
+
+.scan-instructions {
+  text-align: left;
+  background: #e3f2fd;
+  padding: 15px;
+  border-radius: 8px;
+  color: #0d47a1;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.scan-instructions ol {
+  padding-left: 20px;
+}
+
+.scan-instructions li {
+  margin-bottom: 5px;
+}
