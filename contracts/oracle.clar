@@ -1,43 +1,77 @@
-;; Oracle Contract - External data feeds for dynamic fee calculation
-(define-constant err-unauthorized (err u600))
-(define-constant err-stale-data (err u601))
+;; Oracle Price Feed Contract
+(define-constant contract-owner tx-sender)
+(define-constant err-unauthorized (err u401))
+(define-constant err-stale-price (err u402))
+(define-constant err-invalid-price (err u403))
 
-(define-data-var stx-price uint u100000) ;; Price in cents
-(define-data-var last-update uint u0)
-(define-data-var oracle-admin principal tx-sender)
+;; Price data
+(define-map price-feeds (string-ascii 10) {
+  price: uint,
+  timestamp: uint,
+  decimals: uint,
+  source: (string-ascii 20)
+})
 
-(define-map authorized-oracles principal bool)
+;; Oracle operators
+(define-map oracle-operators principal bool)
+(define-data-var price-staleness-threshold uint u3600) ;; 1 hour
 
-(define-public (update-price (new-price uint))
+;; Initialize owner as operator
+(map-set oracle-operators contract-owner true)
+
+;; Update price feed
+(define-public (update-price (symbol (string-ascii 10)) (price uint) (decimals uint) (source (string-ascii 20)))
   (begin
-    (asserts! (default-to false (map-get? authorized-oracles tx-sender)) err-unauthorized)
-    (var-set stx-price new-price)
-    (var-set last-update block-height)
-    (ok true)
-  )
-)
+    (asserts! (default-to false (map-get? oracle-operators tx-sender)) err-unauthorized)
+    (asserts! (> price u0) err-invalid-price)
+    (map-set price-feeds symbol {
+      price: price,
+      timestamp: block-height,
+      decimals: decimals,
+      source: source
+    })
+    (ok true)))
 
-(define-public (add-oracle (oracle principal))
+;; Get price feed
+(define-read-only (get-price (symbol (string-ascii 10)))
+  (let ((feed (unwrap! (map-get? price-feeds symbol) (err u404))))
+    (asserts! (< (- block-height (get timestamp feed)) (var-get price-staleness-threshold)) err-stale-price)
+    (ok (get price feed))))
+
+;; Get price with timestamp
+(define-read-only (get-price-data (symbol (string-ascii 10)))
+  (map-get? price-feeds symbol))
+
+;; Add oracle operator
+(define-public (add-oracle-operator (operator principal))
   (begin
-    (asserts! (is-eq tx-sender (var-get oracle-admin)) err-unauthorized)
-    (map-set authorized-oracles oracle true)
-    (ok true)
-  )
-)
+    (asserts! (is-eq tx-sender contract-owner) err-unauthorized)
+    (map-set oracle-operators operator true)
+    (ok true)))
 
-(define-public (remove-oracle (oracle principal))
+;; Remove oracle operator
+(define-public (remove-oracle-operator (operator principal))
   (begin
-    (asserts! (is-eq tx-sender (var-get oracle-admin)) err-unauthorized)
-    (map-delete authorized-oracles oracle)
-    (ok true)
-  )
-)
+    (asserts! (is-eq tx-sender contract-owner) err-unauthorized)
+    (map-delete oracle-operators operator)
+    (ok true)))
 
-(define-read-only (get-stx-price)
-  (ok (var-get stx-price)))
+;; Set staleness threshold
+(define-public (set-staleness-threshold (threshold uint))
+  (begin
+    (asserts! (is-eq tx-sender contract-owner) err-unauthorized)
+    (var-set price-staleness-threshold threshold)
+    (ok true)))
 
-(define-read-only (get-last-update)
-  (ok (var-get last-update)))
+;; Check if price is fresh
+(define-read-only (is-price-fresh (symbol (string-ascii 10)))
+  (match (map-get? price-feeds symbol)
+    feed (< (- block-height (get timestamp feed)) (var-get price-staleness-threshold))
+    false))
 
-(define-read-only (is-oracle-authorized (oracle principal))
-  (ok (default-to false (map-get? authorized-oracles oracle))))
+;; Get multiple prices
+(define-read-only (get-prices (symbols (list 5 (string-ascii 10))))
+  (map get-price-data symbols))
+
+(define-read-only (is-oracle-operator (operator principal))
+  (default-to false (map-get? oracle-operators operator)))
