@@ -11,15 +11,15 @@ export const validateEnvironmentVariables = (): EnvironmentValidation => {
   const warnings: string[] = [];
 
   if (!environment.walletConnect.projectId) {
-    errors.push('VITE_WALLETCONNECT_PROJECT_ID is required');
+    errors.push('REACT_APP_WALLETCONNECT_PROJECT_ID is required');
   }
 
   if (!environment.walletConnect.appName) {
-    warnings.push('VITE_APP_NAME is not set, using default');
+    warnings.push('REACT_APP_NAME is not set, using default');
   }
 
   if (!environment.walletConnect.appUrl) {
-    warnings.push('VITE_APP_URL is not set, using default');
+    warnings.push('REACT_APP_URL is not set, using default');
   }
 
   if (

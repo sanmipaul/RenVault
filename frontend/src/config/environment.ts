@@ -1,18 +1,18 @@
 export const environment = {
   walletConnect: {
-    projectId: import.meta.env.VITE_WALLETCONNECT_PROJECT_ID,
-    appName: import.meta.env.VITE_APP_NAME || 'RenVault Wallet',
-    appDescription: import.meta.env.VITE_APP_DESCRIPTION || 'RenVault Web Wallet',
-    appUrl: import.meta.env.VITE_APP_URL || 'http://localhost:3000',
-    appIcon: import.meta.env.VITE_APP_ICON || '',
+    projectId: process.env.REACT_APP_WALLETCONNECT_PROJECT_ID,
+    appName: process.env.REACT_APP_NAME || 'RenVault Wallet',
+    appDescription: process.env.REACT_APP_DESCRIPTION || 'RenVault Web Wallet',
+    appUrl: process.env.REACT_APP_URL || 'http://localhost:3000',
+    appIcon: process.env.REACT_APP_ICON || '',
   },
-  isDev: import.meta.env.DEV,
-  isProd: import.meta.env.PROD,
+  isDev: process.env.NODE_ENV === 'development',
+  isProd: process.env.NODE_ENV === 'production',
 };
 
 export const validateEnvironment = () => {
   if (!environment.walletConnect.projectId) {
-    throw new Error('VITE_WALLETCONNECT_PROJECT_ID environment variable is not set');
+    throw new Error('REACT_APP_WALLETCONNECT_PROJECT_ID environment variable is not set');
   }
 };
 
