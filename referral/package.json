@@ -1,0 +1,16 @@
+{
+  "name": "renvault-referral",
+  "version": "1.0.0",
+  "description": "Referral system for RenVault protocol",
+  "main": "referralAPI.js",
+  "scripts": {
+    "start": "node referralAPI.js"
+  },
+  "dependencies": {
+    "express": "^4.18.0",
+    "qrcode": "^1.5.0"
+  },
+  "keywords": ["referral", "rewards", "incentives", "growth"],
+  "author": "RenVault Team",
+  "license": "MIT"
+}
