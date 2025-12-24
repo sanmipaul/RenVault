@@ -126,4 +126,8 @@ export class WalletKitService {
     const sessions = this.getActiveSessions();
     return sessions[topic];
   }
+
+  static reset() {
+    WalletKitService.instance = null as any;
+  }
 }
