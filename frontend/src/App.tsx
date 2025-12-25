@@ -212,7 +212,12 @@ function App() {
         )}
       </div>
 
-      {networkMismatch && (
+      {detectedNetwork === 'mainnet' && (
+        <div className="card success">
+          <h3>✅ Connected to Mainnet</h3>
+          <p>You are connected to the correct network. You can now use RenVault.</p>
+        </div>
+      )}
         <div className="card warning">
           <h3>⚠️ Network Mismatch Detected</h3>
           <p>Your wallet is connected to <strong>{detectedNetwork}</strong>, but RenVault operates on <strong>mainnet</strong>.</p>
