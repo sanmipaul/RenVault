@@ -23,6 +23,8 @@ const detectNetworkFromAddress = (address: string): 'mainnet' | 'testnet' => {
 };
 
 const getCurrentNetwork = () => {
+  // Return the appropriate network instance based on detected network
+  // Note: Contract is deployed on mainnet, so testnet calls will fail
   return detectedNetwork === 'mainnet' ? new StacksMainnet() : new StacksTestnet();
 };
 
