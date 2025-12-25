@@ -7,9 +7,10 @@ import { handleRedirect } from '../utils/walletkit-helpers';
 interface Props {
   proposal: WalletKitTypes.SessionProposal | null;
   onClose: () => void;
+  onSessionApproved?: (session: any) => void;
 }
 
-export const SessionProposalModal: React.FC<Props> = ({ proposal, onClose }) => {
+export const SessionProposalModal: React.FC<Props> = ({ proposal, onClose, onSessionApproved }) => {
   const [loading, setLoading] = useState(false);
 
   if (!proposal) return null;
@@ -20,16 +21,26 @@ export const SessionProposalModal: React.FC<Props> = ({ proposal, onClose }) => 
       const service = WalletKitService.getInstance();
       
       const supportedNamespaces = {
-        eip155: {
-          chains: ['eip155:1', 'eip155:137'],
-          methods: ['eth_sendTransaction', 'personal_sign'],
+        stacks: {
+          chains: ['stacks:1'], // Stacks mainnet
+          methods: [
+            'stacks_signMessage',
+            'stacks_signTransaction', 
+            'stacks_getAccounts',
+            'stacks_getAddresses'
+          ],
           events: ['accountsChanged', 'chainChanged'],
-          accounts: ['eip155:1:0xab16a96d359ec26a11e2c2b3d8f8b8942d5bfcdb'], // TODO: Use actual account
+          accounts: ['stacks:1:SP2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7'], // TODO: Use actual Stacks account
         },
       };
       
-      await service.approveSession(proposal, supportedNamespaces);
+      const session = await service.approveSession(proposal, supportedNamespaces);
       logger.info('Session approved successfully');
+      
+      if (onSessionApproved) {
+        onSessionApproved(session);
+      }
+      
       handleRedirect(proposal.params.proposer.metadata);
       onClose();
     } catch (error) {
