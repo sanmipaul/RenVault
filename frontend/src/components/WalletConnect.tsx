@@ -21,6 +21,8 @@ export const WalletConnect: React.FC<WalletConnectProps> = ({ onSessionEstablish
   const [uri, setUri] = useState('');
   const [manualUri, setManualUri] = useState('');
   const [showQR, setShowQR] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isConnecting, setIsConnecting] = useState(false);
 
   const generateWalletConnectUri = async () => {
     if (!walletKit) return;
