@@ -24,9 +24,26 @@ export const WalletConnect: React.FC<WalletConnectProps> = ({ onSessionEstablish
   const [error, setError] = useState<string | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
 
+  const handleConnectWithUri = async (connectionUri: string) => {
+    if (!walletKit || !connectionUri) return;
+    
+    setError(null);
+    setIsConnecting(true);
+    try {
+      await walletKit.pair({ uri: connectionUri });
+    } catch (err) {
+      console.error('Failed to pair with URI:', err);
+      setError('Failed to connect to the wallet. Please check your URI and try again.');
+    } finally {
+      setIsConnecting(false);
+    }
+  };
+
   const generateWalletConnectUri = async () => {
     if (!walletKit) return;
     
+    setError(null);
+    setIsConnecting(true);
     try {
       const { uri: wcUri } = await walletKit.createSession({
         requiredNamespaces: {
@@ -45,8 +62,11 @@ export const WalletConnect: React.FC<WalletConnectProps> = ({ onSessionEstablish
       
       setUri(wcUri);
       setShowQR(true);
-    } catch (error) {
-      console.error('Failed to create WalletConnect session:', error);
+    } catch (err) {
+      console.error('Failed to create WalletConnect session:', err);
+      setError('Failed to generate connection QR code. Please try again.');
+    } finally {
+      setIsConnecting(false);
     }
   };
 
