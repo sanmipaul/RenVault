@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { AppConfig, UserSession, showConnect, UserData } from '@stacks/connect';
+import { AppConfig, UserSession, showConnect, UserData, openContractCall } from '@stacks/connect';
 import { StacksMainnet, StacksTestnet } from '@stacks/network';
 import { 
   callReadOnlyFunction, 
@@ -38,6 +38,8 @@ function App() {
   const [loading, setLoading] = useState<boolean>(false);
   const [detectedNetwork, setDetectedNetwork] = useState<'mainnet' | 'testnet' | null>(null);
   const [networkMismatch, setNetworkMismatch] = useState<boolean>(false);
+  const [showWithdrawDetails, setShowWithdrawDetails] = useState<boolean>(false);
+  const [withdrawTxDetails, setWithdrawTxDetails] = useState<any>(null);
 
   useEffect(() => {
     if (userSession.isSignInPending()) {
@@ -58,6 +60,33 @@ function App() {
       fetchUserStats();
     }
   }, [userData]);
+
+  useEffect(() => {
+    if (status) {
+      const timer = setTimeout(() => {
+        setStatus('');
+      }, 10000); // Clear status after 10 seconds
+      return () => clearTimeout(timer);
+    }
+  }, [status]);
+
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (showWithdrawDetails) {
+        if (event.key === 'Enter' && !loading) {
+          executeWithdraw();
+        } else if (event.key === 'Escape') {
+          setShowWithdrawDetails(false);
+          setWithdrawTxDetails(null);
+        }
+      }
+    };
+
+    if (showWithdrawDetails) {
+      document.addEventListener('keydown', handleKeyPress);
+      return () => document.removeEventListener('keydown', handleKeyPress);
+    }
+  }, [showWithdrawDetails, loading]);
 
   const connectWallet = () => {
     showConnect({
@@ -144,6 +173,52 @@ function App() {
     }
   };
 
+  const executeWithdraw = async () => {
+    if (!withdrawTxDetails || !userData) return;
+    
+    setLoading(true);
+    setShowWithdrawDetails(false);
+    
+    try {
+      // Set a timeout for the signing process
+      const signingTimeout = setTimeout(() => {
+        setStatus('⚠️ Transaction signing timed out. Please try again.');
+        setWithdrawTxDetails(null);
+        setLoading(false);
+      }, 30000); // 30 seconds timeout
+      
+      await openContractCall({
+        network: withdrawTxDetails.network,
+        anchorMode: AnchorMode.Any,
+        contractAddress: withdrawTxDetails.contractAddress,
+        contractName: withdrawTxDetails.contractName,
+        functionName: withdrawTxDetails.functionName,
+        functionArgs: withdrawTxDetails.functionArgs,
+        appDetails: {
+          name: 'RenVault',
+          icon: window.location.origin + '/logo192.png',
+        },
+        onFinish: (data) => {
+          clearTimeout(signingTimeout);
+          setStatus(`✅ Withdraw transaction submitted successfully! Transaction ID: ${data.txId}`);
+          setWithdrawAmount('');
+          setWithdrawTxDetails(null);
+          setTimeout(fetchUserStats, 3000);
+        },
+        onCancel: () => {
+          clearTimeout(signingTimeout);
+          setStatus('❌ Transaction cancelled by user');
+          setWithdrawTxDetails(null);
+        },
+      });
+    } catch (error: any) {
+      setStatus(`Error signing transaction: ${error.message}`);
+      setWithdrawTxDetails(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const validateNetwork = () => {
     if (networkMismatch) {
       setStatus('Error: Please switch to mainnet to use RenVault');
@@ -152,37 +227,59 @@ function App() {
     return true;
   };
 
+  const promptNetworkSwitch = () => {
+    alert('To switch networks in your Stacks wallet:\n\n1. Open your wallet extension\n2. Look for network/chain selection\n3. Switch to Mainnet\n4. Refresh this page\n\nRenVault operates on Stacks Mainnet.');
+  };
+
   const handleWithdraw = async () => {
     if (!withdrawAmount || !userData) return;
     if (!validateNetwork()) return;
     
+    const withdrawAmountNum = parseFloat(withdrawAmount);
+    
+    if (isNaN(withdrawAmountNum) || withdrawAmountNum <= 0) {
+      setStatus('Error: Please enter a valid withdrawal amount greater than 0');
+      return;
+    }
+    
+    if (withdrawAmountNum > balanceNum) {
+      setStatus(`Error: Insufficient balance. You have ${balance} STX available`);
+      return;
+    }
+    
+    // Warn if withdrawal would leave less than 0.01 STX
+    const remainingBalance = balanceNum - withdrawAmountNum;
+    if (remainingBalance > 0 && remainingBalance < 0.01) {
+      const confirmLeave = window.confirm(`Warning: This withdrawal will leave only ${remainingBalance.toFixed(6)} STX in your vault. Continue?`);
+      if (!confirmLeave) return;
+    }
+    
     setLoading(true);
-    setStatus('');
+    setStatus('Preparing transaction details...');
     
     try {
       const amount = Math.floor(parseFloat(withdrawAmount) * 1000000);
       const network = getCurrentNetwork();
       
-      const txOptions = {
+      // Prepare transaction details for display
+      const txDetails = {
         contractAddress: CONTRACT_ADDRESS,
         contractName: CONTRACT_NAME,
         functionName: 'withdraw',
         functionArgs: [uintCV(amount)],
-        senderKey: userData.appPrivateKey,
         network,
-        anchorMode: AnchorMode.Any,
+        amount: parseFloat(withdrawAmount),
+        currentBalance: balance,
+        remainingBalance: (parseFloat(balance) - parseFloat(withdrawAmount)).toFixed(6),
+        fee: 'Network fee: ~0.001 STX (estimated)',
+        estimatedFee: '0.001 STX'
       };
-
-      const transaction = await makeContractCall(txOptions);
-      const broadcastResponse = await broadcastTransaction(transaction, network);
       
-      setStatus(`Withdraw transaction submitted: ${broadcastResponse.txid}`);
-      setWithdrawAmount('');
-      
-      setTimeout(fetchUserStats, 3000);
+      setWithdrawTxDetails(txDetails);
+      setShowWithdrawDetails(true);
+      setLoading(false);
     } catch (error: any) {
-      setStatus(`Error: ${error.message}`);
-    } finally {
+      setStatus(`Error preparing transaction: ${error.message}`);
       setLoading(false);
     }
   };
@@ -300,12 +397,47 @@ function App() {
           <button 
             className="btn btn-secondary" 
             onClick={handleWithdraw}
-            disabled={loading || !withdrawAmount}
+            disabled={loading || !withdrawAmount || showWithdrawDetails}
           >
-            {loading ? 'Processing...' : 'Withdraw'}
+            {loading ? 'Preparing...' : showWithdrawDetails ? 'Review Transaction' : 'Withdraw'}
           </button>
         </div>
       </div>
+
+      {showWithdrawDetails && withdrawTxDetails && (
+        <div className="card confirmation">
+          <h3>🔐 Confirm Withdrawal Transaction</h3>
+          <div style={{ marginBottom: '16px' }}>
+            <p><strong>Action:</strong> Withdraw STX from vault</p>
+            <p><strong>Amount:</strong> {withdrawTxDetails.amount} STX</p>
+            <p><strong>Current Balance:</strong> {withdrawTxDetails.currentBalance} STX</p>
+            <p><strong>Remaining Balance:</strong> {withdrawTxDetails.remainingBalance} STX</p>
+            <p><strong>Contract:</strong> {withdrawTxDetails.contractAddress}.{withdrawTxDetails.contractName}</p>
+            <p><strong>Function:</strong> {withdrawTxDetails.functionName}</p>
+            <p><strong>Network:</strong> {withdrawTxDetails.network.name}</p>
+            <p><small>{withdrawTxDetails.fee}</small></p>
+          </div>
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <button 
+              className="btn btn-primary" 
+              onClick={executeWithdraw}
+              disabled={loading}
+            >
+              {loading ? 'Signing...' : 'Sign & Submit Transaction'}
+            </button>
+            <button 
+              className="btn btn-secondary" 
+              onClick={() => {
+                setShowWithdrawDetails(false);
+                setWithdrawTxDetails(null);
+              }}
+              disabled={loading}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
 
       {status && (
         <div className={`status ${status.includes('Error') ? 'error' : 'success'}`}>
