@@ -136,7 +136,9 @@ function App() {
     }
   };
 
-  const handleWithdraw = async () => {
+  const promptNetworkSwitch = () => {
+    alert(`To use RenVault, please switch your wallet to mainnet:\n\n1. Open your Stacks wallet\n2. Go to settings/network\n3. Select Mainnet\n4. Refresh this page`);
+  };
     if (!withdrawAmount || !userData || networkMismatch) return;
     
     setLoading(true);
@@ -207,9 +209,14 @@ function App() {
           <h3>⚠️ Network Mismatch Detected</h3>
           <p>Your wallet is connected to <strong>{detectedNetwork}</strong>, but RenVault operates on <strong>mainnet</strong>.</p>
           <p>Please switch your wallet to mainnet to use this application.</p>
-          <button className="btn btn-secondary" onClick={() => window.location.reload()}>
-            Refresh After Switching
-          </button>
+          <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
+            <button className="btn btn-primary" onClick={promptNetworkSwitch}>
+              How to Switch Network
+            </button>
+            <button className="btn btn-secondary" onClick={() => window.location.reload()}>
+              Refresh After Switching
+            </button>
+          </div>
         </div>
       )}
 
