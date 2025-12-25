@@ -10,6 +10,7 @@
     "@stacks/transactions": "^6.5.4",
     "@walletconnect/core": "^2.0.0",
     "@walletconnect/utils": "^2.0.0",
+    "qrcode.react": "^4.2.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-scripts": "5.0.1",
