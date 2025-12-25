@@ -95,6 +95,12 @@ export const WalletConnect: React.FC<WalletConnectProps> = ({ onSessionEstablish
       <h2>📱 WalletConnect</h2>
       <p>Connect your mobile wallet or desktop app using WalletConnect</p>
 
+      <div className='connection-status' style={{ marginBottom: '16px', fontSize: '0.9em' }}>
+        Status: <span style={{ fontWeight: 'bold', color: isConnecting ? '#f39c12' : '#2ecc71' }}>
+          {isConnecting ? 'Connecting...' : 'Ready'}
+        </span>
+      </div>
+
       {error && (
         <div className='error-container' style={{ color: 'red', marginBottom: '16px', padding: '10px', backgroundColor: '#fff0f0', borderRadius: '4px', position: 'relative' }}>
           <p>{error}</p>
