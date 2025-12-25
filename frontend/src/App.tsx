@@ -210,6 +210,13 @@ function App() {
             <span className={`network-badge ${detectedNetwork}`}>
               {detectedNetwork.toUpperCase()}
             </span>
+            <button 
+              className="btn btn-secondary" 
+              style={{ marginLeft: '12px', fontSize: '0.8rem', padding: '4px 8px' }}
+              onClick={() => window.location.reload()}
+            >
+              Refresh
+            </button>
           </div>
         )}
       </div>
