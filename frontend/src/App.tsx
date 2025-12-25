@@ -182,7 +182,7 @@ function App() {
         },
         onFinish: (data) => {
           clearTimeout(signingTimeout);
-          setStatus(`✅ Withdraw transaction submitted successfully: ${data.txId}`);
+          setStatus(`✅ Withdraw transaction submitted successfully! Transaction ID: ${data.txId}`);
           setWithdrawAmount('');
           setWithdrawTxDetails(null);
           setTimeout(fetchUserStats, 3000);
