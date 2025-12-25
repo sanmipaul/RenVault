@@ -227,7 +227,8 @@ function App() {
         functionArgs: [uintCV(amount)],
         network,
         amount: parseFloat(withdrawAmount),
-        fee: 'Network fee applies'
+        fee: 'Network fee: ~0.001 STX (estimated)',
+        estimatedFee: '0.001 STX'
       };
       
       setWithdrawTxDetails(txDetails);
