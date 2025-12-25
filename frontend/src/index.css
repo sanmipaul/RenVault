@@ -38,6 +38,35 @@ body {
   border-left: 4px solid #0066cc;
 }
 
+.btn-outline {
+  background: transparent;
+  border: 1px solid #007bff;
+  color: #007bff;
+}
+
+.btn-outline:hover {
+  background: #007bff;
+  color: white;
+}
+
+.wallet-connect-container {
+  text-align: center;
+}
+
+.qr-section {
+  margin-top: 20px;
+}
+
+.qr-section h3 {
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.qr-section p {
+  margin-bottom: 20px;
+  color: #666;
+}
+
 .card.success {
   background: #d4edda;
   border: 1px solid #c3e6cb;
