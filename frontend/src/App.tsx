@@ -199,6 +199,19 @@ function App() {
     if (!withdrawAmount || !userData) return;
     if (!validateNetwork()) return;
     
+    const withdrawAmountNum = parseFloat(withdrawAmount);
+    const balanceNum = parseFloat(balance);
+    
+    if (withdrawAmountNum <= 0) {
+      setStatus('Error: Withdrawal amount must be greater than 0');
+      return;
+    }
+    
+    if (withdrawAmountNum > balanceNum) {
+      setStatus(`Error: Insufficient balance. You have ${balance} STX available`);
+      return;
+    }
+    
     setLoading(true);
     setStatus('');
     
