@@ -244,6 +244,7 @@ function App() {
         functionArgs: [uintCV(amount)],
         network,
         amount: parseFloat(withdrawAmount),
+        currentBalance: balance,
         fee: 'Network fee: ~0.001 STX (estimated)',
         estimatedFee: '0.001 STX'
       };
@@ -383,6 +384,7 @@ function App() {
           <div style={{ marginBottom: '16px' }}>
             <p><strong>Action:</strong> Withdraw STX from vault</p>
             <p><strong>Amount:</strong> {withdrawTxDetails.amount} STX</p>
+            <p><strong>Current Balance:</strong> {withdrawTxDetails.currentBalance} STX</p>
             <p><strong>Contract:</strong> {withdrawTxDetails.contractAddress}.{withdrawTxDetails.contractName}</p>
             <p><strong>Function:</strong> {withdrawTxDetails.functionName}</p>
             <p><strong>Network:</strong> {withdrawTxDetails.network.name}</p>
