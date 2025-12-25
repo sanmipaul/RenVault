@@ -252,6 +252,7 @@ function App() {
         network,
         amount: parseFloat(withdrawAmount),
         currentBalance: balance,
+        remainingBalance: (parseFloat(balance) - parseFloat(withdrawAmount)).toFixed(6),
         fee: 'Network fee: ~0.001 STX (estimated)',
         estimatedFee: '0.001 STX'
       };
@@ -392,6 +393,7 @@ function App() {
             <p><strong>Action:</strong> Withdraw STX from vault</p>
             <p><strong>Amount:</strong> {withdrawTxDetails.amount} STX</p>
             <p><strong>Current Balance:</strong> {withdrawTxDetails.currentBalance} STX</p>
+            <p><strong>Remaining Balance:</strong> {withdrawTxDetails.remainingBalance} STX</p>
             <p><strong>Contract:</strong> {withdrawTxDetails.contractAddress}.{withdrawTxDetails.contractName}</p>
             <p><strong>Function:</strong> {withdrawTxDetails.functionName}</p>
             <p><strong>Network:</strong> {withdrawTxDetails.network.name}</p>
