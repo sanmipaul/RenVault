@@ -153,6 +153,13 @@ function App() {
     setShowWithdrawDetails(false);
     
     try {
+      // Set a timeout for the signing process
+      const signingTimeout = setTimeout(() => {
+        setStatus('⚠️ Transaction signing timed out. Please try again.');
+        setWithdrawTxDetails(null);
+        setLoading(false);
+      }, 30000); // 30 seconds timeout
+      
       await openContractCall({
         network: withdrawTxDetails.network,
         anchorMode: AnchorMode.Any,
@@ -165,12 +172,14 @@ function App() {
           icon: window.location.origin + '/logo192.png',
         },
         onFinish: (data) => {
+          clearTimeout(signingTimeout);
           setStatus(`✅ Withdraw transaction submitted successfully: ${data.txId}`);
           setWithdrawAmount('');
           setWithdrawTxDetails(null);
           setTimeout(fetchUserStats, 3000);
         },
         onCancel: () => {
+          clearTimeout(signingTimeout);
           setStatus('❌ Transaction cancelled by user');
           setWithdrawTxDetails(null);
         },
