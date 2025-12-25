@@ -70,6 +70,24 @@ function App() {
     }
   }, [status]);
 
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (showWithdrawDetails) {
+        if (event.key === 'Enter' && !loading) {
+          executeWithdraw();
+        } else if (event.key === 'Escape') {
+          setShowWithdrawDetails(false);
+          setWithdrawTxDetails(null);
+        }
+      }
+    };
+
+    if (showWithdrawDetails) {
+      document.addEventListener('keydown', handleKeyPress);
+      return () => document.removeEventListener('keydown', handleKeyPress);
+    }
+  }, [showWithdrawDetails, loading]);
+
   const connectWallet = () => {
     showConnect({
       appDetails: {
