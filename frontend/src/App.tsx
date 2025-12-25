@@ -52,6 +52,7 @@ function App() {
       const network = detectNetworkFromAddress(userData.profile.stxAddress.mainnet);
       setDetectedNetwork(network);
       setNetworkMismatch(network !== 'mainnet');
+      console.log('Detected network:', network, 'Address:', userData.profile.stxAddress.mainnet);
       fetchUserStats();
     }
   }, [userData]);
