@@ -103,7 +103,8 @@ function App() {
   };
 
   const handleDeposit = async () => {
-    if (!depositAmount || !userData || networkMismatch) return;
+    if (!depositAmount || !userData) return;
+    if (!validateNetwork()) return;
     
     setLoading(true);
     setStatus('');
@@ -136,10 +137,17 @@ function App() {
     }
   };
 
-  const promptNetworkSwitch = () => {
-    alert(`To use RenVault, please switch your wallet to mainnet:\n\n1. Open your Stacks wallet\n2. Go to settings/network\n3. Select Mainnet\n4. Refresh this page`);
+  const validateNetwork = () => {
+    if (networkMismatch) {
+      setStatus('Error: Please switch to mainnet to use RenVault');
+      return false;
+    }
+    return true;
   };
-    if (!withdrawAmount || !userData || networkMismatch) return;
+
+  const handleWithdraw = async () => {
+    if (!withdrawAmount || !userData) return;
+    if (!validateNetwork()) return;
     
     setLoading(true);
     setStatus('');
@@ -251,7 +259,7 @@ function App() {
           <button 
             className="btn btn-primary" 
             onClick={handleDeposit}
-            disabled={loading || !depositAmount || networkMismatch}
+            disabled={loading || !depositAmount}
           >
             {loading ? 'Processing...' : 'Deposit'}
           </button>
@@ -273,7 +281,7 @@ function App() {
           <button 
             className="btn btn-secondary" 
             onClick={handleWithdraw}
-            disabled={loading || !withdrawAmount || networkMismatch}
+            disabled={loading || !withdrawAmount}
           >
             {loading ? 'Processing...' : 'Withdraw'}
           </button>
