@@ -9,6 +9,7 @@ import {
   uintCV,
   standardPrincipalCV
 } from '@stacks/transactions';
+import { WalletConnect } from './components/WalletConnect';
 
 const appConfig = new AppConfig(['store_write', 'publish_data']);
 const userSession = new UserSession({ appConfig });
@@ -39,6 +40,9 @@ function App() {
   const [networkMismatch, setNetworkMismatch] = useState<boolean>(false);
   const [showWithdrawDetails, setShowWithdrawDetails] = useState<boolean>(false);
   const [withdrawTxDetails, setWithdrawTxDetails] = useState<any>(null);
+  const [connectionMethod, setConnectionMethod] = useState<'stacks' | 'walletconnect' | null>(null);
+  const [showConnectionOptions, setShowConnectionOptions] = useState<boolean>(false);
+  const [walletConnectSession, setWalletConnectSession] = useState<any>(null);
 
   useEffect(() => {
     if (userSession.isSignInPending()) {
@@ -88,6 +92,12 @@ function App() {
   }, [showWithdrawDetails, loading]);
 
   const connectWallet = () => {
+    setShowConnectionOptions(true);
+  };
+
+  const connectWithStacks = () => {
+    setConnectionMethod('stacks');
+    setShowConnectionOptions(false);
     showConnect({
       appDetails: {
         name: 'RenVault',
@@ -99,6 +109,11 @@ function App() {
       },
       userSession,
     });
+  };
+
+  const connectWithWalletConnect = () => {
+    setConnectionMethod('walletconnect');
+    setShowConnectionOptions(false);
   };
 
   const fetchUserStats = async () => {
@@ -226,8 +241,26 @@ function App() {
     return true;
   };
 
-  const promptNetworkSwitch = () => {
-    alert('To switch networks in your Stacks wallet:\n\n1. Open your wallet extension\n2. Look for network/chain selection\n3. Switch to Mainnet\n4. Refresh this page\n\nRenVault operates on Stacks Mainnet.');
+  const handleWalletConnectSession = (session: any) => {
+    // Extract Stacks account from WalletConnect session
+    const stacksAccount = session.namespaces.stacks?.accounts?.[0];
+    if (stacksAccount) {
+      // Create a mock userData object compatible with @stacks/connect
+      const mockUserData = {
+        profile: {
+          stxAddress: {
+            mainnet: stacksAccount.split(':')[2], // Extract address from stacks:1:address
+            testnet: stacksAccount.split(':')[2],
+          },
+          name: 'WalletConnect User',
+        },
+        appPrivateKey: '', // WalletConnect handles signing
+      };
+      
+      setUserData(mockUserData as any);
+      setWalletConnectSession(session);
+      setStatus('✅ Connected via WalletConnect');
+    }
   };
 
   const handleWithdraw = async () => {
@@ -291,13 +324,37 @@ function App() {
           <h1>RenVault 🏦</h1>
           <p>Clarity 4 Micro-Savings Protocol</p>
         </div>
-        <div className="card">
-          <h2>Connect Your Wallet</h2>
-          <p>Connect your Stacks wallet to start saving STX and earning commitment points.</p>
-          <button className="btn btn-primary" onClick={connectWallet}>
-            Connect Wallet
-          </button>
-        </div>
+        {showConnectionOptions ? (
+          <div className="card">
+            <h2>Choose Connection Method</h2>
+            <p>Select how you'd like to connect your wallet:</p>
+            <div style={{ display: 'flex', gap: '12px', flexDirection: 'column' }}>
+              <button className="btn btn-primary" onClick={connectWithStacks}>
+                🌐 Browser Extension (Stacks)
+              </button>
+              <button className="btn btn-secondary" onClick={connectWithWalletConnect}>
+                📱 WalletConnect (Mobile/Desktop)
+              </button>
+              <button className="btn btn-outline" onClick={() => setShowConnectionOptions(false)}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="card">
+            <h2>Connect Your Wallet</h2>
+            <p>Connect your Stacks wallet to start saving STX and earning commitment points.</p>
+            <button className="btn btn-primary" onClick={connectWallet}>
+              Connect Wallet
+            </button>
+          </div>
+        )}
+
+        {connectionMethod === 'walletconnect' && (
+          <div className="card">
+            <WalletConnect onSessionEstablished={handleWalletConnectSession} />
+          </div>
+        )}
       </div>
     );
   }

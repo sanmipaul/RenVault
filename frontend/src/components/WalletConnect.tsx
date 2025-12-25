@@ -5,7 +5,11 @@ import { getWalletConnectUri } from '../utils/walletkit-helpers';
 import { SessionProposalModal } from './SessionProposalModal';
 import { SessionRequestModal } from './SessionRequestModal';
 
-export const WalletConnect: React.FC = () => {
+interface WalletConnectProps {
+  onSessionEstablished?: (session: any) => void;
+}
+
+export const WalletConnect: React.FC<WalletConnectProps> = ({ onSessionEstablished }) => {
   const { 
     walletKit, 
     isLoading, 
@@ -134,6 +138,7 @@ export const WalletConnect: React.FC = () => {
         <SessionProposalModal
           proposal={sessionProposal}
           onClose={() => setSessionProposal(null)}
+          onSessionApproved={onSessionEstablished}
         />
       )}
 
