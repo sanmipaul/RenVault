@@ -371,9 +371,9 @@ function App() {
           <button 
             className="btn btn-secondary" 
             onClick={handleWithdraw}
-            disabled={loading || !withdrawAmount}
+            disabled={loading || !withdrawAmount || showWithdrawDetails}
           >
-            {loading ? 'Processing...' : 'Withdraw'}
+            {loading ? 'Preparing...' : showWithdrawDetails ? 'Review Transaction' : 'Withdraw'}
           </button>
         </div>
       </div>
