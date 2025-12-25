@@ -18,6 +18,7 @@ const CONTRACT_ADDRESS = 'SP3ESR2PWP83R1YM3S4QJRWPDD886KJ4YFS3FKHPY';
 const CONTRACT_NAME = 'ren-vault';
 
 const detectNetworkFromAddress = (address: string): 'mainnet' | 'testnet' => {
+  // Stacks mainnet addresses start with 'SP', testnet with 'ST'
   return address.startsWith('SP') ? 'mainnet' : 'testnet';
 };
 
