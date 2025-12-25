@@ -229,6 +229,10 @@ function App() {
           <div className="stat-value">{points}</div>
           <div>Commitment Points</div>
         </div>
+        <div className="stat-card">
+          <div className="stat-value">{detectedNetwork ? detectedNetwork.toUpperCase() : 'Unknown'}</div>
+          <div>Network</div>
+        </div>
       </div>
 
       <div className="actions">
