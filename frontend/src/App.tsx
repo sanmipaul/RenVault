@@ -103,6 +103,9 @@ function App() {
       setPoints(pointsResult.value);
     } catch (error) {
       console.error('Error fetching stats:', error);
+      if (networkMismatch) {
+        setStatus('Unable to fetch data: Please switch to mainnet');
+      }
     }
   };
 
