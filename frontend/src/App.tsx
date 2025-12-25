@@ -229,6 +229,13 @@ function App() {
       return;
     }
     
+    // Warn if withdrawal would leave less than 0.01 STX
+    const remainingBalance = balanceNum - withdrawAmountNum;
+    if (remainingBalance > 0 && remainingBalance < 0.01) {
+      const confirmLeave = window.confirm(`Warning: This withdrawal will leave only ${remainingBalance.toFixed(6)} STX in your vault. Continue?`);
+      if (!confirmLeave) return;
+    }
+    
     setLoading(true);
     setStatus('Preparing transaction details...');
     
