@@ -360,7 +360,7 @@ function App() {
       </div>
 
       {showWithdrawDetails && withdrawTxDetails && (
-        <div className="card warning">
+        <div className="card confirmation">
           <h3>🔐 Confirm Withdrawal Transaction</h3>
           <div style={{ marginBottom: '16px' }}>
             <p><strong>Action:</strong> Withdraw STX from vault</p>
