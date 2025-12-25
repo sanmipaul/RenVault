@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { AppConfig, UserSession, showConnect, UserData } from '@stacks/connect';
+import { AppConfig, UserSession, showConnect, UserData, openContractCall } from '@stacks/connect';
 import { StacksMainnet, StacksTestnet } from '@stacks/network';
 import { 
   callReadOnlyFunction, 
@@ -38,6 +38,8 @@ function App() {
   const [loading, setLoading] = useState<boolean>(false);
   const [detectedNetwork, setDetectedNetwork] = useState<'mainnet' | 'testnet' | null>(null);
   const [networkMismatch, setNetworkMismatch] = useState<boolean>(false);
+  const [showWithdrawDetails, setShowWithdrawDetails] = useState<boolean>(false);
+  const [withdrawTxDetails, setWithdrawTxDetails] = useState<any>(null);
 
   useEffect(() => {
     if (userSession.isSignInPending()) {
@@ -144,12 +146,53 @@ function App() {
     }
   };
 
+  const executeWithdraw = async () => {
+    if (!withdrawTxDetails || !userData) return;
+    
+    setLoading(true);
+    setShowWithdrawDetails(false);
+    
+    try {
+      await openContractCall({
+        network: withdrawTxDetails.network,
+        anchorMode: AnchorMode.Any,
+        contractAddress: withdrawTxDetails.contractAddress,
+        contractName: withdrawTxDetails.contractName,
+        functionName: withdrawTxDetails.functionName,
+        functionArgs: withdrawTxDetails.functionArgs,
+        appDetails: {
+          name: 'RenVault',
+          icon: window.location.origin + '/logo192.png',
+        },
+        onFinish: (data) => {
+          setStatus(`Withdraw transaction submitted: ${data.txId}`);
+          setWithdrawAmount('');
+          setWithdrawTxDetails(null);
+          setTimeout(fetchUserStats, 3000);
+        },
+        onCancel: () => {
+          setStatus('Transaction cancelled by user');
+          setWithdrawTxDetails(null);
+        },
+      });
+    } catch (error: any) {
+      setStatus(`Error signing transaction: ${error.message}`);
+      setWithdrawTxDetails(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const validateNetwork = () => {
     if (networkMismatch) {
       setStatus('Error: Please switch to mainnet to use RenVault');
       return false;
     }
     return true;
+  };
+
+  const promptNetworkSwitch = () => {
+    alert('To switch networks in your Stacks wallet:\n\n1. Open your wallet extension\n2. Look for network/chain selection\n3. Switch to Mainnet\n4. Refresh this page\n\nRenVault operates on Stacks Mainnet.');
   };
 
   const handleWithdraw = async () => {
@@ -163,26 +206,22 @@ function App() {
       const amount = Math.floor(parseFloat(withdrawAmount) * 1000000);
       const network = getCurrentNetwork();
       
-      const txOptions = {
+      // Prepare transaction details for display
+      const txDetails = {
         contractAddress: CONTRACT_ADDRESS,
         contractName: CONTRACT_NAME,
         functionName: 'withdraw',
         functionArgs: [uintCV(amount)],
-        senderKey: userData.appPrivateKey,
         network,
-        anchorMode: AnchorMode.Any,
+        amount: parseFloat(withdrawAmount),
+        fee: 'Network fee applies'
       };
-
-      const transaction = await makeContractCall(txOptions);
-      const broadcastResponse = await broadcastTransaction(transaction, network);
       
-      setStatus(`Withdraw transaction submitted: ${broadcastResponse.txid}`);
-      setWithdrawAmount('');
-      
-      setTimeout(fetchUserStats, 3000);
+      setWithdrawTxDetails(txDetails);
+      setShowWithdrawDetails(true);
+      setLoading(false);
     } catch (error: any) {
-      setStatus(`Error: ${error.message}`);
-    } finally {
+      setStatus(`Error preparing transaction: ${error.message}`);
       setLoading(false);
     }
   };
@@ -306,6 +345,39 @@ function App() {
           </button>
         </div>
       </div>
+
+      {showWithdrawDetails && withdrawTxDetails && (
+        <div className="card warning">
+          <h3>🔐 Confirm Withdrawal Transaction</h3>
+          <div style={{ marginBottom: '16px' }}>
+            <p><strong>Action:</strong> Withdraw STX from vault</p>
+            <p><strong>Amount:</strong> {withdrawTxDetails.amount} STX</p>
+            <p><strong>Contract:</strong> {withdrawTxDetails.contractAddress}.{withdrawTxDetails.contractName}</p>
+            <p><strong>Function:</strong> {withdrawTxDetails.functionName}</p>
+            <p><strong>Network:</strong> {withdrawTxDetails.network.name}</p>
+            <p><small>{withdrawTxDetails.fee}</small></p>
+          </div>
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <button 
+              className="btn btn-primary" 
+              onClick={executeWithdraw}
+              disabled={loading}
+            >
+              {loading ? 'Signing...' : 'Sign & Submit Transaction'}
+            </button>
+            <button 
+              className="btn btn-secondary" 
+              onClick={() => {
+                setShowWithdrawDetails(false);
+                setWithdrawTxDetails(null);
+              }}
+              disabled={loading}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
 
       {status && (
         <div className={`status ${status.includes('Error') ? 'error' : 'success'}`}>
