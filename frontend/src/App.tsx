@@ -23,9 +23,8 @@ const detectNetworkFromAddress = (address: string): 'mainnet' | 'testnet' => {
 };
 
 const getCurrentNetwork = () => {
-  // Return the appropriate network instance based on detected network
-  // Note: Contract is deployed on mainnet, so testnet calls will fail
-  return detectedNetwork === 'mainnet' ? new StacksMainnet() : new StacksTestnet();
+  // Always return mainnet for RenVault operations
+  return new StacksMainnet();
 };
 
 function App() {
@@ -236,6 +235,7 @@ function App() {
     if (!validateNetwork()) return;
     
     const withdrawAmountNum = parseFloat(withdrawAmount);
+    const balanceNum = parseFloat(balance);
     
     if (isNaN(withdrawAmountNum) || withdrawAmountNum <= 0) {
       setStatus('Error: Please enter a valid withdrawal amount greater than 0');
@@ -329,6 +329,7 @@ function App() {
           <p>You are connected to the correct network. You can now use RenVault.</p>
         </div>
       )}
+      {detectedNetwork !== 'mainnet' && (
         <div className="card warning">
           <h3>⚠️ Network Mismatch Detected</h3>
           <p>Your wallet is connected to <strong>{detectedNetwork}</strong>, but RenVault operates on <strong>mainnet</strong>.</p>
