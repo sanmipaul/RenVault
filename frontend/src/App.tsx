@@ -165,13 +165,13 @@ function App() {
           icon: window.location.origin + '/logo192.png',
         },
         onFinish: (data) => {
-          setStatus(`Withdraw transaction submitted: ${data.txId}`);
+          setStatus(`✅ Withdraw transaction submitted successfully: ${data.txId}`);
           setWithdrawAmount('');
           setWithdrawTxDetails(null);
           setTimeout(fetchUserStats, 3000);
         },
         onCancel: () => {
-          setStatus('Transaction cancelled by user');
+          setStatus('❌ Transaction cancelled by user');
           setWithdrawTxDetails(null);
         },
       });
