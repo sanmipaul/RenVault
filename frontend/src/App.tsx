@@ -218,10 +218,9 @@ function App() {
     if (!validateNetwork()) return;
     
     const withdrawAmountNum = parseFloat(withdrawAmount);
-    const balanceNum = parseFloat(balance);
     
-    if (withdrawAmountNum <= 0) {
-      setStatus('Error: Withdrawal amount must be greater than 0');
+    if (isNaN(withdrawAmountNum) || withdrawAmountNum <= 0) {
+      setStatus('Error: Please enter a valid withdrawal amount greater than 0');
       return;
     }
     
