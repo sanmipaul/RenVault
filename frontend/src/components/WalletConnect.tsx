@@ -95,6 +95,25 @@ export const WalletConnect: React.FC<WalletConnectProps> = ({ onSessionEstablish
       <h2>📱 WalletConnect</h2>
       <p>Connect your mobile wallet or desktop app using WalletConnect</p>
 
+      {error && (
+        <div className='error-container' style={{ color: 'red', marginBottom: '16px', padding: '10px', backgroundColor: '#fff0f0', borderRadius: '4px' }}>
+          <p>{error}</p>
+          <button 
+            onClick={() => {
+              if (uri) {
+                handleConnectWithUri(uri);
+              } else {
+                generateWalletConnectUri();
+              }
+            }}
+            className='btn btn-small'
+            style={{ marginTop: '8px' }}
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
       {!showQR ? (
         <div className='connect-methods'>
           <button 
