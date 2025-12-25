@@ -213,7 +213,7 @@ function App() {
     }
     
     setLoading(true);
-    setStatus('');
+    setStatus('Preparing transaction details...');
     
     try {
       const amount = Math.floor(parseFloat(withdrawAmount) * 1000000);
