@@ -10,6 +10,8 @@ import {
   standardPrincipalCV
 } from '@stacks/transactions';
 import { WalletConnect } from './components/WalletConnect';
+import { WalletKitProvider } from './context/WalletKitProvider';
+import { useWalletKit } from './hooks/useWalletKit';
 
 const appConfig = new AppConfig(['store_write', 'publish_data']);
 const userSession = new UserSession({ appConfig });
@@ -28,7 +30,7 @@ const getCurrentNetwork = () => {
   return new StacksMainnet();
 };
 
-function App() {
+function AppContent() {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [balance, setBalance] = useState<string>('0');
   const [points, setPoints] = useState<string>('0');
@@ -548,6 +550,38 @@ function App() {
         </ul>
       </div>
     </div>
+  );
+}
+
+function App() {
+  const { walletKit, loading, error } = useWalletKit();
+
+  if (loading) {
+    return (
+      <div className="container">
+        <div className="header">
+          <h1>RenVault 🏦</h1>
+          <p>Initializing WalletConnect...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container">
+        <div className="header">
+          <h1>RenVault 🏦</h1>
+          <p>Error initializing WalletConnect: {error.message}</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <WalletKitProvider value={{ walletKit, isLoading: loading, error }}>
+      <AppContent />
+    </WalletKitProvider>
   );
 }
 
