@@ -25,6 +25,18 @@ body {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
+.card.warning {
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  color: #856404;
+}
+
+.card.success {
+  background: #d4edda;
+  border: 1px solid #c3e6cb;
+  color: #155724;
+}
+
 .header {
   text-align: center;
   margin-bottom: 32px;
@@ -36,6 +48,29 @@ body {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+}
+
+.network-indicator {
+  margin-top: 16px;
+}
+
+.network-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.network-badge.mainnet {
+  background: #28a745;
+  color: white;
+}
+
+.network-badge.testnet {
+  background: #ffc107;
+  color: black;
 }
 
 .stats {
