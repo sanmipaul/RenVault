@@ -29,11 +29,20 @@ export const WalletConnect: React.FC<WalletConnectProps> = ({ onSessionEstablish
     
     setError(null);
     setIsConnecting(true);
+    
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Connection timed out')), 30000)
+    );
+
     try {
-      await walletKit.pair({ uri: connectionUri });
+      await Promise.race([
+        walletKit.pair({ uri: connectionUri }),
+        timeoutPromise
+      ]);
     } catch (err) {
       console.error('Failed to pair with URI:', err);
-      setError('Failed to connect to the wallet. Please check your URI and try again.');
+      const message = err instanceof Error ? err.message : 'Failed to connect to the wallet.';
+      setError(`${message}. Please check your connection and try again.`);
     } finally {
       setIsConnecting(false);
     }
