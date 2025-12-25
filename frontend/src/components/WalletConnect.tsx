@@ -118,10 +118,10 @@ export const WalletConnect: React.FC<WalletConnectProps> = ({ onSessionEstablish
         <div className='connect-methods'>
           <button 
             onClick={generateWalletConnectUri}
-            disabled={isLoading}
+            disabled={isLoading || isConnecting}
             className='btn btn-primary'
           >
-            {isLoading ? 'Generating...' : 'Generate QR Code'}
+            {isLoading || isConnecting ? 'Connecting...' : 'Generate QR Code'}
           </button>
           
           <div className='manual-input' style={{ marginTop: '16px' }}>
