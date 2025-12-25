@@ -61,6 +61,15 @@ function App() {
     }
   }, [userData]);
 
+  useEffect(() => {
+    if (status) {
+      const timer = setTimeout(() => {
+        setStatus('');
+      }, 10000); // Clear status after 10 seconds
+      return () => clearTimeout(timer);
+    }
+  }, [status]);
+
   const connectWallet = () => {
     showConnect({
       appDetails: {
