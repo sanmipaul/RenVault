@@ -44,6 +44,29 @@ body {
   -webkit-text-fill-color: transparent;
 }
 
+.network-indicator {
+  margin-top: 16px;
+}
+
+.network-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.network-badge.mainnet {
+  background: #28a745;
+  color: white;
+}
+
+.network-badge.testnet {
+  background: #ffc107;
+  color: black;
+}
+
 .stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));

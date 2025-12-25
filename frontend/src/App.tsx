@@ -193,6 +193,13 @@ function App() {
       <div className="header">
         <h1>RenVault 🏦</h1>
         <p>Welcome, {userData.profile.name || 'Stacker'}</p>
+        {detectedNetwork && (
+          <div className="network-indicator">
+            <span className={`network-badge ${detectedNetwork}`}>
+              {detectedNetwork.toUpperCase()}
+            </span>
+          </div>
+        )}
       </div>
 
       {networkMismatch && (
