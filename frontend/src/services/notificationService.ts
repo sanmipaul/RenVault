@@ -148,20 +148,15 @@ class NotificationService {
     }
   }
 
-  // Get notification statistics
-  async getStats(): Promise<any> {
-    try {
-      const response = await fetch(`${this.baseUrl}/stats`);
-      if (response.ok) {
-        return await response.json();
-      } else {
-        console.error('❌ Failed to get notification stats');
-        return null;
-      }
-    } catch (error) {
-      console.error('Error getting notification stats:', error);
-      return null;
-    }
+  // Get user preferences from localStorage
+  getUserPreferences(userId: string): any {
+    const saved = localStorage.getItem(`notificationPrefs_${userId}`);
+    return saved ? JSON.parse(saved) : null;
+  }
+
+  // Save user preferences to localStorage
+  saveUserPreferences(userId: string, preferences: any): void {
+    localStorage.setItem(`notificationPrefs_${userId}`, JSON.stringify(preferences));
   }
 
   // Helper function for VAPID key conversion
