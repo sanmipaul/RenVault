@@ -443,3 +443,16 @@ main {
 .confirm-btn:hover {
   background: #c53030;
 }
+
+.logout-btn {
+  background: #2d3748;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 20px;
+  cursor: pointer;
+}
+
+.logout-btn:hover {
+  background: #1a202c;
+}

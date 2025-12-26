@@ -5,10 +5,11 @@ interface DisconnectModalProps {
   isOpen: boolean;
   onConfirm: () => void;
   onCancel: () => void;
+  onLogout: () => void;
   providerName: string;
 }
 
-const DisconnectModal: React.FC<DisconnectModalProps> = ({ isOpen, onConfirm, onCancel, providerName }) => {
+const DisconnectModal: React.FC<DisconnectModalProps> = ({ isOpen, onConfirm, onCancel, onLogout, providerName }) => {
   if (!isOpen) return null;
 
   return (
@@ -19,6 +20,7 @@ const DisconnectModal: React.FC<DisconnectModalProps> = ({ isOpen, onConfirm, on
         <div className="modal-actions">
           <button onClick={onCancel} className="cancel-btn">Cancel</button>
           <button onClick={onConfirm} className="confirm-btn">Disconnect</button>
+          <button onClick={onLogout} className="logout-btn">Logout & Clear All</button>
         </div>
       </div>
     </div>
