@@ -18,7 +18,12 @@ export class WalletConnectProvider extends BaseWalletProvider {
   }
 
   async disconnect(): Promise<void> {
-    // Disconnect logic
+    // Disconnect WalletConnect session
+    const service = await WalletKitService.init();
+    // Assuming WalletKit has a disconnect method
+    await service.disconnect?.();
+    // Clear any stored session data
+    localStorage.removeItem('walletconnect-session');
   }
 
   async signTransaction(tx: any): Promise<any> {
