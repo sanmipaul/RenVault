@@ -155,6 +155,7 @@ function AppContent() {
   const fetchUserStats = async () => {
     if (!userData || networkMismatch) return;
     
+    const startTime = Date.now();
     try {
       const network = getCurrentNetwork();
       const balanceResult = await callReadOnlyFunction({
@@ -180,11 +181,16 @@ function AppContent() {
       setBalance((parseInt(balanceResult.value) / 1000000).toFixed(6));
       // @ts-ignore
       setPoints(pointsResult.value);
+      
+      const duration = Date.now() - startTime;
+      trackAnalytics('performance', { operation: 'fetch-user-stats', duration });
     } catch (error) {
       console.error('Error fetching stats:', error);
       if (networkMismatch) {
         setStatus('Unable to fetch data: Please switch to mainnet');
       }
+      const duration = Date.now() - startTime;
+      trackAnalytics('performance', { operation: 'fetch-user-stats', duration });
     }
   };
 
