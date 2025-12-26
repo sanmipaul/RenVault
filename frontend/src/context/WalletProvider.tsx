@@ -62,7 +62,10 @@ export const WalletProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     setIsLoading(true);
     setError(null);
     try {
-      return await walletManager.signTransaction(tx);
+      const result = await walletManager.signTransaction(tx);
+      // Refresh balance after transaction
+      setTimeout(() => refreshBalance(), 2000); // Wait 2 seconds for transaction to be mined
+      return result;
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Signing failed'));
       throw err;
