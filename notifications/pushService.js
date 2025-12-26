@@ -70,6 +70,60 @@ class PushNotificationService {
     );
   }
 
+  async sendStakingRewardNotification(userId, amount) {
+    return this.sendPushNotification(
+      userId,
+      '🌱 Staking Reward Earned',
+      `You've earned ${amount} STX in staking rewards!`,
+      { type: 'staking_reward', amount }
+    );
+  }
+
+  async sendLiquidityRewardNotification(userId, amount, poolName) {
+    return this.sendPushNotification(
+      userId,
+      '💧 Liquidity Reward Earned',
+      `You've earned ${amount} STX from ${poolName} pool!`,
+      { type: 'liquidity_reward', amount, poolName }
+    );
+  }
+
+  async sendFailedLoginNotification(userId, ipAddress) {
+    return this.sendPushNotification(
+      userId,
+      '🚨 Security Alert',
+      `Failed login attempt detected from ${ipAddress}`,
+      { type: 'security', alertType: 'failed_login', ipAddress }
+    );
+  }
+
+  async sendSuspiciousActivityNotification(userId, activity) {
+    return this.sendPushNotification(
+      userId,
+      '🚨 Security Alert',
+      `Suspicious activity detected: ${activity}`,
+      { type: 'security', alertType: 'suspicious_activity', activity }
+    );
+  }
+
+  async sendTwoFactorEnabledNotification(userId) {
+    return this.sendPushNotification(
+      userId,
+      '🔐 Security Enhanced',
+      'Two-factor authentication has been enabled',
+      { type: 'security', alertType: '2fa_enabled' }
+    );
+  }
+
+  async sendTwoFactorDisabledNotification(userId) {
+    return this.sendPushNotification(
+      userId,
+      '⚠️ Security Changed',
+      'Two-factor authentication has been disabled',
+      { type: 'security', alertType: '2fa_disabled' }
+    );
+  }
+
   getSubscriberCount() {
     return this.subscribers.size;
   }
