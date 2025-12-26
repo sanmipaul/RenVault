@@ -29,7 +29,13 @@ export class HiroWalletProvider extends BaseWalletProvider {
   }
 
   async disconnect(): Promise<void> {
-    // Disconnect logic
+    // Clear Hiro session data
+    if (window.HiroWallet) {
+      // Assuming Hiro has a disconnect method
+      await window.HiroWallet.disconnect?.();
+    }
+    // Clear any stored session data
+    localStorage.removeItem('hiro-session');
   }
 
   async signTransaction(tx: any): Promise<any> {
