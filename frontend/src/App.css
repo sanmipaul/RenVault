@@ -499,9 +499,21 @@ main {
   animation: copySuccess 0.3s ease;
 }
 
+.copy-button.error {
+  background: #e53e3e;
+  color: white;
+  animation: copyError 0.3s ease;
+}
+
 @keyframes copySuccess {
   0% { transform: scale(1); }
   50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+@keyframes copyError {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.9); }
   100% { transform: scale(1); }
 }
 
