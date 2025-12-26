@@ -5,6 +5,13 @@ export interface Balance {
   stx: string;
   tokens: { [key: string]: string };
   lastUpdated: Date;
+  history?: BalanceHistoryEntry[];
+}
+
+export interface BalanceHistoryEntry {
+  timestamp: Date;
+  stx: string;
+  tokens: { [key: string]: string };
 }
 
 export class BalanceService {
@@ -39,6 +46,20 @@ export class BalanceService {
       const oldBalance = this.balances.get(address);
       if (oldBalance) {
         this.detectBalanceChanges(address, oldBalance, newBalance);
+      }
+
+      // Maintain balance history (keep last 10 entries)
+      if (oldBalance) {
+        const history = oldBalance.history || [];
+        history.push({
+          timestamp: oldBalance.lastUpdated,
+          stx: oldBalance.stx,
+          tokens: { ...oldBalance.tokens }
+        });
+        if (history.length > 10) {
+          history.shift(); // Remove oldest
+        }
+        newBalance.history = history;
       }
 
       this.balances.set(address, newBalance);
