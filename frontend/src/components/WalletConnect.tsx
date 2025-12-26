@@ -21,10 +21,10 @@ export const WalletConnect: React.FC<WalletConnectProps> = ({ onSessionEstablish
   const [uri, setUri] = useState('');
   const [manualUri, setManualUri] = useState('');
   const [showQR, setShowQR] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [isConnecting, setIsConnecting] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
+  const [isRetrying, setIsRetrying] = useState(false);
 
-  const handleConnectWithUri = async (connectionUri: string) => {
+  const handleConnectWithUri = async (connectionUri: string, attempt = 0) => {
     if (!walletKit || !connectionUri) return;
     
     setError(null);
@@ -39,16 +39,27 @@ export const WalletConnect: React.FC<WalletConnectProps> = ({ onSessionEstablish
         walletKit.pair({ uri: connectionUri }),
         timeoutPromise
       ]);
+      setRetryCount(0); // Reset on success
     } catch (err) {
       console.error('Failed to pair with URI:', err);
       const message = err instanceof Error ? err.message : 'Failed to connect to the wallet.';
+      if (attempt < 3 && message.includes('timed out')) {
+        setIsRetrying(true);
+        setRetryCount(attempt + 1);
+        const delay = Math.pow(2, attempt) * 1000; // Exponential backoff
+        setTimeout(() => {
+          handleConnectWithUri(connectionUri, attempt + 1);
+        }, delay);
+        return;
+      }
       if (message.includes('timed out')) {
-        setError('Connection timed out. Please ensure your wallet app is open and connected to the internet, then try again.');
+        setError('Connection timed out after multiple attempts. Please ensure your wallet app is open and connected to the internet, then try again.');
       } else if (message.includes('invalid')) {
         setError('Invalid WalletConnect URI. Please check the URI and try again.');
       } else {
         setError(`${message} Please check your wallet app and try again.`);
       }
+      setIsRetrying(false);
     } finally {
       setIsConnecting(false);
     }
@@ -154,7 +165,7 @@ export const WalletConnect: React.FC<WalletConnectProps> = ({ onSessionEstablish
             disabled={isLoading || isConnecting}
             className='btn btn-primary'
           >
-            {isLoading || isConnecting ? 'Connecting...' : 'Generate QR Code'}
+            {isLoading || isConnecting ? (isRetrying ? `Retrying... (${retryCount}/3)` : 'Connecting...') : 'Generate QR Code'}
           </button>
           
           <div className='manual-input' style={{ marginTop: '16px' }}>
