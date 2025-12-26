@@ -56,6 +56,19 @@ export class WalletManager {
     // Clear all state
     this.connectionState = null;
     this.currentProvider = null;
+    // Clear all wallet-related localStorage
+    this.clearStoredData();
+  }
+
+  private clearStoredData(): void {
+    const keysToRemove = [
+      'leather-session',
+      'xverse-session',
+      'hiro-session',
+      'walletconnect-session',
+      'renvault-wallet-state'
+    ];
+    keysToRemove.forEach(key => localStorage.removeItem(key));
   }
 
   async signTransaction(tx: any): Promise<any> {
