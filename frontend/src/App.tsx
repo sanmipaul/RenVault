@@ -69,7 +69,41 @@ function AppContent() {
   const [show2FASetup, setShow2FASetup] = useState<boolean>(false);
   const [show2FAVerify, setShow2FAVerify] = useState<boolean>(false);
   const [showBackupCodes, setShowBackupCodes] = useState<boolean>(false);
-  const [tfaSecret, setTfaSecret] = useState<string>('');
+  const handle2FASetupComplete = (secret: string, backupCodes: string[]) => {
+    setTfaSecret(secret);
+    localStorage.setItem('tfa-enabled', 'true');
+    localStorage.setItem('tfa-secret', secret);
+    localStorage.setItem('tfa-backup-codes', JSON.stringify(backupCodes));
+    setShow2FASetup(false);
+    setStatus('✅ Two-factor authentication enabled successfully!');
+    setTimeout(() => setStatus(''), 5000);
+  };
+
+  const handle2FAVerify = async (code: string): Promise<boolean> => {
+    try {
+      const response = await fetch('/api/2fa/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: 'current-user', code })
+      });
+      return response.ok;
+    } catch (error) {
+      return false;
+    }
+  };
+
+  const handleBackupCodeVerify = async (code: string): Promise<boolean> => {
+    try {
+      const response = await fetch('/api/2fa/verify-backup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: 'current-user', code })
+      });
+      return response.ok;
+    } catch (error) {
+      return false;
+    }
+  };
 
   useEffect(() => {
     if (userSession.isSignInPending()) {
