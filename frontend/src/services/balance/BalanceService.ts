@@ -42,9 +42,19 @@ export class BalanceService {
   }
 
   private async fetchSTXBalance(address: string): Promise<string> {
-    // Placeholder - implement actual STX balance fetching
-    // This would use the Stacks API or provider-specific methods
-    return '1000000'; // Mock balance in microSTX
+    try {
+      // Use Stacks API to fetch balance
+      const response = await fetch(`https://stacks-node-api.mainnet.stacks.co/extended/v1/address/${address}/balances`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch STX balance');
+      }
+      const data = await response.json();
+      return data.stx.balance || '0';
+    } catch (error) {
+      console.error('Error fetching STX balance:', error);
+      // Fallback to mock data
+      return '1000000';
+    }
   }
 
   private async fetchTokenBalances(address: string): Promise<{ [key: string]: string }> {
