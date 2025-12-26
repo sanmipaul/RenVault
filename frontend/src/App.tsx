@@ -221,10 +221,13 @@ function AppContent() {
         setStatus(`Deposit transaction submitted: ${broadcastResponse.txid}`);
         setDepositAmount('');
         
+        trackAnalytics('deposit', { user: userData.profile.stxAddress.mainnet, amount });
+        
         setTimeout(fetchUserStats, 3000);
       }
     } catch (error: any) {
       setStatus(`Error: ${error.message}`);
+      trackAnalytics('wallet-error', { user: userData?.profile?.stxAddress?.mainnet || 'anonymous', method: connectionMethod || 'unknown', errorType: error.message });
     } finally {
       setLoading(false);
     }
