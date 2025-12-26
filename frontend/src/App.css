@@ -89,6 +89,43 @@ main {
   line-height: 20px;
 }
 
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.security-options {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.security-item {
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #f9f9f9;
+}
+
+.security-item h4 {
+  margin: 0 0 8px 0;
+  color: #333;
+}
+
+.security-item p {
+  margin: 0 0 12px 0;
+  color: #666;
+  font-size: 0.9em;
+}
+
 .btn {
   padding: 10px 20px;
   border: none;

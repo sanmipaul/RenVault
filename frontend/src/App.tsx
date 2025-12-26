@@ -62,9 +62,80 @@ function AppContent() {
   const [showConnectionOptions, setShowConnectionOptions] = useState<boolean>(false);
   const [walletConnectSession, setWalletConnectSession] = useState<any>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [show2FASetup, setShow2FASetup] = useState<boolean>(false);
+  const [show2FAVerify, setShow2FAVerify] = useState<boolean>(false);
+  const [showBackupCodes, setShowBackupCodes] = useState<boolean>(false);
+  const handle2FASetupComplete = (secret: string, backupCodes: string[]) => {
+    setTfaSecret(secret);
+    localStorage.setItem('tfa-enabled', 'true');
+    localStorage.setItem('tfa-secret', secret);
+    localStorage.setItem('tfa-backup-codes', JSON.stringify(backupCodes));
+    setShow2FASetup(false);
+    setStatus('✅ Two-factor authentication enabled successfully!');
+    setTimeout(() => setStatus(''), 5000);
+  };
+
+  const handle2FAVerify = async (code: string): Promise<boolean> => {
+    try {
+      const response = await fetch('/api/2fa/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: 'current-user', code })
+      });
+      return response.ok;
+    } catch (error) {
+      return false;
+    }
+  };
+
+  const handleBackupCodeVerify = async (code: string): Promise<boolean> => {
+    try {
+      const response = await fetch('/api/2fa/verify-backup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: 'current-user', code })
+      });
+      return response.ok;
+    } catch (error) {
+      return false;
+    }
+  };
+
+  const disconnectWallet = () => {
+    if (connectionMethod === 'stacks') {
+      // Disconnect Stacks wallet
+      userSession.signUserOut();
+      setUserData(null);
+      setConnectionMethod(null);
+      setWalletConnectSession(null);
+      setStatus('✅ Disconnected from Stacks wallet');
+    } else if (connectionMethod === 'walletconnect') {
+      // Disconnect WalletConnect
+      setWalletConnectSession(null);
+      setUserData(null);
+      setConnectionMethod(null);
+      setStatus('✅ Disconnected from WalletConnect');
+    }
+    // Clear all session data
+    localStorage.removeItem('tfa-enabled');
+    localStorage.removeItem('tfa-secret');
+    localStorage.removeItem('tfa-backup-codes');
+    // Clear all connection-related state
+    setBalance('0');
+    setPoints('0');
+    setDepositAmount('');
+    setWithdrawAmount('');
+    setDetectedNetwork(null);
+    setNetworkMismatch(false);
+  };
 
   useEffect(() => {
-    if (userSession.isSignInPending()) {
+    // Check for 2FA requirement on app load
+    const tfaEnabled = localStorage.getItem('tfa-enabled') === 'true';
+    if (tfaEnabled && !userData) {
+      setShow2FAVerify(true);
+    }
+  }, []);
       userSession.handlePendingSignIn().then((userData) => {
         setUserData(userData);
       });
@@ -499,6 +570,37 @@ function AppContent() {
           </div>
         )}
 
+        {show2FASetup && (
+          <div className="modal-overlay">
+            <TwoFactorAuthSetup
+              onSetupComplete={handle2FASetupComplete}
+              onCancel={() => setShow2FASetup(false)}
+            />
+          </div>
+        )}
+
+        {show2FAVerify && (
+          <div className="modal-overlay">
+            <TwoFactorAuthVerify
+              onVerify={handle2FAVerify}
+              onUseBackup={() => {
+                setShow2FAVerify(false);
+                setShowBackupCodes(true);
+              }}
+              onCancel={() => setShow2FAVerify(false)}
+            />
+          </div>
+        )}
+
+        {showBackupCodes && (
+          <div className="modal-overlay">
+            <BackupCodes
+              onVerify={handleBackupCodeVerify}
+              onCancel={() => setShowBackupCodes(false)}
+            />
+          </div>
+        )}
+
         {connectionMethod === 'walletconnect' && (
           <div className="card">
             <WalletConnect onSessionEstablished={handleWalletConnectSession} />
@@ -563,6 +665,30 @@ function AppContent() {
           </div>
         </div>
       )}
+
+      <div className="card">
+        <h3>🔒 Security Settings</h3>
+        <div className="security-options">
+          <div className="security-item">
+            <h4>Two-Factor Authentication</h4>
+            <p>Add an extra layer of security to your account</p>
+            <button
+              className="btn btn-primary"
+              onClick={() => setShow2FASetup(true)}
+              disabled={localStorage.getItem('tfa-enabled') === 'true'}
+            >
+              {localStorage.getItem('tfa-enabled') === 'true' ? '2FA Enabled' : 'Enable 2FA'}
+            </button>
+          </div>
+          <div className="security-item">
+            <h4>Session Management</h4>
+            <p>Manage your active sessions</p>
+            <button className="btn btn-secondary" onClick={disconnectWallet}>
+              Sign Out All Sessions
+            </button>
+          </div>
+        </div>
+      </div>
 
       <div className="stats">
         <div className="stat-card">
