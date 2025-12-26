@@ -3,15 +3,11 @@ import { useWallet } from '../hooks/useWallet';
 import ProviderSelector from './ProviderSelector';
 
 export const WalletConnect: React.FC = () => {
-  const { connect, disconnect, isLoading, error, selectedProviderType } = useWallet();
-  const [connected, setConnected] = useState(false);
-  const [address, setAddress] = useState('');
+  const { connect, disconnect, isLoading, error, selectedProviderType, isConnected, connectionState } = useWallet();
 
   const handleConnect = async () => {
     try {
-      const result = await connect();
-      setAddress(result.address);
-      setConnected(true);
+      await connect();
     } catch (err) {
       console.error('Connection failed:', err);
     }
@@ -20,8 +16,6 @@ export const WalletConnect: React.FC = () => {
   const handleDisconnect = async () => {
     try {
       await disconnect();
-      setConnected(false);
-      setAddress('');
     } catch (err) {
       console.error('Disconnect failed:', err);
     }
@@ -32,14 +26,16 @@ export const WalletConnect: React.FC = () => {
       <ProviderSelector />
       {selectedProviderType && (
         <div className="connect-section">
-          {!connected ? (
+          {!isConnected ? (
             <button onClick={handleConnect} disabled={isLoading}>
               {isLoading ? 'Connecting...' : `Connect with ${selectedProviderType}`}
             </button>
           ) : (
-            <div>
-              <p>Connected: {address}</p>
-              <button onClick={handleDisconnect}>Disconnect</button>
+            <div className="connected-state">
+              <p>Connected: {connectionState?.address}</p>
+              <button onClick={handleDisconnect} className="disconnect-btn">
+                Disconnect
+              </button>
             </div>
           )}
           {error && <p className="error">{error.message}</p>}
