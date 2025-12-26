@@ -21,6 +21,13 @@ const limiter = rateLimit({
 });
 app.use('/api/', limiter);
 
+// Stricter rate limiting for 2FA endpoints
+const tfaLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  max: 5, // limit each IP to 5 2FA attempts per windowMs
+  message: 'Too many 2FA attempts. Please try again later.'
+});
+
 // Service routes configuration
 const services = {
   monitoring: 'http://localhost:3001',
@@ -55,7 +62,7 @@ Object.entries(services).forEach(([service, target]) => {
 });
 
 // 2FA routes
-app.post('/api/2fa/generate', (req, res) => {
+app.post('/api/2fa/generate', tfaLimiter, (req, res) => {
   try {
     const { userId } = req.body;
     const result = securityService.generateSecret(userId);
@@ -65,7 +72,7 @@ app.post('/api/2fa/generate', (req, res) => {
   }
 });
 
-app.post('/api/2fa/verify', (req, res) => {
+app.post('/api/2fa/verify', tfaLimiter, (req, res) => {
   try {
     const { userId, code } = req.body;
     const isValid = securityService.verifyCode(userId, code);
@@ -90,7 +97,7 @@ app.post('/api/2fa/backup-codes', (req, res) => {
   }
 });
 
-app.post('/api/2fa/verify-backup', (req, res) => {
+app.post('/api/2fa/verify-backup', tfaLimiter, (req, res) => {
   try {
     const { userId, code } = req.body;
     const isValid = securityService.verifyBackupCode(userId, code);
