@@ -10,7 +10,7 @@ export const Analytics: React.FC<AnalyticsProps> = ({ userId }) => {
   const [stats, setStats] = useState<any>(null);
   const [walletStats, setWalletStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [optOut, setOptOut] = useState(false);
+  const [optOut, setOptOut] = useState(() => localStorage.getItem('analytics-opt-out') === 'true');
 
   useEffect(() => {
     if (optOut) return;
