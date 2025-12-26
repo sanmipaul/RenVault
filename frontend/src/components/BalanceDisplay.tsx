@@ -47,6 +47,10 @@ const BalanceDisplay: React.FC<BalanceDisplayProps> = ({
 
       if (autoRefresh) {
         balanceService.startAutoRefresh(connectionState.address, currentProvider);
+        // Start WebSocket updates (placeholder for now)
+        balanceService.startWebSocketUpdates(connectionState.address, currentProvider, (newBalance) => {
+          setBalance(newBalance);
+        });
       }
     } else {
       setBalance(null);
@@ -56,6 +60,7 @@ const BalanceDisplay: React.FC<BalanceDisplayProps> = ({
     return () => {
       if (connectionState?.address) {
         balanceService.stopAutoRefresh(connectionState.address);
+        balanceService.stopWebSocketUpdates(connectionState.address);
       }
     };
   }, [isConnected, connectionState?.address, currentProvider, autoRefresh]);
