@@ -45,7 +45,7 @@ function AppContent() {
   const [connectionMethod, setConnectionMethod] = useState<'stacks' | 'walletconnect' | null>(null);
   const [showConnectionOptions, setShowConnectionOptions] = useState<boolean>(false);
   const [walletConnectSession, setWalletConnectSession] = useState<any>(null);
-  const [showHelp, setShowHelp] = useState<boolean>(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (userSession.isSignInPending()) {
@@ -117,6 +117,8 @@ function AppContent() {
       });
     } catch (error: any) {
       setConnectionError(`Failed to connect with Stacks wallet: ${error.message}`);
+      setToastMessage('Connection failed. Check the error message above.');
+      setTimeout(() => setToastMessage(null), 5000);
     }
   };
 
@@ -436,6 +438,12 @@ function AppContent() {
           </div>
         )}
       </div>
+
+      {toastMessage && (
+        <div className="toast">
+          {toastMessage}
+        </div>
+      )}
     );
   }
 
