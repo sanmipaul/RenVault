@@ -56,6 +56,11 @@ class DashboardServer {
     this.app.get('/api/wallet-stats', (req, res) => {
       res.json(this.metrics.getWalletStats());
     });
+
+    this.app.get('/api/wallet-timeseries', (req, res) => {
+      const interval = req.query.interval || 'daily';
+      res.json(this.metrics.getWalletTimeSeries(interval));
+    });
   }
 
   start() {
