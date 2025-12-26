@@ -47,7 +47,14 @@ const AddressDisplay: React.FC<AddressDisplayProps> = ({
         <button
           className="copy-button"
           onClick={handleCopy}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              handleCopy();
+            }
+          }}
           title="Copy address"
+          aria-label={`Copy address ${address}`}
         >
           {copied ? '✓' : '📋'}
         </button>
