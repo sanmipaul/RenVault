@@ -21,10 +21,62 @@ export const WalletConnect: React.FC<WalletConnectProps> = ({ onSessionEstablish
   const [uri, setUri] = useState('');
   const [manualUri, setManualUri] = useState('');
   const [showQR, setShowQR] = useState(false);
+  const [isRetrying, setIsRetrying] = useState(false);
+  const [progress, setProgress] = useState(0);
+
+  const handleConnectWithUri = async (connectionUri: string, attempt = 0) => {
+    if (!walletKit || !connectionUri) return;
+    
+    setError(null);
+    setIsConnecting(true);
+    setProgress(0);
+    
+    const progressInterval = setInterval(() => {
+      setProgress(prev => Math.min(prev + 10, 90));
+    }, 1000);
+    
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Connection timed out')), 30000)
+    );
+
+    try {
+      await Promise.race([
+        walletKit.pair({ uri: connectionUri }),
+        timeoutPromise
+      ]);
+      setProgress(100);
+      setRetryCount(0); // Reset on success
+    } catch (err) {
+      console.error('Failed to pair with URI:', err);
+      const message = err instanceof Error ? err.message : 'Failed to connect to the wallet.';
+      if (attempt < 3 && message.includes('timed out')) {
+        setIsRetrying(true);
+        setRetryCount(attempt + 1);
+        const delay = Math.pow(2, attempt) * 1000; // Exponential backoff
+        setTimeout(() => {
+          handleConnectWithUri(connectionUri, attempt + 1);
+        }, delay);
+        return;
+      }
+      if (message.includes('timed out')) {
+        setError('Connection timed out after multiple attempts. Please ensure your wallet app is open and connected to the internet, then try again.');
+      } else if (message.includes('invalid')) {
+        setError('Invalid WalletConnect URI. Please check the URI and try again.');
+      } else {
+        setError(`${message} Please check your wallet app and try again.`);
+      }
+      setIsRetrying(false);
+    } finally {
+      setIsConnecting(false);
+      clearInterval(progressInterval);
+    }
+  };
 
   const generateWalletConnectUri = async () => {
     if (!walletKit) return;
     
+    setError(null);
+    setIsConnecting(true);
     try {
       const { uri: wcUri } = await walletKit.createSession({
         requiredNamespaces: {
@@ -43,8 +95,16 @@ export const WalletConnect: React.FC<WalletConnectProps> = ({ onSessionEstablish
       
       setUri(wcUri);
       setShowQR(true);
-    } catch (error) {
-      console.error('Failed to create WalletConnect session:', error);
+    } catch (err) {
+      console.error('Failed to create WalletConnect session:', err);
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      if (message.includes('network')) {
+        setError('Network error. Please check your internet connection and try again.');
+      } else {
+        setError('Failed to generate connection QR code. Please refresh the page and try again.');
+      }
+    } finally {
+      setIsConnecting(false);
     }
   };
 
@@ -73,15 +133,54 @@ export const WalletConnect: React.FC<WalletConnectProps> = ({ onSessionEstablish
       <h2>📱 WalletConnect</h2>
       <p>Connect your mobile wallet or desktop app using WalletConnect</p>
 
+      <div className='connection-status' style={{ marginBottom: '16px', fontSize: '0.9em' }}>
+        Status: <span style={{ fontWeight: 'bold', color: isConnecting ? '#f39c12' : '#2ecc71' }}>
+          {isConnecting ? 'Connecting...' : 'Ready'}
+        </span>
+      </div>
+
+      {error && (
+        <div className='error-container' style={{ color: 'red', marginBottom: '16px', padding: '10px', backgroundColor: '#fff0f0', borderRadius: '4px', position: 'relative' }}>
+          <p>{error}</p>
+          <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+            <button 
+              onClick={() => {
+                if (uri) {
+                  handleConnectWithUri(uri);
+                } else {
+                  generateWalletConnectUri();
+                }
+              }}
+              className='btn btn-small'
+            >
+              Retry
+            </button>
+            <button 
+              onClick={() => setError(null)}
+              className='btn btn-small btn-outline'
+            >
+              Dismiss
+            </button>
+          </div>
+        </div>
+      )}
+
       {!showQR ? (
         <div className='connect-methods'>
           <button 
             onClick={generateWalletConnectUri}
-            disabled={isLoading}
+            disabled={isLoading || isConnecting}
             className='btn btn-primary'
           >
-            {isLoading ? 'Generating...' : 'Generate QR Code'}
+            {isLoading || isConnecting ? (isRetrying ? `Retrying... (${retryCount}/3)` : 'Connecting...') : 'Generate QR Code'}
           </button>
+          
+          {isConnecting && (
+            <div className='progress-bar'>
+              <div className='progress-fill' style={{ width: `${progress}%` }}></div>
+              <span className='progress-text'>{progress}%</span>
+            </div>
+          )}
           
           <div className='manual-input' style={{ marginTop: '16px' }}>
             <p style={{ marginBottom: '8px' }}>Or paste a WalletConnect URI:</p>

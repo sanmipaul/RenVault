@@ -61,7 +61,9 @@ export class WalletKitService {
         namespaces: approvedNamespaces,
       });
     } catch (error) {
-      throw error;
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      logger.error(`Failed to approve session: ${errorMessage}`, error as Error);
+      throw new Error(`Failed to approve wallet session: ${errorMessage}`);
     }
   }
 
@@ -72,7 +74,9 @@ export class WalletKitService {
         reason: getSdkError('USER_REJECTED'),
       });
     } catch (error) {
-      throw error;
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      logger.error(`Failed to reject session: ${errorMessage}`, error as Error);
+      throw new Error(`Failed to reject wallet session: ${errorMessage}`);
     }
   }
 
@@ -93,7 +97,9 @@ export class WalletKitService {
         response,
       });
     } catch (error) {
-      throw error;
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      logger.error(`Failed to respond to session request: ${errorMessage}`, error as Error);
+      throw new Error(`Wallet response failed: ${errorMessage}`);
     }
   }
 
@@ -113,8 +119,10 @@ export class WalletKitService {
         topic,
         response,
       });
-    } catch (error) {
-      throw error;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      logger.error(`Failed to reject session request: ${errorMessage}`, err as Error);
+      throw new Error(`Failed to reject request: ${errorMessage}`);
     }
   }
 
