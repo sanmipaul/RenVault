@@ -59,25 +59,34 @@ Every deposit increments a user's "commitment score" using Clarity 4's new arith
 A small portion of each deposit goes to the contract owner.
 This ensures sustainable protocol operation through fee collection.
 
-### � Notification System
+### 🔔 Notification System
 
-Comprehensive notification system for wallet events and security:
+Comprehensive notification system for wallet events and security with customizable preferences:
 
 **Transaction Notifications:**
-- Deposit and withdrawal confirmations
-- Staking and liquidity reward alerts
-- Balance change notifications
+- ✅ Deposit and withdrawal confirmations with amounts and transaction hashes
+- ✅ Staking and liquidity reward alerts
+- ✅ Balance change notifications with real-time updates
 
 **Security Alerts:**
-- Failed login attempt warnings
-- Suspicious activity detection
-- Two-factor authentication changes
-- Account security updates
+- ✅ Failed login attempt warnings with IP tracking
+- ✅ Suspicious activity detection and alerts
+- ✅ Two-factor authentication enable/disable notifications
+- ✅ Account security updates and password changes
 
 **Customizable Preferences:**
-- Granular notification controls
-- Email and push notification options
-- Real-time preference management
+- ✅ Granular notification controls (email/push/sound)
+- ✅ Real-time preference management via settings panel
+- ✅ Theme selection (light/dark/auto) with system preference detection
+- ✅ Sound settings with volume control
+- ✅ Search and filter functionality for notification history
+
+**Technical Implementation:**
+- ✅ Multi-channel delivery (email, push notifications, in-app)
+- ✅ HTML email templates with responsive design
+- ✅ Service worker for background push notifications
+- ✅ Local storage for offline preference persistence
+- ✅ Real-time notification center with unread counters
 
 ### �🔥 Clarity 4 Functionality
 
