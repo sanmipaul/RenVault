@@ -400,6 +400,21 @@ function AppContent() {
           </div>
         )}
 
+        {connectionError && (
+          <div className="card error">
+            <h3>❌ Connection Failed</h3>
+            <p>{connectionError}</p>
+            <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
+              <button className="btn btn-primary" onClick={retryConnectWithStacks}>
+                Retry Stacks Wallet
+              </button>
+              <button className="btn btn-secondary" onClick={connectWithWalletConnect}>
+                Try WalletConnect Instead
+              </button>
+            </div>
+          </div>
+        )}
+
         {connectionMethod === 'walletconnect' && (
           <div className="card">
             <WalletConnect onSessionEstablished={handleWalletConnectSession} />
