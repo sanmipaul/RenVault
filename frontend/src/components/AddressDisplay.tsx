@@ -16,6 +16,7 @@ const AddressDisplay: React.FC<AddressDisplayProps> = ({
   truncate = true
 }) => {
   const [copied, setCopied] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
 
   const displayAddress = truncate ? truncateAddress(address) : address;
 
@@ -29,9 +30,19 @@ const AddressDisplay: React.FC<AddressDisplayProps> = ({
 
   return (
     <div className={`address-display ${className}`}>
-      <span className="address-text" title={address}>
+      <span
+        className="address-text"
+        title={address}
+        onMouseEnter={() => setShowTooltip(true)}
+        onMouseLeave={() => setShowTooltip(false)}
+      >
         {displayAddress}
       </span>
+      {showTooltip && truncate && (
+        <div className="address-tooltip">
+          {address}
+        </div>
+      )}
       {showCopyButton && (
         <button
           className="copy-button"
