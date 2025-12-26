@@ -15,6 +15,9 @@ interface NotificationPreferences {
   loginAlerts: boolean;
   suspiciousActivityAlerts: boolean;
   twoFactorAlerts: boolean;
+  // Sound settings
+  soundEnabled: boolean;
+  soundVolume: number;
 }
 
 interface NotificationPreferencesProps {
@@ -37,7 +40,9 @@ const NotificationPreferencesComponent: React.FC<NotificationPreferencesProps> =
     securityAlerts: true,
     loginAlerts: true,
     suspiciousActivityAlerts: true,
-    twoFactorAlerts: true
+    twoFactorAlerts: true,
+    soundEnabled: true,
+    soundVolume: 50
   });
 
   const [loading, setLoading] = useState(false);
@@ -300,7 +305,36 @@ const NotificationPreferencesComponent: React.FC<NotificationPreferencesProps> =
               Cancel
             </button>
           </div>
-        </div>
+
+          {/* Sound Settings */}
+          <div className="preference-section">
+            <h3>🔊 Sound Settings</h3>
+            <div className="preference-item">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={preferences.soundEnabled}
+                  onChange={(e) => handlePreferenceChange('soundEnabled', e.target.checked)}
+                />
+                Enable notification sounds
+              </label>
+            </div>
+            {preferences.soundEnabled && (
+              <div className="preference-item">
+                <label>
+                  Volume: {preferences.soundVolume}%
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={preferences.soundVolume}
+                    onChange={(e) => handlePreferenceChange('soundVolume', parseInt(e.target.value))}
+                    className="volume-slider"
+                  />
+                </label>
+              </div>
+            )}
+          </div>
       </div>
     </div>
   );

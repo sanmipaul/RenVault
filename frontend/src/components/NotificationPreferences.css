@@ -218,8 +218,12 @@
   transform: translateY(-1px);
 }
 
-/* Responsive design */
-@media (max-width: 640px) {
+.volume-slider {
+  width: 100%;
+  max-width: 200px;
+  margin-left: 12px;
+  accent-color: #4299e1;
+}
   .notification-preferences-content {
     width: 95%;
     max-height: 90vh;
