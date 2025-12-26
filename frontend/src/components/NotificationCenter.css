@@ -96,6 +96,27 @@
   overflow-x: auto;
 }
 
+.search-container {
+  display: flex;
+  align-items: center;
+  margin-right: 12px;
+}
+
+.search-input {
+  padding: 8px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  font-size: 14px;
+  width: 200px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.search-input:focus {
+  border-color: #4299e1;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+}
+
 .notification-filters button {
   background: #f7fafc;
   color: #4a5568;
