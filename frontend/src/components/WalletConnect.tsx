@@ -42,7 +42,13 @@ export const WalletConnect: React.FC<WalletConnectProps> = ({ onSessionEstablish
     } catch (err) {
       console.error('Failed to pair with URI:', err);
       const message = err instanceof Error ? err.message : 'Failed to connect to the wallet.';
-      setError(`${message}. Please check your connection and try again.`);
+      if (message.includes('timed out')) {
+        setError('Connection timed out. Please ensure your wallet app is open and connected to the internet, then try again.');
+      } else if (message.includes('invalid')) {
+        setError('Invalid WalletConnect URI. Please check the URI and try again.');
+      } else {
+        setError(`${message} Please check your wallet app and try again.`);
+      }
     } finally {
       setIsConnecting(false);
     }
@@ -73,7 +79,12 @@ export const WalletConnect: React.FC<WalletConnectProps> = ({ onSessionEstablish
       setShowQR(true);
     } catch (err) {
       console.error('Failed to create WalletConnect session:', err);
-      setError('Failed to generate connection QR code. Please try again.');
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      if (message.includes('network')) {
+        setError('Network error. Please check your internet connection and try again.');
+      } else {
+        setError('Failed to generate connection QR code. Please refresh the page and try again.');
+      }
     } finally {
       setIsConnecting(false);
     }
