@@ -1,20 +1,14 @@
 import React from 'react';
-import { useWalletKit } from './hooks/useWalletKit';
-import { WalletKitProvider, useWalletKitContext } from './context/WalletKitProvider';
+import { WalletProvider } from './context/WalletProvider';
 import { WalletConnect } from './components/WalletConnect';
 import './App.css';
 
 const AppContent: React.FC = () => {
-  const { isLoading, error } = useWalletKitContext();
-
-  if (isLoading) return <div className='loading'>Initializing WalletKit...</div>;
-  if (error) return <div className='error'>Error: {error.message}</div>;
-
   return (
     <div className='app-container'>
       <header>
         <h1>RenVault Wallet</h1>
-        <p>WalletConnect Integration</p>
+        <p>Multi-Provider Wallet Integration</p>
       </header>
       <main>
         <WalletConnect />
@@ -24,12 +18,10 @@ const AppContent: React.FC = () => {
 };
 
 const App: React.FC = () => {
-  const { walletKit, loading, error } = useWalletKit();
-
   return (
-    <WalletKitProvider value={{ walletKit, isLoading: loading, error }}>
+    <WalletProvider>
       <AppContent />
-    </WalletKitProvider>
+    </WalletProvider>
   );
 };
 
