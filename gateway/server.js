@@ -8,6 +8,18 @@ const { SecurityService } = require('./securityService');
 const app = express();
 const securityService = new SecurityService();
 
+// Input validation middleware
+const validate2FAInput = (req, res, next) => {
+  const { userId, code } = req.body;
+  if (!userId || typeof userId !== 'string' || userId.length > 100) {
+    return res.status(400).json({ error: 'Invalid userId' });
+  }
+  if (code && (typeof code !== 'string' || !/^\d{6}$/.test(code))) {
+    return res.status(400).json({ error: 'Invalid 2FA code format' });
+  }
+  next();
+};
+
 // Security middleware
 app.use(helmet({
   contentSecurityPolicy: {
@@ -84,7 +96,7 @@ app.post('/api/2fa/generate', tfaLimiter, (req, res) => {
   }
 });
 
-app.post('/api/2fa/verify', tfaLimiter, (req, res) => {
+app.post('/api/2fa/verify', tfaLimiter, validate2FAInput, (req, res) => {
   try {
     const { userId, code } = req.body;
     const isValid = securityService.verifyCode(userId, code);
