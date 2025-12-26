@@ -45,6 +45,8 @@ function AppContent() {
   const [connectionMethod, setConnectionMethod] = useState<'stacks' | 'walletconnect' | null>(null);
   const [showConnectionOptions, setShowConnectionOptions] = useState<boolean>(false);
   const [walletConnectSession, setWalletConnectSession] = useState<any>(null);
+  const [connectionError, setConnectionError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState<number>(0);
 
   useEffect(() => {
     if (userSession.isSignInPending()) {
