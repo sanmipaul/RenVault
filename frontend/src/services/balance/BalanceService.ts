@@ -11,6 +11,8 @@ export class BalanceService {
   private static instance: BalanceService;
   private balances: Map<string, Balance> = new Map();
   private refreshIntervals: Map<string, NodeJS.Timeout> = new Map();
+  private websockets: Map<string, WebSocket> = new Map();
+  private balanceCallbacks: Map<string, (balance: Balance) => void> = new Map();
 
   static getInstance(): BalanceService {
     if (!BalanceService.instance) {
@@ -90,14 +92,36 @@ export class BalanceService {
     return this.balances.get(address) || null;
   }
 
+  startWebSocketUpdates(address: string, provider: WalletProvider, callback: (balance: Balance) => void): void {
+    this.stopWebSocketUpdates(address);
+    this.balanceCallbacks.set(address, callback);
+
+    // For now, use polling as WebSocket implementation would require specific Stacks node WebSocket support
+    // This is a placeholder for future WebSocket implementation
+    console.log('WebSocket updates not yet implemented, using polling');
+  }
+
+  stopWebSocketUpdates(address: string): void {
+    const ws = this.websockets.get(address);
+    if (ws) {
+      ws.close();
+      this.websockets.delete(address);
+    }
+    this.balanceCallbacks.delete(address);
+  }
+
   clearCache(address?: string): void {
     if (address) {
       this.balances.delete(address);
       this.stopAutoRefresh(address);
+      this.stopWebSocketUpdates(address);
     } else {
       this.balances.clear();
       this.refreshIntervals.forEach(interval => clearInterval(interval));
       this.refreshIntervals.clear();
+      this.websockets.forEach(ws => ws.close());
+      this.websockets.clear();
+      this.balanceCallbacks.clear();
     }
   }
 }
