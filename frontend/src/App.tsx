@@ -13,6 +13,9 @@ import { WalletConnect } from './components/WalletConnect';
 import { WalletKitProvider } from './context/WalletKitProvider';
 import { useWalletKit } from './hooks/useWalletKit';
 import ConnectionStatus from './components/ConnectionStatus';
+import TwoFactorAuthSetup from './components/TwoFactorAuthSetup';
+import TwoFactorAuthVerify from './components/TwoFactorAuthVerify';
+import NotificationService from './services/notificationService';
 
 const appConfig = new AppConfig(['store_write', 'publish_data']);
 const userSession = new UserSession({ appConfig });
@@ -65,6 +68,10 @@ function AppContent() {
   const [show2FASetup, setShow2FASetup] = useState<boolean>(false);
   const [show2FAVerify, setShow2FAVerify] = useState<boolean>(false);
   const [showBackupCodes, setShowBackupCodes] = useState<boolean>(false);
+  const [showNotificationCenter, setShowNotificationCenter] = useState<boolean>(false);
+
+  // Initialize notification service
+  const notificationService = userData ? new NotificationService(userData.profile.stxAddress.mainnet) : null;
   const handle2FASetupComplete = (secret: string, backupCodes: string[]) => {
     setTfaSecret(secret);
     localStorage.setItem('tfa-enabled', 'true');
@@ -72,6 +79,12 @@ function AppContent() {
     localStorage.setItem('tfa-backup-codes', JSON.stringify(backupCodes));
     setShow2FASetup(false);
     setStatus('✅ Two-factor authentication enabled successfully!');
+    
+    // Send 2FA enabled notification
+    if (notificationService) {
+      notificationService.testTwoFactorEnabledNotification();
+    }
+    
     setTimeout(() => setStatus(''), 5000);
   };
 
@@ -88,17 +101,19 @@ function AppContent() {
     }
   };
 
-  const handleBackupCodeVerify = async (code: string): Promise<boolean> => {
-    try {
-      const response = await fetch('/api/2fa/verify-backup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: 'current-user', code })
-      });
-      return response.ok;
-    } catch (error) {
-      return false;
+  const handleDisable2FA = () => {
+    localStorage.removeItem('tfa-enabled');
+    localStorage.removeItem('tfa-secret');
+    localStorage.removeItem('tfa-backup-codes');
+    setTfaSecret('');
+    setStatus('✅ Two-factor authentication disabled');
+    
+    // Send 2FA disabled notification
+    if (notificationService) {
+      notificationService.testTwoFactorDisabledNotification();
     }
+    
+    setTimeout(() => setStatus(''), 5000);
   };
 
   const disconnectWallet = () => {
@@ -304,6 +319,11 @@ function AppContent() {
         
         trackAnalytics('deposit', { user: userData.profile.stxAddress.mainnet, amount });
         
+        // Send deposit notification
+        if (notificationService) {
+          notificationService.testDepositNotification(parseFloat(depositAmount), parseFloat(balance) + parseFloat(depositAmount));
+        }
+        
         setTimeout(fetchUserStats, 3000);
       }
     } catch (error: any) {
@@ -349,6 +369,13 @@ function AppContent() {
             setWithdrawAmount('');
             setWithdrawTxDetails(null);
             trackAnalytics('withdrawal', { user: userData.profile.stxAddress.mainnet, amount: withdrawTxDetails.amount });
+            
+            // Send withdrawal notification
+            if (notificationService) {
+              const remainingBalance = parseFloat(balance) - parseFloat(withdrawAmount);
+              notificationService.testWithdrawalNotification(parseFloat(withdrawAmount), remainingBalance);
+            }
+            
             setTimeout(fetchUserStats, 3000);
           },
           onCancel: () => {
@@ -621,20 +648,29 @@ function AppContent() {
       <div className="header">
         <h1>RenVault 🏦</h1>
         <p>Welcome, {userData.profile.name || 'Stacker'}</p>
-        {detectedNetwork && (
-          <div className="network-indicator">
-            <span className={`network-badge ${detectedNetwork}`}>
-              {detectedNetwork.toUpperCase()}
-            </span>
-            <button 
-              className="btn btn-secondary" 
-              style={{ marginLeft: '12px', fontSize: '0.8rem', padding: '4px 8px' }}
-              onClick={() => window.location.reload()}
-            >
-              Refresh
-            </button>
-          </div>
-        )}
+        <div className="header-actions">
+          <button
+            className="notification-button"
+            onClick={() => setShowNotificationCenter(true)}
+            title="Notifications"
+          >
+            🔔
+          </button>
+          {detectedNetwork && (
+            <div className="network-indicator">
+              <span className={`network-badge ${detectedNetwork}`}>
+                {detectedNetwork.toUpperCase()}
+              </span>
+              <button 
+                className="btn btn-secondary" 
+                style={{ marginLeft: '12px', fontSize: '0.8rem', padding: '4px 8px' }}
+                onClick={() => window.location.reload()}
+              >
+                Refresh
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       <ConnectionStatus
@@ -672,20 +708,42 @@ function AppContent() {
           <div className="security-item">
             <h4>Two-Factor Authentication</h4>
             <p>Add an extra layer of security to your account</p>
-            <button
-              className="btn btn-primary"
-              onClick={() => setShow2FASetup(true)}
-              disabled={localStorage.getItem('tfa-enabled') === 'true'}
-            >
-              {localStorage.getItem('tfa-enabled') === 'true' ? '2FA Enabled' : 'Enable 2FA'}
-            </button>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button
+                className="btn btn-primary"
+                onClick={() => setShow2FASetup(true)}
+                disabled={localStorage.getItem('tfa-enabled') === 'true'}
+              >
+                {localStorage.getItem('tfa-enabled') === 'true' ? '2FA Enabled' : 'Enable 2FA'}
+              </button>
+              {localStorage.getItem('tfa-enabled') === 'true' && (
+                <button
+                  className="btn btn-outline"
+                  onClick={handleDisable2FA}
+                >
+                  Disable 2FA
+                </button>
+              )}
+            </div>
           </div>
           <div className="security-item">
             <h4>Session Management</h4>
             <p>Manage your active sessions</p>
-            <button className="btn btn-secondary" onClick={disconnectWallet}>
-              Sign Out All Sessions
-            </button>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              <button className="btn btn-secondary" onClick={disconnectWallet}>
+                Sign Out All Sessions
+              </button>
+              <button
+                className="btn btn-outline"
+                onClick={() => {
+                  if (notificationService) {
+                    notificationService.testFailedLoginNotification('192.168.1.100', 'Chrome/91.0');
+                  }
+                }}
+              >
+                Test Security Alert
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -802,6 +860,12 @@ function AppContent() {
           <li>Built with Clarity 4 on Stacks blockchain</li>
         </ul>
       </div>
+
+      <NotificationCenter
+        userId={userData.profile.stxAddress.mainnet}
+        isOpen={showNotificationCenter}
+        onClose={() => setShowNotificationCenter(false)}
+      />
     </div>
   );
 }
