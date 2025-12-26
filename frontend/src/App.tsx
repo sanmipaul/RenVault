@@ -13,6 +13,10 @@ import { WalletConnect } from './components/WalletConnect';
 import { WalletKitProvider } from './context/WalletKitProvider';
 import { useWalletKit } from './hooks/useWalletKit';
 import ConnectionStatus from './components/ConnectionStatus';
+import TwoFactorAuthSetup from './components/TwoFactorAuthSetup';
+import TwoFactorAuthVerify from './components/TwoFactorAuthVerify';
+import BackupCodes from './components/BackupCodes';
+import NotificationCenter from './components/NotificationCenter';
 
 const appConfig = new AppConfig(['store_write', 'publish_data']);
 const userSession = new UserSession({ appConfig });
@@ -65,6 +69,7 @@ function AppContent() {
   const [show2FASetup, setShow2FASetup] = useState<boolean>(false);
   const [show2FAVerify, setShow2FAVerify] = useState<boolean>(false);
   const [showBackupCodes, setShowBackupCodes] = useState<boolean>(false);
+  const [showNotificationCenter, setShowNotificationCenter] = useState<boolean>(false);
   const handle2FASetupComplete = (secret: string, backupCodes: string[]) => {
     setTfaSecret(secret);
     localStorage.setItem('tfa-enabled', 'true');
@@ -621,20 +626,29 @@ function AppContent() {
       <div className="header">
         <h1>RenVault 🏦</h1>
         <p>Welcome, {userData.profile.name || 'Stacker'}</p>
-        {detectedNetwork && (
-          <div className="network-indicator">
-            <span className={`network-badge ${detectedNetwork}`}>
-              {detectedNetwork.toUpperCase()}
-            </span>
-            <button 
-              className="btn btn-secondary" 
-              style={{ marginLeft: '12px', fontSize: '0.8rem', padding: '4px 8px' }}
-              onClick={() => window.location.reload()}
-            >
-              Refresh
-            </button>
-          </div>
-        )}
+        <div className="header-actions">
+          <button
+            className="notification-button"
+            onClick={() => setShowNotificationCenter(true)}
+            title="Notifications"
+          >
+            🔔
+          </button>
+          {detectedNetwork && (
+            <div className="network-indicator">
+              <span className={`network-badge ${detectedNetwork}`}>
+                {detectedNetwork.toUpperCase()}
+              </span>
+              <button 
+                className="btn btn-secondary" 
+                style={{ marginLeft: '12px', fontSize: '0.8rem', padding: '4px 8px' }}
+                onClick={() => window.location.reload()}
+              >
+                Refresh
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       <ConnectionStatus
@@ -802,6 +816,12 @@ function AppContent() {
           <li>Built with Clarity 4 on Stacks blockchain</li>
         </ul>
       </div>
+
+      <NotificationCenter
+        userId={userData.profile.stxAddress.mainnet}
+        isOpen={showNotificationCenter}
+        onClose={() => setShowNotificationCenter(false)}
+      />
     </div>
   );
 }
