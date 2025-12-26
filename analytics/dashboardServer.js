@@ -34,6 +34,28 @@ class DashboardServer {
       this.metrics.recordWithdrawal(user, amount, Date.now());
       res.json({ success: true });
     });
+
+    this.app.post('/api/wallet-connect', (req, res) => {
+      const { user, method, success } = req.body;
+      this.metrics.recordWalletConnection(user, method, Date.now(), success);
+      res.json({ success: true });
+    });
+
+    this.app.post('/api/wallet-error', (req, res) => {
+      const { user, method, errorType } = req.body;
+      this.metrics.recordWalletError(user, method, errorType, Date.now());
+      res.json({ success: true });
+    });
+
+    this.app.post('/api/performance', (req, res) => {
+      const { operation, duration } = req.body;
+      this.metrics.recordPerformanceMetric(operation, duration, Date.now());
+      res.json({ success: true });
+    });
+
+    this.app.get('/api/wallet-stats', (req, res) => {
+      res.json(this.metrics.getWalletStats());
+    });
   }
 
   start() {
