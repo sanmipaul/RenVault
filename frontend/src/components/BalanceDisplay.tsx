@@ -77,7 +77,12 @@ const BalanceDisplay: React.FC<BalanceDisplayProps> = ({
   return (
     <div className={`balance-display ${className}`}>
       <h3>Wallet Balance</h3>
-      {loading && <div className="loading">Loading balance...</div>}
+      {loading && (
+        <div className="loading">
+          <div className="balance-loading"></div>
+          Loading balance...
+        </div>
+      )}
       {error && <div className="error">Error: {error}</div>}
       {balance && (
         <div className="balance-content">

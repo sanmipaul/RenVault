@@ -610,6 +610,21 @@ main {
   font-style: italic;
 }
 
+.balance-loading {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid #e2e8f0;
+  border-radius: 50%;
+  border-top-color: #4299e1;
+  animation: spin 1s ease-in-out infinite;
+  margin-right: 8px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 @keyframes copySuccess {
   0% { transform: scale(1); }
   50% { transform: scale(1.1); }
