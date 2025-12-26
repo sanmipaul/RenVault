@@ -46,8 +46,12 @@ export const WalletProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     setIsLoading(true);
     try {
       await walletManager.disconnect();
+      // Reset local state
+      setSelectedProviderType(null);
+      setError(null);
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Disconnect failed'));
+      throw err;
     } finally {
       setIsLoading(false);
     }
