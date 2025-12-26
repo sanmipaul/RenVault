@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>RenVault 2FA Security Update</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 8px; }
+        .header { background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%); color: white; padding: 30px; text-align: center; }
+        .content { padding: 30px; }
+        .status-box { background: #ebf8ff; border: 1px solid #90cdf4; border-radius: 6px; padding: 20px; margin: 20px 0; text-align: center; }
+        .status-icon { font-size: 48px; margin-bottom: 10px; }
+        .status-title { font-size: 20px; font-weight: bold; color: #2b6cb0; margin-bottom: 10px; }
+        .security-tips { background: #f7fafc; border-left: 4px solid #4299e1; padding: 20px; margin: 20px 0; }
+        .backup-codes { background: #fff5f5; border: 1px solid #feb2b2; border-radius: 6px; padding: 20px; margin: 20px 0; }
+        .code-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 15px; }
+        .backup-code { background: #fed7d7; padding: 8px; border-radius: 4px; font-family: monospace; text-align: center; font-weight: bold; }
+        .footer { background: #f8f9fa; padding: 20px; text-align: center; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 RenVault Security</h1>
+            <h2>Two-Factor Authentication {{status}}</h2>
+        </div>
+        <div class="content">
+            <div class="status-box">
+                <div class="status-icon">{{statusIcon}}</div>
+                <div class="status-title">{{statusMessage}}</div>
+                <p>{{description}}</p>
+            </div>
+
+            {{#if backupCodes}}
+            <div class="backup-codes">
+                <h3>🔑 Your Backup Codes</h3>
+                <p><strong>Important:</strong> Save these backup codes in a secure location. You can use them to access your account if you lose your authenticator device.</p>
+                <div class="code-grid">
+                    {{#each backupCodes}}
+                    <div class="backup-code">{{this}}</div>
+                    {{/each}}
+                </div>
+                <p style="color: #c53030; margin-top: 15px;"><strong>⚠️ Each code can only be used once.</strong></p>
+            </div>
+            {{/if}}
+
+            <div class="security-tips">
+                <h3>🛡️ Security Best Practices</h3>
+                <ul>
+                    <li><strong>Backup Codes:</strong> Store them securely (password manager, safe deposit box)</li>
+                    <li><strong>Multiple Devices:</strong> Set up 2FA on multiple authenticator apps</li>
+                    <li><strong>Recovery:</strong> Keep your recovery email updated</li>
+                    <li><strong>Monitor:</strong> Regularly check your account activity</li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer">
+            <p>RenVault - Your Security is Our Priority</p>
+            <p>Questions about 2FA? Contact our support team.</p>
+        </div>
+    </div>
+</body>
+</html>
