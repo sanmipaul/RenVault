@@ -267,6 +267,7 @@ function AppContent() {
             setStatus(`✅ Withdraw transaction submitted successfully! Transaction ID: ${data.txId}`);
             setWithdrawAmount('');
             setWithdrawTxDetails(null);
+            trackAnalytics('withdrawal', { user: userData.profile.stxAddress.mainnet, amount: withdrawTxDetails.amount });
             setTimeout(fetchUserStats, 3000);
           },
           onCancel: () => {
