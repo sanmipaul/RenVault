@@ -456,3 +456,118 @@ main {
 .logout-btn:hover {
   background: #1a202c;
 }
+
+.address-display {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #f7fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-family: monospace;
+  font-size: 14px;
+  color: #2d3748;
+}
+
+.address-text {
+  cursor: pointer;
+  user-select: text;
+}
+
+.copy-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: background 0.2s;
+  font-size: 16px;
+}
+
+.copy-button:hover {
+  background: #e2e8f0;
+}
+
+.copy-button:active {
+  transform: scale(0.95);
+}
+
+.copy-button.copied {
+  background: #48bb78;
+  color: white;
+  animation: copySuccess 0.3s ease;
+}
+
+.copy-button.error {
+  background: #e53e3e;
+  color: white;
+  animation: copyError 0.3s ease;
+}
+
+.expand-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: background 0.2s;
+  font-size: 16px;
+}
+
+.expand-button:hover {
+  background: #e2e8f0;
+}
+
+@keyframes copySuccess {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+@keyframes copyError {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}
+
+.connected-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.connected-state p {
+  margin: 0;
+  font-weight: 500;
+}
+
+.address-tooltip {
+  position: absolute;
+  background: #2d3748;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: monospace;
+  white-space: nowrap;
+  z-index: 100;
+  margin-top: 5px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.address-display {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #f7fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-family: monospace;
+  font-size: 14px;
+  color: #2d3748;
+}
