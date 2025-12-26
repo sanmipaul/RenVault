@@ -27,6 +27,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showPreferences, setShowPreferences] = useState(false);
   const [filter, setFilter] = useState<'all' | 'unread' | 'transaction' | 'security' | 'reward'>('all');
+  const [searchTerm, setSearchTerm] = useState('');
 
   const notificationService = new NotificationService(userId);
 
@@ -107,7 +108,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
     localStorage.removeItem(`notifications_${userId}`);
   };
 
-  const [searchTerm, setSearchTerm] = useState('');
+  const [theme, setTheme] = useState<'light' | 'dark' | 'auto'>('light');
 
   const filteredNotifications = notifications.filter(n => {
     const matchesFilter = (() => {
@@ -168,10 +169,19 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
   return (
     <>
       <div className="notification-center-overlay" onClick={onClose}>
-        <div className="notification-center" onClick={e => e.stopPropagation()}>
+        <div className="notification-center" data-theme={theme} onClick={e => e.stopPropagation()}>
           <div className="notification-center-header">
             <h2>🔔 Notifications</h2>
             <div className="notification-actions">
+              <select
+                value={theme}
+                onChange={(e) => setTheme(e.target.value as 'light' | 'dark' | 'auto')}
+                className="theme-selector"
+              >
+                <option value="light">☀️ Light</option>
+                <option value="dark">🌙 Dark</option>
+                <option value="auto">🌓 Auto</option>
+              </select>
               <button
                 className="preferences-button"
                 onClick={() => setShowPreferences(true)}
