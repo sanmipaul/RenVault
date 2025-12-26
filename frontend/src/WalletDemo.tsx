@@ -4,6 +4,7 @@ import { WalletConnect } from './components/WalletConnect';
 import { useWallet } from './hooks/useWallet';
 import DisconnectModal from './components/DisconnectModal';
 import AddressDisplay from './components/AddressDisplay';
+import BalanceDisplay from './components/BalanceDisplay';
 import './App.css';
 
 const AppContent: React.FC = () => {
@@ -42,6 +43,7 @@ const AppContent: React.FC = () => {
       </header>
       <main>
         <WalletConnect />
+        <BalanceDisplay />
       </main>
       <DisconnectModal
         isOpen={showDisconnectModal}
