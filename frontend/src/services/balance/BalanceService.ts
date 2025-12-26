@@ -29,14 +29,20 @@ export class BalanceService {
       // Fetch token balances (placeholder for now)
       const tokens = await this.fetchTokenBalances(address);
 
-      const balance: Balance = {
+      const newBalance: Balance = {
         stx: stxBalance,
         tokens,
         lastUpdated: new Date()
       };
 
-      this.balances.set(address, balance);
-      return balance;
+      // Check for balance changes
+      const oldBalance = this.balances.get(address);
+      if (oldBalance) {
+        this.detectBalanceChanges(address, oldBalance, newBalance);
+      }
+
+      this.balances.set(address, newBalance);
+      return newBalance;
     } catch (error) {
       console.error('Failed to fetch balance:', error);
       throw error;
@@ -110,18 +116,22 @@ export class BalanceService {
     this.balanceCallbacks.delete(address);
   }
 
-  clearCache(address?: string): void {
-    if (address) {
-      this.balances.delete(address);
-      this.stopAutoRefresh(address);
-      this.stopWebSocketUpdates(address);
-    } else {
-      this.balances.clear();
-      this.refreshIntervals.forEach(interval => clearInterval(interval));
-      this.refreshIntervals.clear();
-      this.websockets.forEach(ws => ws.close());
-      this.websockets.clear();
-      this.balanceCallbacks.clear();
+  private detectBalanceChanges(address: string, oldBalance: Balance, newBalance: Balance): void {
+    const stxChanged = oldBalance.stx !== newBalance.stx;
+    const tokensChanged = JSON.stringify(oldBalance.tokens) !== JSON.stringify(newBalance.tokens);
+
+    if (stxChanged || tokensChanged) {
+      console.log('Balance changed for address:', address);
+      // Could emit events or call callbacks here
+      // For now, just log the changes
+      if (stxChanged) {
+        const oldStx = parseInt(oldBalance.stx) / 1000000;
+        const newStx = parseInt(newBalance.stx) / 1000000;
+        console.log(`STX balance changed: ${oldStx} → ${newStx}`);
+      }
+      if (tokensChanged) {
+        console.log('Token balances changed');
+      }
     }
   }
 }
