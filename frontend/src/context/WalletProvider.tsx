@@ -12,6 +12,8 @@ interface WalletContextType {
   signTransaction: (tx: any) => Promise<any>;
   isLoading: boolean;
   error: Error | null;
+  isConnected: boolean;
+  connectionState: { address: string; publicKey: string } | null;
 }
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
@@ -74,6 +76,8 @@ export const WalletProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     signTransaction,
     isLoading,
     error,
+    isConnected: walletManager.isConnected(),
+    connectionState: walletManager.getConnectionState(),
   };
 
   return (
