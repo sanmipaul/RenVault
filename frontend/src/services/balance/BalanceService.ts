@@ -20,6 +20,7 @@ export class BalanceService {
   private refreshIntervals: Map<string, NodeJS.Timeout> = new Map();
   private websockets: Map<string, WebSocket> = new Map();
   private balanceCallbacks: Map<string, (balance: Balance) => void> = new Map();
+  private readonly DEFAULT_REFRESH_INTERVAL = 30000; // 30 seconds
 
   static getInstance(): BalanceService {
     if (!BalanceService.instance) {
@@ -135,6 +136,43 @@ export class BalanceService {
       this.websockets.delete(address);
     }
     this.balanceCallbacks.delete(address);
+  }
+
+  setRefreshInterval(address: string, intervalMs: number): void {
+    // Clear existing interval
+    const existingInterval = this.refreshIntervals.get(address);
+    if (existingInterval) {
+      clearInterval(existingInterval);
+    }
+
+    // Set new interval
+    const interval = setInterval(async () => {
+      try {
+        const provider = this.getProviderForAddress(address);
+        if (provider) {
+          await this.getBalance(address, provider);
+        }
+      } catch (error) {
+        console.error('Error refreshing balance:', error);
+      }
+    }, intervalMs);
+
+    this.refreshIntervals.set(address, interval);
+  }
+
+  getRefreshInterval(address: string): number {
+    return this.refreshIntervals.has(address) ? this.DEFAULT_REFRESH_INTERVAL : 0;
+  }
+
+  getDefaultRefreshInterval(): number {
+    return this.DEFAULT_REFRESH_INTERVAL;
+  }
+
+  private getProviderForAddress(address: string): WalletProvider | null {
+    // This is a placeholder - in a real implementation, you'd need to track
+    // which provider is associated with each address
+    // For now, return null and handle in the calling code
+    return null;
   }
 
   private detectBalanceChanges(address: string, oldBalance: Balance, newBalance: Balance): void {
