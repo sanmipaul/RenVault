@@ -20,8 +20,10 @@ const AddressDisplay: React.FC<AddressDisplayProps> = ({
   const [copied, setCopied] = useState(false);
   const [copyError, setCopyError] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
+  const [expanded, setExpanded] = useState(showFullAddress);
 
-  const displayAddress = showFullAddress ? address : (truncate ? truncateAddress(address) : address);
+  const displayAddress = expanded ? address : (truncate ? truncateAddress(address) : address);
+  const shouldShowExpand = truncate && !expanded && address.length > 10;
 
   const handleCopy = async () => {
     setCopyError(false);
@@ -45,10 +47,19 @@ const AddressDisplay: React.FC<AddressDisplayProps> = ({
       >
         {displayAddress}
       </span>
-      {showTooltip && truncate && (
+      {showTooltip && truncate && !expanded && (
         <div className="address-tooltip">
           {address}
         </div>
+      )}
+      {shouldShowExpand && (
+        <button
+          className="expand-button"
+          onClick={() => setExpanded(!expanded)}
+          title={expanded ? "Show truncated address" : "Show full address"}
+        >
+          {expanded ? '⊟' : '⊞'}
+        </button>
       )}
       {showCopyButton && (
         <button
