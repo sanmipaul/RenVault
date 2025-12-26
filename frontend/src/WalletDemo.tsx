@@ -3,6 +3,7 @@ import { WalletProvider } from './context/WalletProvider';
 import { WalletConnect } from './components/WalletConnect';
 import { useWallet } from './hooks/useWallet';
 import DisconnectModal from './components/DisconnectModal';
+import AddressDisplay from './components/AddressDisplay';
 import './App.css';
 
 const AppContent: React.FC = () => {
@@ -34,7 +35,7 @@ const AppContent: React.FC = () => {
         <p>Multi-Provider Wallet Integration</p>
         {isConnected && (
           <div className="header-actions">
-            <span>Connected: {connectionState?.address.slice(0, 6)}...{connectionState?.address.slice(-4)}</span>
+            <AddressDisplay address={connectionState?.address || ''} />
             <button onClick={handleDisconnectClick} className="disconnect-btn">Disconnect</button>
           </div>
         )}
