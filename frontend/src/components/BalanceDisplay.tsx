@@ -7,12 +7,14 @@ interface BalanceDisplayProps {
   className?: string;
   showRefreshButton?: boolean;
   autoRefresh?: boolean;
+  refreshInterval?: number; // in milliseconds
 }
 
 const BalanceDisplay: React.FC<BalanceDisplayProps> = ({
   className = '',
   showRefreshButton = true,
-  autoRefresh = true
+  autoRefresh = true,
+  refreshInterval = 30000
 }) => {
   const { isConnected, connectionState, currentProvider } = useWallet();
   const [balance, setBalance] = useState<Balance | null>(null);
@@ -46,7 +48,7 @@ const BalanceDisplay: React.FC<BalanceDisplayProps> = ({
       fetchBalance(true);
 
       if (autoRefresh) {
-        balanceService.startAutoRefresh(connectionState.address, currentProvider);
+        balanceService.startAutoRefresh(connectionState.address, currentProvider, refreshInterval);
         // Start WebSocket updates (placeholder for now)
         balanceService.startWebSocketUpdates(connectionState.address, currentProvider, (newBalance) => {
           setBalance(newBalance);
