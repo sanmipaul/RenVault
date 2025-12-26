@@ -14,6 +14,9 @@ import { WalletKitProvider } from './context/WalletKitProvider';
 import { useWalletKit } from './hooks/useWalletKit';
 import ConnectionStatus from './components/ConnectionStatus';
 import { Analytics } from './components/Analytics';
+import { TwoFactorAuthSetup } from './components/TwoFactorAuthSetup';
+import { TwoFactorAuthVerify } from './components/TwoFactorAuthVerify';
+import { BackupCodes } from './components/BackupCodes';
 
 const appConfig = new AppConfig(['store_write', 'publish_data']);
 const userSession = new UserSession({ appConfig });
@@ -63,6 +66,10 @@ function AppContent() {
   const [showConnectionOptions, setShowConnectionOptions] = useState<boolean>(false);
   const [walletConnectSession, setWalletConnectSession] = useState<any>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [show2FASetup, setShow2FASetup] = useState<boolean>(false);
+  const [show2FAVerify, setShow2FAVerify] = useState<boolean>(false);
+  const [showBackupCodes, setShowBackupCodes] = useState<boolean>(false);
+  const [tfaSecret, setTfaSecret] = useState<string>('');
 
   useEffect(() => {
     if (userSession.isSignInPending()) {
