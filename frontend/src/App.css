@@ -456,3 +456,48 @@ main {
 .logout-btn:hover {
   background: #1a202c;
 }
+
+.address-display {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #f7fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-family: monospace;
+  font-size: 14px;
+  color: #2d3748;
+}
+
+.address-text {
+  cursor: pointer;
+  user-select: text;
+}
+
+.copy-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: background 0.2s;
+  font-size: 16px;
+}
+
+.copy-button:hover {
+  background: #e2e8f0;
+}
+
+.connected-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.connected-state p {
+  margin: 0;
+  font-weight: 500;
+}
