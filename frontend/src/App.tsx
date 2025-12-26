@@ -13,7 +13,6 @@ import { WalletConnect } from './components/WalletConnect';
 import { WalletKitProvider } from './context/WalletKitProvider';
 import { useWalletKit } from './hooks/useWalletKit';
 import ConnectionStatus from './components/ConnectionStatus';
-import { Analytics } from './components/Analytics';
 
 const appConfig = new AppConfig(['store_write', 'publish_data']);
 const userSession = new UserSession({ appConfig });
@@ -352,6 +351,30 @@ function AppContent() {
     }
   };
 
+  const disconnectWallet = () => {
+    if (connectionMethod === 'stacks') {
+      // Disconnect Stacks wallet
+      userSession.signUserOut();
+      setUserData(null);
+      setConnectionMethod(null);
+      setWalletConnectSession(null);
+      setStatus('✅ Disconnected from Stacks wallet');
+    } else if (connectionMethod === 'walletconnect') {
+      // Disconnect WalletConnect
+      setWalletConnectSession(null);
+      setUserData(null);
+      setConnectionMethod(null);
+      setStatus('✅ Disconnected from WalletConnect');
+    }
+    // Clear all connection-related state
+    setBalance('0');
+    setPoints('0');
+    setDepositAmount('');
+    setWithdrawAmount('');
+    setDetectedNetwork(null);
+    setNetworkMismatch(false);
+  };
+
   const handleWithdraw = async () => {
     if (!withdrawAmount || !userData) return;
     if (!validateNetwork()) return;
@@ -413,6 +436,12 @@ function AppContent() {
           <h1>RenVault 🏦</h1>
           <p>Clarity 4 Micro-Savings Protocol</p>
         </div>
+
+        <ConnectionStatus
+          isConnected={false}
+          connectionMethod={null}
+        />
+
         {showConnectionOptions ? (
           <div className="card">
             <h2>Choose Connection Method</h2>
@@ -505,6 +534,13 @@ function AppContent() {
           </div>
         )}
       </div>
+
+      <ConnectionStatus
+        isConnected={!!userData}
+        connectionMethod={connectionMethod}
+        walletAddress={userData?.profile?.stxAddress?.mainnet}
+        onDisconnect={disconnectWallet}
+      />
 
       {detectedNetwork === 'mainnet' && (
         <div className="card success">
