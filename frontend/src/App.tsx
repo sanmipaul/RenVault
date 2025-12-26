@@ -30,6 +30,18 @@ const getCurrentNetwork = () => {
   return new StacksMainnet();
 };
 
+const trackAnalytics = async (event: string, data: any) => {
+  try {
+    await fetch('http://localhost:3001/api/' + event, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+  } catch (error) {
+    console.warn('Analytics tracking failed:', error);
+  }
+};
+
 function AppContent() {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [balance, setBalance] = useState<string>('0');
@@ -103,6 +115,7 @@ function AppContent() {
     setRetryCount(0);
     setConnectionMethod('stacks');
     setShowConnectionOptions(false);
+    const startTime = Date.now();
     try {
       showConnect({
         appDetails: {
@@ -111,12 +124,19 @@ function AppContent() {
         },
         redirectTo: '/',
         onFinish: () => {
+          const duration = Date.now() - startTime;
+          trackAnalytics('wallet-connect', { user: 'anonymous', method: 'stacks', success: true });
+          trackAnalytics('performance', { operation: 'wallet-connect-stacks', duration });
           window.location.reload();
         },
         userSession,
       });
     } catch (error: any) {
+      const duration = Date.now() - startTime;
       setConnectionError(`Failed to connect with Stacks wallet: ${error.message}`);
+      trackAnalytics('wallet-connect', { user: 'anonymous', method: 'stacks', success: false });
+      trackAnalytics('wallet-error', { user: 'anonymous', method: 'stacks', errorType: error.message });
+      trackAnalytics('performance', { operation: 'wallet-connect-stacks', duration });
       setToastMessage('Connection failed. Check the error message above.');
       setTimeout(() => setToastMessage(null), 5000);
     }
