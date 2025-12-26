@@ -12,6 +12,8 @@ import {
 import { WalletConnect } from './components/WalletConnect';
 import { WalletKitProvider } from './context/WalletKitProvider';
 import { useWalletKit } from './hooks/useWalletKit';
+import ConnectionStatus from './components/ConnectionStatus';
+import { Analytics } from './components/Analytics';
 
 const appConfig = new AppConfig(['store_write', 'publish_data']);
 const userSession = new UserSession({ appConfig });
@@ -537,6 +539,8 @@ function AppContent() {
           <div>Network</div>
         </div>
       </div>
+
+      <Analytics userId={userData?.profile?.stxAddress?.mainnet} />
 
       <div className="actions">
         <div className="card">
