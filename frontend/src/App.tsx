@@ -33,6 +33,9 @@ const getCurrentNetwork = () => {
 };
 
 const trackAnalytics = async (event: string, data: any) => {
+  const optOut = localStorage.getItem('analytics-opt-out') === 'true';
+  if (optOut) return;
+  
   try {
     await fetch('http://localhost:3001/api/' + event, {
       method: 'POST',
