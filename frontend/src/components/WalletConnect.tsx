@@ -22,7 +22,17 @@ export const WalletConnect: React.FC<WalletConnectProps> = ({ onSessionEstablish
   const [manualUri, setManualUri] = useState('');
   const [showQR, setShowQR] = useState(false);
   const [isRetrying, setIsRetrying] = useState(false);
-  const [progress, setProgress] = useState(0);
+  const trackWalletError = async (method: string, errorType: string) => {
+    try {
+      await fetch('http://localhost:3001/api/wallet-error', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user: 'anonymous', method, errorType })
+      });
+    } catch (error) {
+      console.warn('Error tracking failed:', error);
+    }
+  };
 
   const handleConnectWithUri = async (connectionUri: string, attempt = 0) => {
     if (!walletKit || !connectionUri) return;
@@ -60,10 +70,13 @@ export const WalletConnect: React.FC<WalletConnectProps> = ({ onSessionEstablish
       }
       if (message.includes('timed out')) {
         setError('Connection timed out after multiple attempts. Please ensure your wallet app is open and connected to the internet, then try again.');
+        trackWalletError('walletconnect', 'timeout');
       } else if (message.includes('invalid')) {
         setError('Invalid WalletConnect URI. Please check the URI and try again.');
+        trackWalletError('walletconnect', 'invalid_uri');
       } else {
         setError(`${message} Please check your wallet app and try again.`);
+        trackWalletError('walletconnect', 'unknown');
       }
       setIsRetrying(false);
     } finally {
