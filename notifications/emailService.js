@@ -1,4 +1,6 @@
 const nodemailer = require('nodemailer');
+const fs = require('fs');
+const path = require('path');
 
 class EmailService {
   constructor() {
@@ -14,16 +16,14 @@ class EmailService {
   }
 
   async sendDepositAlert(userEmail, amount, balance) {
+    const template = this.loadTemplate('deposit.html');
+    const html = this.renderTemplate(template, { amount, balance });
+
     const mailOptions = {
       from: process.env.FROM_EMAIL || 'noreply@renvault.com',
       to: userEmail,
       subject: '🏦 RenVault Deposit Confirmed',
-      html: `
-        <h2>Deposit Successful!</h2>
-        <p>Your deposit of <strong>${amount} STX</strong> has been confirmed.</p>
-        <p>New vault balance: <strong>${balance} STX</strong></p>
-        <p>Thank you for using RenVault!</p>
-      `
+      html
     };
 
     try {
@@ -35,15 +35,19 @@ class EmailService {
   }
 
   async sendWithdrawAlert(userEmail, amount, balance) {
+    const template = this.loadTemplate('deposit.html'); // Reuse deposit template structure
+    const html = this.renderTemplate(template, {
+      amount,
+      balance,
+      title: 'Withdrawal Confirmed',
+      message: 'Your STX withdrawal has been processed successfully.'
+    });
+
     const mailOptions = {
       from: process.env.FROM_EMAIL || 'noreply@renvault.com',
       to: userEmail,
       subject: '💰 RenVault Withdrawal Confirmed',
-      html: `
-        <h2>Withdrawal Successful!</h2>
-        <p>Your withdrawal of <strong>${amount} STX</strong> has been processed.</p>
-        <p>Remaining vault balance: <strong>${balance} STX</strong></p>
-      `
+      html: html.replace('Deposit Confirmed', 'Withdrawal Confirmed').replace('Deposit Successful', 'Withdrawal Successful')
     };
 
     try {
@@ -76,16 +80,18 @@ class EmailService {
   }
 
   async sendStakingRewardAlert(userEmail, amount, stakedAmount) {
+    const template = this.loadTemplate('staking-reward.html');
+    const html = this.renderTemplate(template, {
+      amount,
+      stakedAmount,
+      rewardRate: '12.5' // This could be dynamic based on current rates
+    });
+
     const mailOptions = {
       from: process.env.FROM_EMAIL || 'noreply@renvault.com',
       to: userEmail,
       subject: '🌱 RenVault Staking Reward Earned',
-      html: `
-        <h2>Staking Reward Received!</h2>
-        <p>You've earned <strong>${amount} STX</strong> in staking rewards!</p>
-        <p>Current staked amount: <strong>${stakedAmount} STX</strong></p>
-        <p>Your rewards are automatically compounded for maximum yield.</p>
-      `
+      html
     };
 
     try {
@@ -118,19 +124,18 @@ class EmailService {
   }
 
   async sendFailedLoginAlert(userEmail, ipAddress, userAgent) {
+    const template = this.loadTemplate('security-alert.html');
+    const html = this.renderTemplate(template, {
+      ipAddress,
+      userAgent,
+      timestamp: new Date().toLocaleString()
+    });
+
     const mailOptions = {
       from: process.env.FROM_EMAIL || 'noreply@renvault.com',
       to: userEmail,
       subject: '🚨 RenVault Security Alert: Failed Login Attempt',
-      html: `
-        <h2>Security Alert: Failed Login Attempt</h2>
-        <p>We detected a failed login attempt to your RenVault account.</p>
-        <p><strong>IP Address:</strong> ${ipAddress}</p>
-        <p><strong>User Agent:</strong> ${userAgent}</p>
-        <p><strong>Time:</strong> ${new Date().toLocaleString()}</p>
-        <p>If this wasn't you, please secure your account immediately.</p>
-        <p>Consider enabling 2FA if you haven't already.</p>
-      `
+      html
     };
 
     try {
@@ -165,16 +170,20 @@ class EmailService {
   }
 
   async sendTwoFactorEnabledAlert(userEmail) {
+    const template = this.loadTemplate('2fa-update.html');
+    const html = this.renderTemplate(template, {
+      status: 'Enabled',
+      statusIcon: '✅',
+      statusMessage: 'Two-Factor Authentication Enabled',
+      description: 'Two-factor authentication has been successfully enabled on your RenVault account. Your account is now more secure.',
+      backupCodes: null // No backup codes for enable notification
+    });
+
     const mailOptions = {
       from: process.env.FROM_EMAIL || 'noreply@renvault.com',
       to: userEmail,
       subject: '🔐 RenVault Security: 2FA Enabled',
-      html: `
-        <h2>Two-Factor Authentication Enabled</h2>
-        <p>Two-factor authentication has been successfully enabled on your RenVault account.</p>
-        <p>Your account is now more secure with an additional layer of protection.</p>
-        <p>Remember to keep your backup codes safe!</p>
-      `
+      html
     };
 
     try {
@@ -186,16 +195,19 @@ class EmailService {
   }
 
   async sendTwoFactorDisabledAlert(userEmail) {
+    const template = this.loadTemplate('2fa-update.html');
+    const html = this.renderTemplate(template, {
+      status: 'Disabled',
+      statusIcon: '⚠️',
+      statusMessage: 'Two-Factor Authentication Disabled',
+      description: 'Two-factor authentication has been disabled on your RenVault account. Your account now has reduced security protection.'
+    });
+
     const mailOptions = {
       from: process.env.FROM_EMAIL || 'noreply@renvault.com',
       to: userEmail,
       subject: '⚠️ RenVault Security: 2FA Disabled',
-      html: `
-        <h2>Two-Factor Authentication Disabled</h2>
-        <p>Two-factor authentication has been disabled on your RenVault account.</p>
-        <p>Your account now has reduced security. We recommend re-enabling 2FA.</p>
-        <p>If you didn't make this change, please contact support immediately.</p>
-      `
+      html
     };
 
     try {
@@ -204,6 +216,20 @@ class EmailService {
     } catch (error) {
       console.error('❌ Email send failed:', error.message);
     }
+  }
+
+  loadTemplate(templateName) {
+    const templatePath = path.join(__dirname, 'templates', templateName);
+    return fs.readFileSync(templatePath, 'utf8');
+  }
+
+  renderTemplate(template, data) {
+    let rendered = template;
+    for (const [key, value] of Object.entries(data)) {
+      const regex = new RegExp(`{{${key}}}`, 'g');
+      rendered = rendered.replace(regex, value);
+    }
+    return rendered;
   }
 }
 
