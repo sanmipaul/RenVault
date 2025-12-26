@@ -13,6 +13,16 @@ class NotificationManager {
       email: preferences.email || null,
       emailEnabled: preferences.emailEnabled || false,
       pushEnabled: preferences.pushEnabled || false,
+      // Transaction notifications
+      depositNotifications: preferences.depositNotifications !== false,
+      withdrawalNotifications: preferences.withdrawalNotifications !== false,
+      stakingNotifications: preferences.stakingNotifications !== false,
+      rewardNotifications: preferences.rewardNotifications !== false,
+      // Security alerts
+      securityAlerts: preferences.securityAlerts !== false,
+      loginAlerts: preferences.loginAlerts !== false,
+      suspiciousActivityAlerts: preferences.suspiciousActivityAlerts !== false,
+      twoFactorAlerts: preferences.twoFactorAlerts !== false,
       ...preferences
     });
   }
@@ -74,6 +84,132 @@ class NotificationManager {
     if (prefs.pushEnabled) {
       promises.push(
         this.pushService.sendRankingNotification(userId, rank)
+      );
+    }
+
+    await Promise.allSettled(promises);
+  }
+
+  async notifyStakingReward(userId, amount, stakedAmount) {
+    const prefs = this.userPreferences.get(userId);
+    if (!prefs || !prefs.stakingNotifications) return;
+
+    const promises = [];
+
+    if (prefs.emailEnabled && prefs.email) {
+      promises.push(
+        this.emailService.sendStakingRewardAlert(prefs.email, amount, stakedAmount)
+      );
+    }
+
+    if (prefs.pushEnabled) {
+      promises.push(
+        this.pushService.sendStakingRewardNotification(userId, amount)
+      );
+    }
+
+    await Promise.allSettled(promises);
+  }
+
+  async notifyLiquidityReward(userId, amount, poolName) {
+    const prefs = this.userPreferences.get(userId);
+    if (!prefs || !prefs.rewardNotifications) return;
+
+    const promises = [];
+
+    if (prefs.emailEnabled && prefs.email) {
+      promises.push(
+        this.emailService.sendLiquidityRewardAlert(prefs.email, amount, poolName)
+      );
+    }
+
+    if (prefs.pushEnabled) {
+      promises.push(
+        this.pushService.sendLiquidityRewardNotification(userId, amount, poolName)
+      );
+    }
+
+    await Promise.allSettled(promises);
+  }
+
+  async notifyFailedLogin(userId, ipAddress, userAgent) {
+    const prefs = this.userPreferences.get(userId);
+    if (!prefs || !prefs.securityAlerts || !prefs.loginAlerts) return;
+
+    const promises = [];
+
+    if (prefs.emailEnabled && prefs.email) {
+      promises.push(
+        this.emailService.sendFailedLoginAlert(prefs.email, ipAddress, userAgent)
+      );
+    }
+
+    if (prefs.pushEnabled) {
+      promises.push(
+        this.pushService.sendFailedLoginNotification(userId, ipAddress)
+      );
+    }
+
+    await Promise.allSettled(promises);
+  }
+
+  async notifySuspiciousActivity(userId, activity, ipAddress) {
+    const prefs = this.userPreferences.get(userId);
+    if (!prefs || !prefs.securityAlerts || !prefs.suspiciousActivityAlerts) return;
+
+    const promises = [];
+
+    if (prefs.emailEnabled && prefs.email) {
+      promises.push(
+        this.emailService.sendSuspiciousActivityAlert(prefs.email, activity, ipAddress)
+      );
+    }
+
+    if (prefs.pushEnabled) {
+      promises.push(
+        this.pushService.sendSuspiciousActivityNotification(userId, activity)
+      );
+    }
+
+    await Promise.allSettled(promises);
+  }
+
+  async notifyTwoFactorEnabled(userId) {
+    const prefs = this.userPreferences.get(userId);
+    if (!prefs || !prefs.securityAlerts || !prefs.twoFactorAlerts) return;
+
+    const promises = [];
+
+    if (prefs.emailEnabled && prefs.email) {
+      promises.push(
+        this.emailService.sendTwoFactorEnabledAlert(prefs.email)
+      );
+    }
+
+    if (prefs.pushEnabled) {
+      promises.push(
+        this.pushService.sendTwoFactorEnabledNotification(userId)
+      );
+    }
+
+    await Promise.allSettled(promises);
+  }
+
+  async notifyTwoFactorDisabled(userId) {
+    const prefs = this.userPreferences.get(userId);
+    if (!prefs || !prefs.securityAlerts || !prefs.twoFactorAlerts) return;
+
+    const promises = [];
+
+    if (prefs.emailEnabled && prefs.email) {
+      promises.push(
+        this.emailService.sendTwoFactorDisabledAlert(prefs.email)
+      );
+    }
+
+    if (prefs.pushEnabled) {
+      promises.push(
+        this.pushService.sendTwoFactorDisabledNotification(userId)
       );
     }
 
