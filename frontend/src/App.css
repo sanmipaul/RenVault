@@ -519,6 +519,97 @@ main {
   background: #e2e8f0;
 }
 
+.balance-display {
+  background: #f7fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 20px;
+  max-width: 400px;
+}
+
+.balance-display h3 {
+  margin: 0 0 16px 0;
+  color: #2d3748;
+  font-size: 18px;
+}
+
+.balance-content {
+  margin-bottom: 16px;
+}
+
+.stx-balance {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.currency {
+  font-weight: bold;
+  color: #4a5568;
+}
+
+.amount {
+  font-size: 24px;
+  font-weight: bold;
+  color: #2d3748;
+}
+
+.token-balances h4 {
+  margin: 12px 0 8px 0;
+  color: #4a5568;
+  font-size: 14px;
+}
+
+.token-balance {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  font-size: 14px;
+}
+
+.token-name {
+  color: #4a5568;
+  font-family: monospace;
+}
+
+.token-amount {
+  color: #2d3748;
+  font-weight: 500;
+}
+
+.last-updated {
+  font-size: 12px;
+  color: #718096;
+  margin-top: 8px;
+}
+
+.refresh-button {
+  background: #4299e1;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s;
+}
+
+.refresh-button:hover:not(:disabled) {
+  background: #3182ce;
+}
+
+.refresh-button:disabled {
+  background: #a0aec0;
+  cursor: not-allowed;
+}
+
+.loading {
+  color: #718096;
+  font-style: italic;
+}
+
 @keyframes copySuccess {
   0% { transform: scale(1); }
   50% { transform: scale(1.1); }
