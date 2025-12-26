@@ -107,19 +107,29 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
     localStorage.removeItem(`notifications_${userId}`);
   };
 
+  const [searchTerm, setSearchTerm] = useState('');
+
   const filteredNotifications = notifications.filter(n => {
-    switch (filter) {
-      case 'unread':
-        return !n.read;
-      case 'transaction':
-        return n.type === 'transaction';
-      case 'security':
-        return n.type === 'security';
-      case 'reward':
-        return n.type === 'reward';
-      default:
-        return true;
-    }
+    const matchesFilter = (() => {
+      switch (filter) {
+        case 'unread':
+          return !n.read;
+        case 'transaction':
+          return n.type === 'transaction';
+        case 'security':
+          return n.type === 'security';
+        case 'reward':
+          return n.type === 'reward';
+        default:
+          return true;
+      }
+    })();
+
+    const matchesSearch = searchTerm === '' ||
+      n.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      n.message.toLowerCase().includes(searchTerm.toLowerCase());
+
+    return matchesFilter && matchesSearch;
   });
 
   const getNotificationIcon = (type: string) => {
@@ -173,6 +183,15 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
           </div>
 
           <div className="notification-filters">
+            <div className="search-container">
+              <input
+                type="text"
+                placeholder="Search notifications..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="search-input"
+              />
+            </div>
             <button
               className={filter === 'all' ? 'active' : ''}
               onClick={() => setFilter('all')}
