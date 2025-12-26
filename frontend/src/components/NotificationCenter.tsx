@@ -171,7 +171,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
       <div className="notification-center-overlay" onClick={onClose}>
         <div className="notification-center" data-theme={theme} onClick={e => e.stopPropagation()}>
           <div className="notification-center-header">
-            <h2>🔔 Notifications</h2>
+            <h2>🔔 Notifications {notifications.filter(n => !n.read).length > 0 && <span className="notification-badge">{notifications.filter(n => !n.read).length}</span>}</h2>
             <div className="notification-actions">
               <select
                 value={theme}
