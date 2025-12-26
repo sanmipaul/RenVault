@@ -45,7 +45,7 @@ const AddressDisplay: React.FC<AddressDisplayProps> = ({
       )}
       {showCopyButton && (
         <button
-          className="copy-button"
+          className={`copy-button ${copied ? 'copied' : ''}`}
           onClick={handleCopy}
           onKeyDown={(e) => {
             if (e.key === 'Enter' || e.key === ' ') {

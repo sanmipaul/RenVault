@@ -489,6 +489,22 @@ main {
   background: #e2e8f0;
 }
 
+.copy-button:active {
+  transform: scale(0.95);
+}
+
+.copy-button.copied {
+  background: #48bb78;
+  color: white;
+  animation: copySuccess 0.3s ease;
+}
+
+@keyframes copySuccess {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
 .connected-state {
   display: flex;
   flex-direction: column;
