@@ -100,19 +100,30 @@ function AppContent() {
   };
 
   const connectWithStacks = () => {
+    setConnectionError(null);
+    setRetryCount(0);
     setConnectionMethod('stacks');
     setShowConnectionOptions(false);
-    showConnect({
-      appDetails: {
-        name: 'RenVault',
-        icon: window.location.origin + '/logo192.png',
-      },
-      redirectTo: '/',
-      onFinish: () => {
-        window.location.reload();
-      },
-      userSession,
-    });
+    try {
+      showConnect({
+        appDetails: {
+          name: 'RenVault',
+          icon: window.location.origin + '/logo192.png',
+        },
+        redirectTo: '/',
+        onFinish: () => {
+          window.location.reload();
+        },
+        userSession,
+      });
+    } catch (error: any) {
+      setConnectionError(`Failed to connect with Stacks wallet: ${error.message}`);
+    }
+  };
+
+  const retryConnectWithStacks = () => {
+    setRetryCount(prev => prev + 1);
+    connectWithStacks();
   };
 
   const connectWithWalletConnect = () => {
