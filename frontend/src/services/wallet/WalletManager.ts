@@ -8,6 +8,7 @@ import { WalletConnectProvider } from './WalletConnectProvider';
 export class WalletManager {
   private providers: Map<WalletProviderType, WalletProvider> = new Map();
   private currentProvider: WalletProvider | null = null;
+  private connectionState: { address: string; publicKey: string } | null = null;
 
   constructor() {
     this.providers.set('leather', new LeatherWalletProvider());
@@ -31,17 +32,43 @@ export class WalletManager {
     return this.currentProvider;
   }
 
+  getConnectionState(): { address: string; publicKey: string } | null {
+    return this.connectionState;
+  }
+
+  isConnected(): boolean {
+    return this.connectionState !== null;
+  }
+
   async connect(): Promise<any> {
     if (!this.currentProvider) {
       throw new Error('No provider selected');
     }
-    return this.currentProvider.connect();
+    const result = await this.currentProvider.connect();
+    this.connectionState = result;
+    return result;
   }
 
   async disconnect(): Promise<void> {
     if (this.currentProvider) {
       await this.currentProvider.disconnect();
     }
+    // Clear all state
+    this.connectionState = null;
+    this.currentProvider = null;
+    // Clear all wallet-related localStorage
+    this.clearStoredData();
+  }
+
+  private clearStoredData(): void {
+    const keysToRemove = [
+      'leather-session',
+      'xverse-session',
+      'hiro-session',
+      'walletconnect-session',
+      'renvault-wallet-state'
+    ];
+    keysToRemove.forEach(key => localStorage.removeItem(key));
   }
 
   async signTransaction(tx: any): Promise<any> {
