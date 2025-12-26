@@ -505,6 +505,20 @@ main {
   animation: copyError 0.3s ease;
 }
 
+.expand-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: background 0.2s;
+  font-size: 16px;
+}
+
+.expand-button:hover {
+  background: #e2e8f0;
+}
+
 @keyframes copySuccess {
   0% { transform: scale(1); }
   50% { transform: scale(1.1); }
