@@ -168,6 +168,32 @@ export class BalanceService {
     return this.DEFAULT_REFRESH_INTERVAL;
   }
 
+  stopRefresh(address: string): void {
+    const interval = this.refreshIntervals.get(address);
+    if (interval) {
+      clearInterval(interval);
+      this.refreshIntervals.delete(address);
+    }
+  }
+
+  cleanup(): void {
+    // Clear all refresh intervals
+    for (const interval of this.refreshIntervals.values()) {
+      clearInterval(interval);
+    }
+    this.refreshIntervals.clear();
+
+    // Close all websockets
+    for (const ws of this.websockets.values()) {
+      ws.close();
+    }
+    this.websockets.clear();
+
+    // Clear balances and callbacks
+    this.balances.clear();
+    this.balanceCallbacks.clear();
+  }
+
   private getProviderForAddress(address: string): WalletProvider | null {
     // This is a placeholder - in a real implementation, you'd need to track
     // which provider is associated with each address
