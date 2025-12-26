@@ -105,8 +105,41 @@ function AppContent() {
     }
   };
 
+  const disconnectWallet = () => {
+    if (connectionMethod === 'stacks') {
+      // Disconnect Stacks wallet
+      userSession.signUserOut();
+      setUserData(null);
+      setConnectionMethod(null);
+      setWalletConnectSession(null);
+      setStatus('✅ Disconnected from Stacks wallet');
+    } else if (connectionMethod === 'walletconnect') {
+      // Disconnect WalletConnect
+      setWalletConnectSession(null);
+      setUserData(null);
+      setConnectionMethod(null);
+      setStatus('✅ Disconnected from WalletConnect');
+    }
+    // Clear all session data
+    localStorage.removeItem('tfa-enabled');
+    localStorage.removeItem('tfa-secret');
+    localStorage.removeItem('tfa-backup-codes');
+    // Clear all connection-related state
+    setBalance('0');
+    setPoints('0');
+    setDepositAmount('');
+    setWithdrawAmount('');
+    setDetectedNetwork(null);
+    setNetworkMismatch(false);
+  };
+
   useEffect(() => {
-    if (userSession.isSignInPending()) {
+    // Check for 2FA requirement on app load
+    const tfaEnabled = localStorage.getItem('tfa-enabled') === 'true';
+    if (tfaEnabled && !userData) {
+      setShow2FAVerify(true);
+    }
+  }, []);
       userSession.handlePendingSignIn().then((userData) => {
         setUserData(userData);
       });
