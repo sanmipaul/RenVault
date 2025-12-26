@@ -7,19 +7,21 @@ interface AddressDisplayProps {
   className?: string;
   showCopyButton?: boolean;
   truncate?: boolean;
+  showFullAddress?: boolean;
 }
 
 const AddressDisplay: React.FC<AddressDisplayProps> = ({
   address,
   className = '',
   showCopyButton = true,
-  truncate = true
+  truncate = true,
+  showFullAddress = false
 }) => {
   const [copied, setCopied] = useState(false);
   const [copyError, setCopyError] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
 
-  const displayAddress = truncate ? truncateAddress(address) : address;
+  const displayAddress = showFullAddress ? address : (truncate ? truncateAddress(address) : address);
 
   const handleCopy = async () => {
     setCopyError(false);
