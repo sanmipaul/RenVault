@@ -1,7 +1,26 @@
 // Metrics Collector
+const fs = require('fs');
+const path = require('path');
+
 class MetricsCollector {
   constructor() {
-    this.metrics = {
+    this.dataFile = path.join(__dirname, 'metrics.json');
+    this.metrics = this.loadMetrics();
+  }
+
+  loadMetrics() {
+    try {
+      if (fs.existsSync(this.dataFile)) {
+        const data = fs.readFileSync(this.dataFile, 'utf8');
+        const parsed = JSON.parse(data);
+        // Convert users back to Set
+        parsed.users = new Set(parsed.users);
+        return parsed;
+      }
+    } catch (error) {
+      console.error('Failed to load metrics:', error);
+    }
+    return {
       deposits: [],
       withdrawals: [],
       users: new Set(),
@@ -12,30 +31,45 @@ class MetricsCollector {
     };
   }
 
+  saveMetrics() {
+    try {
+      const data = { ...this.metrics, users: Array.from(this.metrics.users) };
+      fs.writeFileSync(this.dataFile, JSON.stringify(data, null, 2));
+    } catch (error) {
+      console.error('Failed to save metrics:', error);
+    }
+  }
+
   recordDeposit(user, amount, timestamp) {
     this.metrics.deposits.push({ user, amount, timestamp });
     this.metrics.users.add(user);
+    this.saveMetrics();
   }
 
   recordWithdrawal(user, amount, timestamp) {
     this.metrics.withdrawals.push({ user, amount, timestamp });
+    this.saveMetrics();
   }
 
   recordFee(amount) {
     this.metrics.fees += amount;
+    this.saveMetrics();
   }
 
   recordWalletConnection(user, method, timestamp, success = true) {
     this.metrics.walletConnections.push({ user, method, timestamp, success });
     if (success) this.metrics.users.add(user);
+    this.saveMetrics();
   }
 
   recordWalletError(user, method, errorType, timestamp) {
     this.metrics.walletErrors.push({ user, method, errorType, timestamp });
+    this.saveMetrics();
   }
 
   recordPerformanceMetric(operation, duration, timestamp) {
     this.metrics.performanceMetrics.push({ operation, duration, timestamp });
+    this.saveMetrics();
   }
 
   getStats() {
