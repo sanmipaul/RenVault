@@ -21,14 +21,19 @@ export const WalletConnect: React.FC<WalletConnectProps> = ({ onSessionEstablish
   const [uri, setUri] = useState('');
   const [manualUri, setManualUri] = useState('');
   const [showQR, setShowQR] = useState(false);
-  const [retryCount, setRetryCount] = useState(0);
   const [isRetrying, setIsRetrying] = useState(false);
+  const [progress, setProgress] = useState(0);
 
   const handleConnectWithUri = async (connectionUri: string, attempt = 0) => {
     if (!walletKit || !connectionUri) return;
     
     setError(null);
     setIsConnecting(true);
+    setProgress(0);
+    
+    const progressInterval = setInterval(() => {
+      setProgress(prev => Math.min(prev + 10, 90));
+    }, 1000);
     
     const timeoutPromise = new Promise((_, reject) => 
       setTimeout(() => reject(new Error('Connection timed out')), 30000)
@@ -39,6 +44,7 @@ export const WalletConnect: React.FC<WalletConnectProps> = ({ onSessionEstablish
         walletKit.pair({ uri: connectionUri }),
         timeoutPromise
       ]);
+      setProgress(100);
       setRetryCount(0); // Reset on success
     } catch (err) {
       console.error('Failed to pair with URI:', err);
@@ -62,6 +68,7 @@ export const WalletConnect: React.FC<WalletConnectProps> = ({ onSessionEstablish
       setIsRetrying(false);
     } finally {
       setIsConnecting(false);
+      clearInterval(progressInterval);
     }
   };
 
@@ -167,6 +174,13 @@ export const WalletConnect: React.FC<WalletConnectProps> = ({ onSessionEstablish
           >
             {isLoading || isConnecting ? (isRetrying ? `Retrying... (${retryCount}/3)` : 'Connecting...') : 'Generate QR Code'}
           </button>
+          
+          {isConnecting && (
+            <div className='progress-bar'>
+              <div className='progress-fill' style={{ width: `${progress}%` }}></div>
+              <span className='progress-text'>{progress}%</span>
+            </div>
+          )}
           
           <div className='manual-input' style={{ marginTop: '16px' }}>
             <p style={{ marginBottom: '8px' }}>Or paste a WalletConnect URI:</p>
