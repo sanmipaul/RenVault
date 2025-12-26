@@ -13,12 +13,13 @@ const AppContent: React.FC = () => {
     setShowDisconnectModal(true);
   };
 
-  const handleDisconnectConfirm = async () => {
+  const handleLogout = async () => {
     try {
       await disconnect();
+      // Additional logout logic if needed
       setShowDisconnectModal(false);
     } catch (err) {
-      console.error('Disconnect failed:', err);
+      console.error('Logout failed:', err);
     }
   };
 
@@ -45,6 +46,7 @@ const AppContent: React.FC = () => {
         isOpen={showDisconnectModal}
         onConfirm={handleDisconnectConfirm}
         onCancel={handleDisconnectCancel}
+        onLogout={handleLogout}
         providerName={currentProvider?.name || 'wallet'}
       />
     </div>
