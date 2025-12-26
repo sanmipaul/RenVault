@@ -123,6 +123,21 @@ class MetricsCollector {
       errorCount: errors.length
     };
   }
+
+  getWalletTimeSeries(interval = 'daily') {
+    const grouped = {};
+    this.metrics.walletConnections.forEach(c => {
+      const key = this.getTimeKey(c.timestamp, interval);
+      if (!grouped[key]) grouped[key] = { connections: 0, errors: 0 };
+      grouped[key].connections += 1;
+    });
+    this.metrics.walletErrors.forEach(e => {
+      const key = this.getTimeKey(e.timestamp, interval);
+      if (!grouped[key]) grouped[key] = { connections: 0, errors: 0 };
+      grouped[key].errors += 1;
+    });
+    return grouped;
+  }
 }
 
 module.exports = { MetricsCollector };
