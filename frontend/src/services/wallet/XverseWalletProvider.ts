@@ -30,7 +30,13 @@ export class XverseWalletProvider extends BaseWalletProvider {
   }
 
   async disconnect(): Promise<void> {
-    // Disconnect logic
+    // Clear Xverse session data
+    if (window.XverseWallet) {
+      // Assuming Xverse has a disconnect method
+      await window.XverseWallet.disconnect?.();
+    }
+    // Clear any stored session data
+    localStorage.removeItem('xverse-session');
   }
 
   async signTransaction(tx: any): Promise<any> {
