@@ -31,6 +31,21 @@ const getCurrentNetwork = () => {
   return new StacksMainnet();
 };
 
+const trackAnalytics = async (event: string, data: any) => {
+  const optOut = localStorage.getItem('analytics-opt-out') === 'true';
+  if (optOut) return;
+  
+  try {
+    await fetch('http://localhost:3001/api/' + event, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+  } catch (error) {
+    console.warn('Analytics tracking failed:', error);
+  }
+};
+
 function AppContent() {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [balance, setBalance] = useState<string>('0');
@@ -104,6 +119,7 @@ function AppContent() {
     setRetryCount(0);
     setConnectionMethod('stacks');
     setShowConnectionOptions(false);
+    const startTime = Date.now();
     try {
       showConnect({
         appDetails: {
@@ -112,12 +128,19 @@ function AppContent() {
         },
         redirectTo: '/',
         onFinish: () => {
+          const duration = Date.now() - startTime;
+          trackAnalytics('wallet-connect', { user: 'anonymous', method: 'stacks', success: true });
+          trackAnalytics('performance', { operation: 'wallet-connect-stacks', duration });
           window.location.reload();
         },
         userSession,
       });
     } catch (error: any) {
+      const duration = Date.now() - startTime;
       setConnectionError(`Failed to connect with Stacks wallet: ${error.message}`);
+      trackAnalytics('wallet-connect', { user: 'anonymous', method: 'stacks', success: false });
+      trackAnalytics('wallet-error', { user: 'anonymous', method: 'stacks', errorType: error.message });
+      trackAnalytics('performance', { operation: 'wallet-connect-stacks', duration });
       setToastMessage('Connection failed. Check the error message above.');
       setTimeout(() => setToastMessage(null), 5000);
     }
@@ -136,6 +159,7 @@ function AppContent() {
   const fetchUserStats = async () => {
     if (!userData || networkMismatch) return;
     
+    const startTime = Date.now();
     try {
       const network = getCurrentNetwork();
       const balanceResult = await callReadOnlyFunction({
@@ -161,11 +185,16 @@ function AppContent() {
       setBalance((parseInt(balanceResult.value) / 1000000).toFixed(6));
       // @ts-ignore
       setPoints(pointsResult.value);
+      
+      const duration = Date.now() - startTime;
+      trackAnalytics('performance', { operation: 'fetch-user-stats', duration });
     } catch (error) {
       console.error('Error fetching stats:', error);
       if (networkMismatch) {
         setStatus('Unable to fetch data: Please switch to mainnet');
       }
+      const duration = Date.now() - startTime;
+      trackAnalytics('performance', { operation: 'fetch-user-stats', duration });
     }
   };
 
@@ -202,10 +231,13 @@ function AppContent() {
         setStatus(`Deposit transaction submitted: ${broadcastResponse.txid}`);
         setDepositAmount('');
         
+        trackAnalytics('deposit', { user: userData.profile.stxAddress.mainnet, amount });
+        
         setTimeout(fetchUserStats, 3000);
       }
     } catch (error: any) {
       setStatus(`Error: ${error.message}`);
+      trackAnalytics('wallet-error', { user: userData?.profile?.stxAddress?.mainnet || 'anonymous', method: connectionMethod || 'unknown', errorType: error.message });
     } finally {
       setLoading(false);
     }
@@ -245,6 +277,7 @@ function AppContent() {
             setStatus(`✅ Withdraw transaction submitted successfully! Transaction ID: ${data.txId}`);
             setWithdrawAmount('');
             setWithdrawTxDetails(null);
+            trackAnalytics('withdrawal', { user: userData.profile.stxAddress.mainnet, amount: withdrawTxDetails.amount });
             setTimeout(fetchUserStats, 3000);
           },
           onCancel: () => {
@@ -312,6 +345,9 @@ function AppContent() {
       setUserData(mockUserData as any);
       setWalletConnectSession(session);
       setStatus('✅ Connected via WalletConnect');
+      trackAnalytics('wallet-connect', { user: stacksAccount.split(':')[2], method: 'walletconnect', success: true });
+    } else {
+      trackAnalytics('wallet-connect', { user: 'anonymous', method: 'walletconnect', success: false });
     }
   };
 
@@ -542,6 +578,8 @@ function AppContent() {
           <div>Network</div>
         </div>
       </div>
+
+      <Analytics userId={userData?.profile?.stxAddress?.mainnet} />
 
       <div className="actions">
         <div className="card">
