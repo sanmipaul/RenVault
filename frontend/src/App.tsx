@@ -511,6 +511,37 @@ function AppContent() {
           </div>
         )}
 
+        {show2FASetup && (
+          <div className="modal-overlay">
+            <TwoFactorAuthSetup
+              onSetupComplete={handle2FASetupComplete}
+              onCancel={() => setShow2FASetup(false)}
+            />
+          </div>
+        )}
+
+        {show2FAVerify && (
+          <div className="modal-overlay">
+            <TwoFactorAuthVerify
+              onVerify={handle2FAVerify}
+              onUseBackup={() => {
+                setShow2FAVerify(false);
+                setShowBackupCodes(true);
+              }}
+              onCancel={() => setShow2FAVerify(false)}
+            />
+          </div>
+        )}
+
+        {showBackupCodes && (
+          <div className="modal-overlay">
+            <BackupCodes
+              onVerify={handleBackupCodeVerify}
+              onCancel={() => setShowBackupCodes(false)}
+            />
+          </div>
+        )}
+
         {connectionMethod === 'walletconnect' && (
           <div className="card">
             <WalletConnect onSessionEstablished={handleWalletConnectSession} />
