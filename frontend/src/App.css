@@ -358,3 +358,28 @@ main {
 .scan-instructions li {
   margin-bottom: 5px;
 }
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 16px;
+  font-size: 14px;
+  color: #666;
+}
+
+.disconnect-btn {
+  background: #e53e3e;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s;
+}
+
+.disconnect-btn:hover {
+  background: #c53030;
+}
