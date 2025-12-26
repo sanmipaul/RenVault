@@ -38,6 +38,7 @@ npm start
 - ✅ **On-chain Activity**: Fee generation on every deposit
 - ✅ **User Engagement**: Simple deposit/withdraw flow
 - ✅ **React Frontend**: Complete web interface with wallet integration
+- ✅ **Notification System**: Real-time alerts for transactions and security
 - ✅ **Mainnet Deployed**: Live contracts ready for interaction
 - ✅ **Open Source**: Comprehensive documentation & tests
 
@@ -58,7 +59,27 @@ Every deposit increments a user's "commitment score" using Clarity 4's new arith
 A small portion of each deposit goes to the contract owner.
 This ensures sustainable protocol operation through fee collection.
 
-### 🔥 Clarity 4 Functionality
+### � Notification System
+
+Comprehensive notification system for wallet events and security:
+
+**Transaction Notifications:**
+- Deposit and withdrawal confirmations
+- Staking and liquidity reward alerts
+- Balance change notifications
+
+**Security Alerts:**
+- Failed login attempt warnings
+- Suspicious activity detection
+- Two-factor authentication changes
+- Account security updates
+
+**Customizable Preferences:**
+- Granular notification controls
+- Email and push notification options
+- Real-time preference management
+
+### �🔥 Clarity 4 Functionality
 
 RenVault showcases **6 key Clarity 4 enhancements**:
 
