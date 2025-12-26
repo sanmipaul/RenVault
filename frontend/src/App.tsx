@@ -335,6 +335,9 @@ function AppContent() {
       setUserData(mockUserData as any);
       setWalletConnectSession(session);
       setStatus('✅ Connected via WalletConnect');
+      trackAnalytics('wallet-connect', { user: stacksAccount.split(':')[2], method: 'walletconnect', success: true });
+    } else {
+      trackAnalytics('wallet-connect', { user: 'anonymous', method: 'walletconnect', success: false });
     }
   };
 
