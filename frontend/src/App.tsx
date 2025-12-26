@@ -600,6 +600,30 @@ function AppContent() {
         </div>
       )}
 
+      <div className="card">
+        <h3>🔒 Security Settings</h3>
+        <div className="security-options">
+          <div className="security-item">
+            <h4>Two-Factor Authentication</h4>
+            <p>Add an extra layer of security to your account</p>
+            <button
+              className="btn btn-primary"
+              onClick={() => setShow2FASetup(true)}
+              disabled={localStorage.getItem('tfa-enabled') === 'true'}
+            >
+              {localStorage.getItem('tfa-enabled') === 'true' ? '2FA Enabled' : 'Enable 2FA'}
+            </button>
+          </div>
+          <div className="security-item">
+            <h4>Session Management</h4>
+            <p>Manage your active sessions</p>
+            <button className="btn btn-secondary" onClick={disconnectWallet}>
+              Sign Out All Sessions
+            </button>
+          </div>
+        </div>
+      </div>
+
       <div className="stats">
         <div className="stat-card">
           <div className="stat-value">{balance} STX</div>
