@@ -1,51 +1,67 @@
-.app-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+.provider-selector {
+  margin-bottom: 20px;
 }
 
-header {
-  text-align: center;
-  margin-bottom: 40px;
-}
-
-header h1 {
-  margin: 0;
+.provider-selector h3 {
+  margin-bottom: 10px;
   color: #333;
 }
 
-header p {
-  margin: 10px 0 0;
-  color: #666;
-}
-
-.header-actions {
+.provider-list {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  margin-top: 16px;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
-.notification-button {
+.provider-button {
+  padding: 10px 15px;
+  border: 2px solid #ddd;
+  background: white;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+
+.provider-button:hover {
+  border-color: #4299e1;
+  background: #f0f8ff;
+}
+
+.provider-button.selected {
+  border-color: #4299e1;
+  background: #4299e1;
+  color: white;
+}
+
+.connect-section {
+  text-align: center;
+}
+
+.connect-section button {
+  padding: 12px 24px;
   background: #4299e1;
   color: white;
   border: none;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  font-size: 18px;
+  border-radius: 8px;
+  font-size: 16px;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
-  box-shadow: 0 2px 4px rgba(66, 153, 225, 0.3);
+  margin: 10px;
+  transition: background 0.2s;
+}
+
+.connect-section button:hover:not(:disabled) {
+  background: #3182ce;
+}
+
+.connect-section button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.error {
+  color: red;
+  margin-top: 10px;
 }
 
 .notification-button:hover {
