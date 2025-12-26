@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useWallet } from '../hooks/useWallet';
 import ProviderSelector from './ProviderSelector';
+import AddressDisplay from './AddressDisplay';
 
 export const WalletConnect: React.FC = () => {
   const { connect, disconnect, isLoading, error, selectedProviderType, isConnected, connectionState } = useWallet();
@@ -32,7 +33,7 @@ export const WalletConnect: React.FC = () => {
             </button>
           ) : (
             <div className="connected-state">
-              <p>Connected: {connectionState?.address}</p>
+              <AddressDisplay address={connectionState?.address || ''} />
               <button onClick={handleDisconnect} className="disconnect-btn">
                 Disconnect
               </button>
