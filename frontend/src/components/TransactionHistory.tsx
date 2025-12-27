@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { TransactionHistoryService, TransactionHistoryItem } from '../services/transaction/TransactionHistoryService';
 import { useWallet } from '../hooks/useWallet';
+import './TransactionHistory.css';
 
 interface TransactionHistoryProps {
   address: string;
