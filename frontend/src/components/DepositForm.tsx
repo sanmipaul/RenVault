@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { TransactionService, TransactionDetails } from '../services/transaction/TransactionService';
 import { useWallet } from '../hooks/useWallet';
 import { WalletError } from '../utils/wallet-errors';
+import { getFriendlyErrorMessage } from '../utils/wallet-errors';
 import TransactionSigner from './TransactionSigner';
 import './DepositForm.css';
 
@@ -50,7 +51,7 @@ const DepositForm: React.FC<DepositFormProps> = ({
       setTransactionDetails(details);
     } catch (err) {
       const walletError = err as WalletError;
-      setError(walletError.message);
+      setError(getFriendlyErrorMessage(walletError));
       onDepositError?.(walletError);
     } finally {
       setIsPreparing(false);
@@ -70,7 +71,7 @@ const DepositForm: React.FC<DepositFormProps> = ({
       onDepositSuccess?.(txId);
     } catch (err) {
       const walletError = err as WalletError;
-      setError(walletError.message);
+      setError(getFriendlyErrorMessage(walletError));
       onDepositError?.(walletError);
     }
   };

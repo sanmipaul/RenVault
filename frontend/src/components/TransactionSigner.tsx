@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { TransactionService, TransactionDetails, SignedTransaction } from '../services/transaction/TransactionService';
 import { WalletError } from '../utils/wallet-errors';
+import { getFriendlyErrorMessage } from '../utils/wallet-errors';
 import './TransactionSigner.css';
 
 interface TransactionSignerProps {
@@ -31,7 +32,7 @@ const TransactionSigner: React.FC<TransactionSignerProps> = ({
       onSigned?.(signedTx);
     } catch (err) {
       const walletError = err as WalletError;
-      setError(walletError.message);
+      setError(getFriendlyErrorMessage(walletError));
       onError?.(walletError);
     } finally {
       setIsSigning(false);
