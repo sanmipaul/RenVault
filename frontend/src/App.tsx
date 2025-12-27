@@ -27,6 +27,7 @@ import { WalletManager } from './services/wallet/WalletManager';
 import { MultiSigSetup } from './components/MultiSigSetup';
 import { CoSignerManagement } from './components/CoSignerManagement';
 import { MultiSigTransactionSigner } from './components/MultiSigTransactionSigner';
+import { WalletProviderLoader } from './services/wallet/WalletProviderLoader';
 
 const appConfig = new AppConfig(['store_write', 'publish_data']);
 const userSession = new UserSession({ appConfig });
