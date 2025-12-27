@@ -40,8 +40,20 @@ export class TrezorWalletProvider extends BaseWalletProvider {
   }
 
   async signTransaction(tx: any): Promise<any> {
-    // Note: Trezor Stacks signing might require custom implementation
-    // For now, throw error
-    throw new Error('Trezor transaction signing not yet implemented');
+    // For Stacks transactions, we need to sign the serialized transaction
+    const serializedTx = tx.serialize();
+
+    const result = await TrezorConnect.stacksSignTransaction({
+      path: "m/44'/5757'/0'/0/0",
+      transaction: serializedTx.toString('hex'),
+    });
+
+    if (result.success) {
+      // Attach signature
+      tx.auth.spendingCondition.signature = Buffer.from(result.payload.signature, 'hex');
+      return tx;
+    } else {
+      throw new Error(result.payload.error);
+    }
   }
 }
