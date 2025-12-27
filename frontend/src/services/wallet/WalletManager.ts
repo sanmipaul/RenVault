@@ -78,11 +78,9 @@ export class WalletManager {
     return Array.from(this.providers.values());
   }
 
-  setProvider(type: WalletProviderType): void {
-    const provider = this.providers.get(type);
-    if (provider) {
-      this.currentProvider = provider;
-    }
+  async setProvider(type: WalletProviderType): Promise<void> {
+    const provider = await this.lazyLoadProvider(type);
+    this.currentProvider = provider;
   }
 
   getCurrentProvider(): WalletProvider | null {
