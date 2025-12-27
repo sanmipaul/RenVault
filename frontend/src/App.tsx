@@ -18,6 +18,7 @@ import TwoFactorAuthVerify from './components/TwoFactorAuthVerify';
 import { SessionStatus } from './components/SessionStatus';
 import { AutoReconnect } from './components/AutoReconnect';
 import NotificationService from './services/notificationService';
+import TransactionHistory from './components/TransactionHistory';
 import { SessionStatus } from './components/SessionStatus';
 import { AutoReconnect } from './components/AutoReconnect';
 
@@ -770,6 +771,8 @@ function AppContent() {
       </div>
 
       <Analytics userId={userData?.profile?.stxAddress?.mainnet} />
+
+      <TransactionHistory address={userData?.profile?.stxAddress?.mainnet} />
 
       <div className="actions">
         <div className="card">
