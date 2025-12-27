@@ -45,6 +45,8 @@ export class AppKitService {
         ],
         metadata: walletConnectConfig.metadata,
         projectId: walletConnectConfig.projectId,
+        themeMode: walletConnectConfig.appKit.themeMode,
+        themeVariables: walletConnectConfig.appKit.themeVariables,
       });
 
       AppKitService.instance = new AppKitService(appKit);
