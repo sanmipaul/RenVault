@@ -983,6 +983,37 @@ function AppContent() {
           />
         </div>
       )}
+
+      {showMultiSigSetup && (
+        <div className="modal-overlay">
+          <MultiSigSetup
+            walletManager={walletManager}
+            onSetupComplete={handleMultiSigSetupComplete}
+            onCancel={() => setShowMultiSigSetup(false)}
+          />
+        </div>
+      )}
+
+      {showCoSignerManagement && (
+        <div className="modal-overlay">
+          <CoSignerManagement
+            walletManager={walletManager}
+            onUpdate={handleCoSignerUpdate}
+            onCancel={() => setShowCoSignerManagement(false)}
+          />
+        </div>
+      )}
+
+      {showMultiSigSigner && (
+        <div className="modal-overlay">
+          <MultiSigTransactionSigner
+            walletManager={walletManager}
+            transaction={currentTransaction}
+            onSigned={handleMultiSigTransactionSigned}
+            onCancel={() => setShowMultiSigSigner(false)}
+          />
+        </div>
+      )}
     </div>
   );
 }
