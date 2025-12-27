@@ -917,6 +917,26 @@ function AppContent() {
         isOpen={showNotificationCenter}
         onClose={() => setShowNotificationCenter(false)}
       />
+
+      {showWalletBackup && (
+        <div className="modal-overlay">
+          <WalletBackup
+            walletManager={walletManager}
+            onBackupComplete={handleWalletBackupComplete}
+            onCancel={() => setShowWalletBackup(false)}
+          />
+        </div>
+      )}
+
+      {showWalletRecovery && (
+        <div className="modal-overlay">
+          <WalletRecovery
+            walletManager={walletManager}
+            onRecoveryComplete={handleWalletRecoveryComplete}
+            onCancel={() => setShowWalletRecovery(false)}
+          />
+        </div>
+      )}
     </div>
   );
 }
