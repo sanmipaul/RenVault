@@ -730,6 +730,27 @@ function AppContent() {
           >
             🔄 Recover
           </button>
+          <button
+            className="btn btn-outline"
+            onClick={() => setShowMultiSigSetup(true)}
+            title="Setup Multi-Sig"
+          >
+            🔐 Multi-Sig
+          </button>
+          <button
+            className="btn btn-outline"
+            onClick={() => setShowCoSignerManagement(true)}
+            title="Manage Co-Signers"
+          >
+            👥 Co-Signers
+          </button>
+          <button
+            className="btn btn-outline"
+            onClick={() => setShowMultiSigSigner(true)}
+            title="Sign Multi-Sig Transactions"
+          >
+            ✍️ Sign Tx
+          </button>
           {detectedNetwork && (
             <div className="network-indicator">
               <span className={`network-badge ${detectedNetwork}`}>
