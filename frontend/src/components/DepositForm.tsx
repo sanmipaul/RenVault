@@ -4,6 +4,7 @@ import { TransactionService, TransactionDetails } from '../services/transaction/
 import { useWallet } from '../hooks/useWallet';
 import { WalletError } from '../utils/wallet-errors';
 import { getFriendlyErrorMessage } from '../utils/wallet-errors';
+import TransactionSuccess from './TransactionSuccess';
 import TransactionSigner from './TransactionSigner';
 import './DepositForm.css';
 
@@ -21,6 +22,8 @@ const DepositForm: React.FC<DepositFormProps> = ({
   const [isPreparing, setIsPreparing] = useState(false);
   const [transactionDetails, setTransactionDetails] = useState<TransactionDetails | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [successTxId, setSuccessTxId] = useState<string | null>(null);
+  const [successAmount, setSuccessAmount] = useState<number>(0);
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -63,8 +66,12 @@ const DepositForm: React.FC<DepositFormProps> = ({
       const transactionService = TransactionService.getInstance();
       const txId = await transactionService.broadcastTransaction(signedTx);
 
-      // Reset form
-      setAmount('');
+      // Extract amount from transaction details
+      const depositedAmount = transactionDetails ? (transactionDetails.amount / 1000000) : 0;
+
+      // Show success notification
+      setSuccessTxId(txId);
+      setSuccessAmount(depositedAmount);
       setTransactionDetails(null);
       setError(null);
 
@@ -86,7 +93,21 @@ const DepositForm: React.FC<DepositFormProps> = ({
     onDepositError?.(walletError);
   };
 
-  if (transactionDetails) {
+  const handleSuccessClose = () => {
+    setSuccessTxId(null);
+    setSuccessAmount(0);
+    setAmount(''); // Reset form after success
+  };
+
+  if (successTxId) {
+    return (
+      <TransactionSuccess
+        txId={successTxId}
+        amount={successAmount}
+        onClose={handleSuccessClose}
+      />
+    );
+  }
     return (
       <TransactionSigner
         details={transactionDetails}
