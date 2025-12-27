@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { BalanceService, Balance } from '../services/balance/BalanceService';
 import { useWallet } from '../hooks/useWallet';
+import { usePermissions } from '../hooks/usePermissions';
+import { PermissionType } from '../services/permissions/PermissionService';
 
 interface BalanceDisplayProps {
   className?: string;
@@ -17,6 +19,7 @@ const BalanceDisplay: React.FC<BalanceDisplayProps> = ({
   refreshInterval = 30000
 }) => {
   const { isConnected, connectionState, currentProvider } = useWallet();
+  const { hasPermission, requestPermission } = usePermissions();
   const [balance, setBalance] = useState<Balance | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -25,6 +28,12 @@ const BalanceDisplay: React.FC<BalanceDisplayProps> = ({
 
   const fetchBalance = async (showLoading = true) => {
     if (!connectionState?.address || !currentProvider) return;
+
+    // Check permission before fetching balance
+    if (!hasPermission(PermissionType.BALANCE_READ)) {
+      setError('Balance access permission required. Please grant permission in wallet settings.');
+      return;
+    }
 
     if (showLoading) setLoading(true);
     setError(null);
