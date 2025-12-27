@@ -99,9 +99,50 @@ export class WalletManager {
     if (!this.currentProvider) {
       throw new Error('No provider selected');
     }
-    const result = await this.currentProvider.connect();
-    this.connectionState = result;
-    return result;
+
+    // Check cache first
+    const cacheKey = `connection-${this.currentProvider.getType()}`;
+    const cached = this.connectionCache.get(cacheKey);
+    if (cached && (Date.now() - cached.timestamp) < this.CACHE_TTL) {
+      this.connectionState = cached.data;
+      return cached.data;
+    }
+
+    // Set connection timeout
+    const timeoutPromise = new Promise((_, reject) => {
+      const timeout = setTimeout(() => {
+        reject(new Error('Connection timeout'));
+      }, this.CONNECTION_TIMEOUT);
+      this.connectionTimeouts.set(cacheKey, timeout);
+    });
+
+    try {
+      const result = await Promise.race([
+        this.currentProvider.connect(),
+        timeoutPromise
+      ]);
+
+      // Cache the result
+      this.connectionState = result;
+      this.connectionCache.set(cacheKey, { data: result, timestamp: Date.now() });
+
+      // Clear timeout
+      const timeout = this.connectionTimeouts.get(cacheKey);
+      if (timeout) {
+        clearTimeout(timeout);
+        this.connectionTimeouts.delete(cacheKey);
+      }
+
+      return result;
+    } catch (error) {
+      // Clear timeout on error
+      const timeout = this.connectionTimeouts.get(cacheKey);
+      if (timeout) {
+        clearTimeout(timeout);
+        this.connectionTimeouts.delete(cacheKey);
+      }
+      throw error;
+    }
   }
 
   async disconnect(): Promise<void> {
