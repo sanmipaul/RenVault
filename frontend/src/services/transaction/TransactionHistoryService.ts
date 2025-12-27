@@ -33,7 +33,7 @@ export class TransactionHistoryService {
     return TransactionHistoryService.instance;
   }
 
-  async getTransactionHistory(address: string, limit = 50, offset = 0): Promise<TransactionHistoryItem[]> {
+  async getTransactionHistory(address: string, limit = 50, offset = 0): Promise<{ transactions: TransactionHistoryItem[], total: number }> {
     try {
       const response = await this.accountsApi.getAccountTransactions({
         principal: address,
@@ -41,7 +41,7 @@ export class TransactionHistoryService {
         offset,
       });
 
-      return response.results.map(tx => ({
+      const transactions = response.results.map(tx => ({
         txId: tx.tx_id,
         type: this.getTransactionType(tx),
         amount: tx.tx_type === 'token_transfer' ? parseInt(tx.token_transfer.amount) : undefined,
@@ -52,6 +52,11 @@ export class TransactionHistoryService {
         fee: parseInt(tx.fee_rate),
         memo: tx.tx_type === 'token_transfer' ? tx.token_transfer.memo : undefined,
       }));
+
+      return {
+        transactions,
+        total: response.total || response.results.length, // Assuming API provides total
+      };
     } catch (error) {
       throw new Error('Failed to fetch transaction history: ' + error.message);
     }

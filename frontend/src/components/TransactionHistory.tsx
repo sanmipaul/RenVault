@@ -15,6 +15,9 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ address }) => {
   const [filter, setFilter] = useState<'all' | 'sent' | 'received' | 'contract_call'>('all');
   const [sortBy, setSortBy] = useState<'timestamp' | 'amount'>('timestamp');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [page, setPage] = useState(0);
+  const [total, setTotal] = useState(0);
+  const pageSize = 20;
 
   useEffect(() => {
     fetchTransactions();
@@ -25,8 +28,9 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ address }) => {
     setError(null);
     try {
       const historyService = TransactionHistoryService.getInstance();
-      const txs = await historyService.getTransactionHistory(address);
-      setTransactions(txs);
+      const result = await historyService.getTransactionHistory(address, pageSize, page * pageSize);
+      setTransactions(result.transactions);
+      setTotal(result.total);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -102,6 +106,15 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ address }) => {
           ))}
         </tbody>
       </table>
+      <div className="pagination">
+        <button onClick={() => setPage(Math.max(0, page - 1))} disabled={page === 0}>
+          Previous
+        </button>
+        <span>Page {page + 1} of {Math.ceil(total / pageSize)}</span>
+        <button onClick={() => setPage(page + 1)} disabled={(page + 1) * pageSize >= total}>
+          Next
+        </button>
+      </div>
     </div>
   );
 };
