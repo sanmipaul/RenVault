@@ -89,6 +89,13 @@ function AppContent() {
   const [showMultiSigSigner, setShowMultiSigSigner] = useState<boolean>(false);
   const [currentTransaction, setCurrentTransaction] = useState<any>(null);
 
+  // Preload critical wallet providers for better performance
+  useEffect(() => {
+    WalletProviderLoader.preloadCriticalProviders().catch(error =>
+      console.warn('Failed to preload critical providers:', error)
+    );
+  }, []);
+
   // Initialize notification service
   const notificationService = userData ? new NotificationService(userData.profile.stxAddress.mainnet) : null;
   const handle2FASetupComplete = (secret: string, backupCodes: string[]) => {
