@@ -154,4 +154,52 @@ export class WalletManager {
     decrypted += decipher.final('utf8');
     return decrypted;
   }
+
+  // Multi-Signature Methods
+  setupMultiSigWallet(threshold: number, coSigners: any[]): void {
+    const multiSigProvider = this.providers.get('multisig') as MultiSigWalletProvider;
+    if (!multiSigProvider) {
+      throw new Error('Multi-sig provider not available');
+    }
+
+    const config = {
+      threshold,
+      totalSigners: coSigners.length + 1, // +1 for owner
+      coSigners,
+      owner: this.connectionState?.address || ''
+    };
+
+    multiSigProvider.setupMultiSig(config);
+  }
+
+  getMultiSigConfig(): any {
+    const multiSigProvider = this.providers.get('multisig') as MultiSigWalletProvider;
+    return multiSigProvider?.getConfig();
+  }
+
+  addCoSigner(coSigner: any): void {
+    const multiSigProvider = this.providers.get('multisig') as MultiSigWalletProvider;
+    if (!multiSigProvider) {
+      throw new Error('Multi-sig provider not available');
+    }
+    multiSigProvider.addCoSigner(coSigner);
+  }
+
+  removeCoSigner(address: string): void {
+    const multiSigProvider = this.providers.get('multisig') as MultiSigWalletProvider;
+    if (!multiSigProvider) {
+      throw new Error('Multi-sig provider not available');
+    }
+    multiSigProvider.removeCoSigner(address);
+  }
+
+  getPendingMultiSigTransactions(): string[] {
+    const multiSigProvider = this.providers.get('multisig') as MultiSigWalletProvider;
+    return multiSigProvider?.getPendingTransactions() || [];
+  }
+
+  getMultiSigTransactionStatus(txId: string): any {
+    const multiSigProvider = this.providers.get('multisig') as MultiSigWalletProvider;
+    return multiSigProvider?.getTransactionStatus(txId);
+  }
 }
