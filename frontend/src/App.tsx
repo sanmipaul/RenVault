@@ -36,6 +36,16 @@ const network = new StacksMainnet();
 const CONTRACT_ADDRESS = 'SP3ESR2PWP83R1YM3S4QJRWPDD886KJ4YFS3FKHPY';
 const CONTRACT_NAME = 'ren-vault';
 
+// App configuration constants
+const APP_CONFIG = {
+  name: 'RenVault',
+  icon: window.location.origin + '/logo192.png',
+  analyticsOptOutKey: 'analytics-opt-out',
+  tfaEnabledKey: 'tfa-enabled',
+  tfaSecretKey: 'tfa-secret',
+  tfaBackupCodesKey: 'tfa-backup-codes',
+} as const;
+
 const detectNetworkFromAddress = (address: string): 'mainnet' | 'testnet' => {
   // Stacks mainnet addresses start with 'SP', testnet with 'ST'
   return address.startsWith('SP') ? 'mainnet' : 'testnet';
@@ -47,7 +57,7 @@ const getCurrentNetwork = () => {
 };
 
 const trackAnalytics = async (event: string, data: any) => {
-  const optOut = localStorage.getItem('analytics-opt-out') === 'true';
+  const optOut = localStorage.getItem(APP_CONFIG.analyticsOptOutKey) === 'true';
   if (optOut) return;
   
   try {
@@ -104,9 +114,9 @@ function AppContent() {
   const notificationService = userData ? new NotificationService(userData.profile.stxAddress.mainnet) : null;
   const handle2FASetupComplete = (secret: string, backupCodes: string[]) => {
     setTfaSecret(secret);
-    localStorage.setItem('tfa-enabled', 'true');
-    localStorage.setItem('tfa-secret', secret);
-    localStorage.setItem('tfa-backup-codes', JSON.stringify(backupCodes));
+    localStorage.setItem(APP_CONFIG.tfaEnabledKey, 'true');
+    localStorage.setItem(APP_CONFIG.tfaSecretKey, secret);
+    localStorage.setItem(APP_CONFIG.tfaBackupCodesKey, JSON.stringify(backupCodes));
     setShow2FASetup(false);
     setStatus('✅ Two-factor authentication enabled successfully!');
     
@@ -132,9 +142,9 @@ function AppContent() {
   };
 
   const handleDisable2FA = () => {
-    localStorage.removeItem('tfa-enabled');
-    localStorage.removeItem('tfa-secret');
-    localStorage.removeItem('tfa-backup-codes');
+    localStorage.removeItem(APP_CONFIG.tfaEnabledKey);
+    localStorage.removeItem(APP_CONFIG.tfaSecretKey);
+    localStorage.removeItem(APP_CONFIG.tfaBackupCodesKey);
     setTfaSecret('');
     setStatus('✅ Two-factor authentication disabled');
     
@@ -286,8 +296,8 @@ function AppContent() {
     try {
       showConnect({
         appDetails: {
-          name: 'RenVault',
-          icon: window.location.origin + '/logo192.png',
+          name: APP_CONFIG.name,
+          icon: APP_CONFIG.icon,
         },
         redirectTo: '/',
         onFinish: () => {
