@@ -33,40 +33,7 @@ export class WalletManager {
       return this.providers.get(type)!;
     }
 
-    if (!this.lazyLoadedProviders.has(type)) {
-      throw new Error(`Unknown provider type: ${type}`);
-    }
-
-    let provider: WalletProvider;
-    switch (type) {
-      case 'xverse':
-        const { XverseWalletProvider } = await import('./XverseWalletProvider');
-        provider = new XverseWalletProvider();
-        break;
-      case 'hiro':
-        const { HiroWalletProvider } = await import('./HiroWalletProvider');
-        provider = new HiroWalletProvider();
-        break;
-      case 'walletconnect':
-        const { WalletConnectProvider } = await import('./WalletConnectProvider');
-        provider = new WalletConnectProvider();
-        break;
-      case 'ledger':
-        const { LedgerWalletProvider } = await import('./LedgerWalletProvider');
-        provider = new LedgerWalletProvider();
-        break;
-      case 'trezor':
-        const { TrezorWalletProvider } = await import('./TrezorWalletProvider');
-        provider = new TrezorWalletProvider();
-        break;
-      case 'multisig':
-        const { MultiSigWalletProvider } = await import('./MultiSigWalletProvider');
-        provider = new MultiSigWalletProvider();
-        break;
-      default:
-        throw new Error(`Unsupported provider type: ${type}`);
-    }
-
+    const provider = await WalletProviderLoader.loadProvider(type);
     this.providers.set(type, provider);
     this.lazyLoadedProviders.delete(type);
     return provider;
