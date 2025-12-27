@@ -211,6 +211,6 @@ export class SessionManager {
     if (this.cleanupTimer) {
       clearInterval(this.cleanupTimer);
     }
-    this.sessionStorage.clearSession();
+    this.sessionStorage.clearAllWalletData();
   }
 }
