@@ -38,6 +38,7 @@ npm start
 - ✅ **On-chain Activity**: Fee generation on every deposit
 - ✅ **User Engagement**: Simple deposit/withdraw flow
 - ✅ **React Frontend**: Complete web interface with wallet integration
+- ✅ **Hardware Wallet Support**: Secure transactions with Ledger and Trezor
 - ✅ **Notification System**: Real-time alerts for transactions and security
 - ✅ **Mainnet Deployed**: Live contracts ready for interaction
 - ✅ **Open Source**: Comprehensive documentation & tests
