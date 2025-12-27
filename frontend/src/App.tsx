@@ -10,8 +10,7 @@ import {
   standardPrincipalCV
 } from '@stacks/transactions';
 import { WalletConnect } from './components/WalletConnect';
-import { WalletKitProvider } from './context/WalletKitProvider';
-import { useWalletKit } from './hooks/useWalletKit';
+import { AppKit } from '@reown/appkit/react';
 import ConnectionStatus from './components/ConnectionStatus';
 import TwoFactorAuthSetup from './components/TwoFactorAuthSetup';
 import TwoFactorAuthVerify from './components/TwoFactorAuthVerify';
@@ -1051,34 +1050,39 @@ function AppContent() {
 }
 
 function App() {
-  const { walletKit, loading, error } = useWalletKit();
+  const [appKitInitialized, setAppKitInitialized] = useState(false);
 
-  if (loading) {
+  useEffect(() => {
+    const initAppKit = async () => {
+      try {
+        // AppKit is initialized in AppKitService, but we need to ensure it's ready
+        const { AppKitService } = await import('./services/appkit-service');
+        await AppKitService.init();
+        setAppKitInitialized(true);
+      } catch (error) {
+        console.error('Failed to initialize AppKit:', error);
+      }
+    };
+
+    initAppKit();
+  }, []);
+
+  if (!appKitInitialized) {
     return (
       <div className="container">
         <div className="header">
           <h1>RenVault 🏦</h1>
-          <p>Initializing WalletConnect...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="container">
-        <div className="header">
-          <h1>RenVault 🏦</h1>
-          <p>Error initializing WalletConnect: {error.message}</p>
+          <p>Initializing AppKit...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <WalletKitProvider value={{ walletKit, isLoading: loading, error }}>
+    <>
       <AppContent />
-    </WalletKitProvider>
+      <AppKit />
+    </>
   );
 }
 

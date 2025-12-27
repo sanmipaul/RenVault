@@ -1,71 +1,134 @@
-import { WalletKit, WalletKitTypes } from '@reown/walletkit';
-import { buildApprovedNamespaces, getSdkError } from '@walletconnect/utils';
+import { createAppKit } from '@reown/appkit';
+import { StacksAdapter } from '@reown/appkit-adapter-stacks'; // assuming it exists, or use built-in
 import { CoreService } from './core-service';
 import { walletConnectConfig } from '../config/walletconnect';
 import { logger } from '../utils/logger';
 import { WalletError, WalletErrorCode, isNetworkError, isUserRejectedError } from '../utils/wallet-errors';
 
-export class WalletKitService {
-  private static instance: WalletKitService;
-  private walletKit: WalletKit;
+export class AppKitService {
+  private static instance: AppKitService;
+  private appKit: any; // Type from AppKit
 
-  private constructor(walletKit: WalletKit) {
-    this.walletKit = walletKit;
+  private constructor(appKit: any) {
+    this.appKit = appKit;
   }
 
   private static readonly MAX_RETRIES = 3;
   private static readonly INIT_RETRY_DELAY = 1000; // 1 second
 
-  static async init(retryCount = 0): Promise<WalletKitService> {
-    if (WalletKitService.instance) {
-      return WalletKitService.instance;
+  static async init(retryCount = 0): Promise<AppKitService> {
+    if (AppKitService.instance) {
+      return AppKitService.instance;
     }
 
     try {
-      logger.info('Initializing WalletKit...');
+      logger.info('Initializing AppKit...');
       const core = CoreService.getInstance();
 
-      const walletKit = await WalletKit.init({
-        core,
+      // For Stacks, AppKit has built-in support
+      const stacksAdapter = new StacksAdapter();
+
+      const appKit = createAppKit({
+        adapters: [stacksAdapter],
+        networks: [
+          {
+            id: 'stacks:1',
+            name: 'Stacks Mainnet',
+            network: 'stacks',
+            nativeCurrency: {
+              name: 'STX',
+              symbol: 'STX',
+              decimals: 6,
+            },
+            rpcUrls: {
+              default: { http: ['https://api.mainnet.stacks.co'] },
+            },
+            blockExplorers: {
+              default: { name: 'Stacks Explorer', url: 'https://explorer.stacks.co' },
+            },
+          },
+        ],
         metadata: walletConnectConfig.metadata,
+        projectId: walletConnectConfig.projectId,
       });
 
-      WalletKitService.instance = new WalletKitService(walletKit);
-      logger.info('WalletKit initialized successfully');
-      return WalletKitService.instance;
+      AppKitService.instance = new AppKitService(appKit);
+      logger.info('AppKit initialized successfully');
+      return AppKitService.instance;
     } catch (error) {
       const isNetworkIssue = isNetworkError(error);
-      const shouldRetry = isNetworkIssue && retryCount < WalletKitService.MAX_RETRIES;
-      
+      const shouldRetry = isNetworkIssue && retryCount < AppKitService.MAX_RETRIES;
+
       if (shouldRetry) {
-        const delay = WalletKitService.INIT_RETRY_DELAY * Math.pow(2, retryCount);
-        logger.warn(`WalletKit init attempt ${retryCount + 1} failed, retrying in ${delay}ms...`, error);
-        
+        const delay = AppKitService.INIT_RETRY_DELAY * Math.pow(2, retryCount);
+        logger.warn(`AppKit init attempt ${retryCount + 1} failed, retrying in ${delay}ms...`, error);
+
         await new Promise(resolve => setTimeout(resolve, delay));
-        return WalletKitService.init(retryCount + 1);
+        return AppKitService.init(retryCount + 1);
       }
-      
+
       const walletError = new WalletError(
         WalletErrorCode.WALLET_INIT_FAILED,
         'Failed to initialize wallet service',
         error
       );
-      
-      logger.error('Failed to initialize WalletKit', walletError);
+
+      logger.error('Failed to initialize AppKit', walletError);
       throw walletError;
     }
   }
 
-  static getInstance(): WalletKitService {
-    if (!WalletKitService.instance) {
-      throw new Error('WalletKitService not initialized. Call init() first.');
+  static getInstance(): AppKitService {
+    if (!AppKitService.instance) {
+      throw new Error('AppKitService not initialized. Call init() first.');
     }
-    return WalletKitService.instance;
+    return AppKitService.instance;
   }
 
-  public getKit(): WalletKit {
-    return this.walletKit;
+  public getAppKit(): any {
+    return this.appKit;
   }
+
+  // AppKit handles sessions internally, so these methods change
+  async openModal() {
+    this.appKit.open();
+  }
+
+  async closeModal() {
+    this.appKit.close();
+  }
+
+  getActiveSessions() {
+    // AppKit manages sessions differently
+    return this.appKit.getActiveSessions ? this.appKit.getActiveSessions() : [];
+  }
+
+  async disconnect() {
+    try {
+      await this.appKit.disconnect();
+    } catch (error) {
+      throw new WalletError(
+        WalletErrorCode.UNKNOWN_ERROR,
+        'Failed to disconnect',
+        error
+      );
+    }
+  }
+
+  static reset() {
+    if (AppKitService.instance) {
+      try {
+        AppKitService.instance.disconnect().catch(err => {
+          logger.warn('Error disconnecting during reset:', err);
+        });
+      } catch (error) {
+        logger.warn('Error during wallet service reset:', error);
+      } finally {
+        AppKitService.instance = null as any;
+      }
+    }
+  }
+}
 
   async approveSession(
     proposal: WalletKitTypes.SessionProposal,
