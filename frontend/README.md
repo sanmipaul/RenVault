@@ -1,14 +1,27 @@
 # RenVault Frontend
 
-React frontend for the RenVault Clarity 4 micro-savings protocol.
+React frontend for the RenVault Clarity 4 micro-savings protocol with AppKit integration.
 
 ## Features
 
-- Connect Stacks wallet
-- View vault balance and commitment points
-- Deposit STX with 1% protocol fee
-- Withdraw STX anytime
-- Real-time transaction status
+- **AppKit Integration**: Modern wallet connection UI with professional account management
+- **Account Components**: Built-in balance display, transaction history, and account switching
+- **Network Switching**: Easy switching between Stacks networks
+- **Mobile Responsive**: Optimized for mobile wallet connections
+- **Connect Stacks wallet**: Support for multiple wallet types (browser extensions, mobile wallets)
+- **View vault balance and commitment points**: Real-time balance updates
+- **Deposit STX with 1% protocol fee**: Secure transaction handling
+- **Withdraw STX anytime**: Flexible withdrawal options
+- **Real-time transaction status**: Live transaction monitoring
+
+## Wallet Integration
+
+RenVault uses **@reown/appkit** for wallet connectivity, providing:
+
+- **<appkit-account-button />**: Account management with balance display and transaction history
+- **<appkit-network-button />**: Network switching capabilities
+- **<appkit-button />**: Main connection modal for wallet selection
+- **AppKit Modal**: Professional wallet connection interface
 
 ## Setup
 
@@ -26,7 +39,10 @@ npm start
 
 ## Usage
 
-1. Connect your Stacks wallet
-2. View your current vault balance and commitment points
-3. Deposit STX to earn points (1% fee applies)
-4. Withdraw funds anytime
+1. Click the **"Connect Wallet"** button (powered by AppKit)
+2. Choose your preferred wallet from the modal
+3. View your account details using the **Account Button**
+4. Switch networks using the **Network Button** if needed
+5. Deposit STX to earn points (1% fee applies)
+6. Withdraw funds anytime
+7. Monitor transactions in the account modal

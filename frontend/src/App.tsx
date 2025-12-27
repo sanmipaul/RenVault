@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { AppConfig, UserSession, showConnect, UserData, openContractCall } from '@stacks/connect';
 import { StacksMainnet, StacksTestnet } from '@stacks/network';
 import { 
@@ -36,6 +36,16 @@ const network = new StacksMainnet();
 const CONTRACT_ADDRESS = 'SP3ESR2PWP83R1YM3S4QJRWPDD886KJ4YFS3FKHPY';
 const CONTRACT_NAME = 'ren-vault';
 
+// App configuration constants
+const APP_CONFIG = {
+  name: 'RenVault',
+  icon: window.location.origin + '/logo192.png',
+  analyticsOptOutKey: 'analytics-opt-out',
+  tfaEnabledKey: 'tfa-enabled',
+  tfaSecretKey: 'tfa-secret',
+  tfaBackupCodesKey: 'tfa-backup-codes',
+} as const;
+
 const detectNetworkFromAddress = (address: string): 'mainnet' | 'testnet' => {
   // Stacks mainnet addresses start with 'SP', testnet with 'ST'
   return address.startsWith('SP') ? 'mainnet' : 'testnet';
@@ -47,7 +57,7 @@ const getCurrentNetwork = () => {
 };
 
 const trackAnalytics = async (event: string, data: any) => {
-  const optOut = localStorage.getItem('analytics-opt-out') === 'true';
+  const optOut = localStorage.getItem(APP_CONFIG.analyticsOptOutKey) === 'true';
   if (optOut) return;
   
   try {
@@ -90,20 +100,23 @@ function AppContent() {
   const [currentTransaction, setCurrentTransaction] = useState<any>(null);
   const [showPerformanceMonitor, setShowPerformanceMonitor] = useState<boolean>(false);
 
-  // Preload critical wallet providers for better performance
+  // Cleanup effect for component unmount
   useEffect(() => {
-    WalletProviderLoader.preloadCriticalProviders().catch(error =>
-      console.warn('Failed to preload critical providers:', error)
-    );
+    return () => {
+      // Cleanup any pending operations
+      if (withdrawTxDetails) {
+        setWithdrawTxDetails(null);
+      }
+    };
   }, []);
 
   // Initialize notification service
   const notificationService = userData ? new NotificationService(userData.profile.stxAddress.mainnet) : null;
   const handle2FASetupComplete = (secret: string, backupCodes: string[]) => {
     setTfaSecret(secret);
-    localStorage.setItem('tfa-enabled', 'true');
-    localStorage.setItem('tfa-secret', secret);
-    localStorage.setItem('tfa-backup-codes', JSON.stringify(backupCodes));
+    localStorage.setItem(APP_CONFIG.tfaEnabledKey, 'true');
+    localStorage.setItem(APP_CONFIG.tfaSecretKey, secret);
+    localStorage.setItem(APP_CONFIG.tfaBackupCodesKey, JSON.stringify(backupCodes));
     setShow2FASetup(false);
     setStatus('✅ Two-factor authentication enabled successfully!');
     
@@ -129,9 +142,9 @@ function AppContent() {
   };
 
   const handleDisable2FA = () => {
-    localStorage.removeItem('tfa-enabled');
-    localStorage.removeItem('tfa-secret');
-    localStorage.removeItem('tfa-backup-codes');
+    localStorage.removeItem(APP_CONFIG.tfaEnabledKey);
+    localStorage.removeItem(APP_CONFIG.tfaSecretKey);
+    localStorage.removeItem(APP_CONFIG.tfaBackupCodesKey);
     setTfaSecret('');
     setStatus('✅ Two-factor authentication disabled');
     
@@ -226,15 +239,22 @@ function AppContent() {
     }
   }, []);
 
+  // Memoize network detection to avoid unnecessary recalculations
+  const detectedNetwork = useMemo(() => {
+    if (!userData?.profile?.stxAddress?.mainnet) return null;
+    return detectNetworkFromAddress(userData.profile.stxAddress.mainnet);
+  }, [userData?.profile?.stxAddress?.mainnet]);
+
+  const networkMismatch = useMemo(() => {
+    return detectedNetwork !== 'mainnet';
+  }, [detectedNetwork]);
+
   useEffect(() => {
-    if (userData) {
-      const network = detectNetworkFromAddress(userData.profile.stxAddress.mainnet);
-      setDetectedNetwork(network);
-      setNetworkMismatch(network !== 'mainnet');
-      console.log('Detected network:', network, 'Address:', userData.profile.stxAddress.mainnet);
+    if (userData && detectedNetwork) {
+      console.log('Detected network:', detectedNetwork, 'Address:', userData.profile.stxAddress.mainnet);
       fetchUserStats();
     }
-  }, [userData]);
+  }, [userData, detectedNetwork]);
 
   useEffect(() => {
     if (status) {
@@ -276,8 +296,8 @@ function AppContent() {
     try {
       showConnect({
         appDetails: {
-          name: 'RenVault',
-          icon: window.location.origin + '/logo192.png',
+          name: APP_CONFIG.name,
+          icon: APP_CONFIG.icon,
         },
         redirectTo: '/',
         onFinish: () => {
@@ -627,9 +647,7 @@ function AppContent() {
           <div className="card">
             <h2>Connect Your Wallet</h2>
             <p>Connect your Stacks wallet to start saving STX and earning commitment points.</p>
-            <button className="btn btn-primary" onClick={connectWallet}>
-              Connect Wallet
-            </button>
+            <appkit-button aria-label="Open wallet connection modal" />
           </div>
         )}
 
@@ -790,6 +808,11 @@ function AppContent() {
         walletAddress={userData?.profile?.stxAddress?.mainnet}
         onDisconnect={disconnectWallet}
       />
+
+      <div className="appkit-controls" role="region" aria-label="Wallet controls">
+        <appkit-account-button aria-label="Account management and balance" />
+        <appkit-network-button aria-label="Switch blockchain network" />
+      </div>
 
       {detectedNetwork === 'mainnet' && (
         <div className="card success">
@@ -1051,6 +1074,7 @@ function AppContent() {
 
 function App() {
   const [appKitInitialized, setAppKitInitialized] = useState(false);
+  const [appKitError, setAppKitError] = useState<string | null>(null);
 
   useEffect(() => {
     const initAppKit = async () => {
@@ -1059,13 +1083,36 @@ function App() {
         const { AppKitService } = await import('./services/appkit-service');
         await AppKitService.init();
         setAppKitInitialized(true);
+        setAppKitError(null);
       } catch (error) {
         console.error('Failed to initialize AppKit:', error);
+        setAppKitError('Failed to initialize wallet service. Please refresh the page.');
       }
     };
 
     initAppKit();
   }, []);
+
+  if (appKitError) {
+    return (
+      <div className="container">
+        <div className="header">
+          <h1>RenVault 🏦</h1>
+          <p>Wallet Service Error</p>
+        </div>
+        <div className="card error">
+          <h3>❌ Initialization Failed</h3>
+          <p>{appKitError}</p>
+          <button
+            className="btn btn-primary"
+            onClick={() => window.location.reload()}
+          >
+            Refresh Page
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (!appKitInitialized) {
     return (
@@ -1073,6 +1120,12 @@ function App() {
         <div className="header">
           <h1>RenVault 🏦</h1>
           <p>Initializing AppKit...</p>
+        </div>
+        <div className="card">
+          <div style={{ textAlign: 'center', padding: '20px' }}>
+            <div style={{ fontSize: '24px', marginBottom: '16px' }}>🔄</div>
+            <p>Loading wallet service...</p>
+          </div>
         </div>
       </div>
     );

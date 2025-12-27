@@ -7,7 +7,7 @@ import { AppKitConfig, StacksNetwork } from '../types/appkit';
 
 /**
  * AppKitService - Migrated from WalletKit to AppKit for enhanced UI/UX
- * 
+ *
  * This service provides a complete wallet connection UI with:
  * - Pre-built, customizable wallet connection modals
  * - Multi-chain support (currently configured for Stacks)
@@ -18,9 +18,9 @@ import { AppKitConfig, StacksNetwork } from '../types/appkit';
  */
 export class AppKitService {
   private static instance: AppKitService;
-  private appKit: any; // Type from AppKit
+  private appKit: ReturnType<typeof createAppKit>;
 
-  private constructor(appKit: any) {
+  private constructor(appKit: ReturnType<typeof createAppKit>) {
     this.appKit = appKit;
   }
 
@@ -30,6 +30,14 @@ export class AppKitService {
   static async init(retryCount = 0): Promise<AppKitService> {
     if (AppKitService.instance) {
       return AppKitService.instance;
+    }
+
+    // Validate configuration before initialization
+    if (!walletConnectConfig.projectId) {
+      throw new WalletError(
+        WalletErrorCode.CONFIGURATION_ERROR,
+        'WalletConnect project ID is required'
+      );
     }
 
     try {
@@ -59,6 +67,16 @@ export class AppKitService {
         projectId: walletConnectConfig.projectId,
         themeMode: walletConnectConfig.appKit.themeMode,
         themeVariables: walletConnectConfig.appKit.themeVariables,
+        features: {
+          analytics: true,
+          email: false,
+          socials: false,
+          history: true,
+        },
+        enableWalletConnect: true,
+        enableInjected: true,
+        enableEIP6963: true,
+        enableCoinbase: true,
       });
 
       AppKitService.instance = new AppKitService(appKit);
@@ -94,31 +112,51 @@ export class AppKitService {
     return AppKitService.instance;
   }
 
-  public getAppKit(): any {
+  public getAppKit(): ReturnType<typeof createAppKit> {
     return this.appKit;
   }
 
   async openModal() {
-    this.appKit.open();
+    try {
+      await this.appKit.open();
+    } catch (error) {
+      throw new WalletError(
+        WalletErrorCode.MODAL_OPEN_FAILED,
+        'Failed to open wallet modal',
+        error
+      );
+    }
   }
 
   async closeModal() {
-    this.appKit.close();
+    try {
+      await this.appKit.close();
+    } catch (error) {
+      logger.warn('Error closing modal:', error);
+    }
   }
 
   getActiveSessions() {
-    return this.appKit.getActiveSessions ? this.appKit.getActiveSessions() : [];
+    try {
+      return this.appKit.getActiveSessions ? this.appKit.getActiveSessions() : [];
+    } catch (error) {
+      logger.warn('Error getting active sessions:', error);
+      return [];
+    }
   }
 
   async disconnect() {
     try {
       await this.appKit.disconnect();
+      logger.info('Successfully disconnected from wallet');
     } catch (error) {
-      throw new WalletError(
+      const walletError = new WalletError(
         WalletErrorCode.UNKNOWN_ERROR,
         'Failed to disconnect',
         error
       );
+      logger.error('Disconnect error:', walletError);
+      throw walletError;
     }
   }
 

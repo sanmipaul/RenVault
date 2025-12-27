@@ -21,17 +21,12 @@ const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
 
   const getStatusText = () => {
     if (!isConnected) return 'Not Connected';
-    return connectionMethod === 'walletconnect' ? 'WalletConnect' : 'Stacks Wallet';
+    return 'Connected via AppKit';
   };
 
   const getStatusClass = () => {
     if (!isConnected) return 'disconnected';
     return 'connected';
-  };
-
-  const formatAddress = (address: string) => {
-    if (!address) return '';
-    return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
   return (
@@ -41,24 +36,9 @@ const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
         <span className="status-text">{getStatusText()}</span>
       </div>
 
-      {isConnected && walletAddress && (
-        <div className="wallet-info">
-          <span className="wallet-address">{formatAddress(walletAddress)}</span>
-          {onDisconnect && (
-            <button
-              className="disconnect-btn"
-              onClick={onDisconnect}
-              title="Disconnect wallet"
-            >
-              ✕
-            </button>
-          )}
-        </div>
-      )}
-
       {!isConnected && (
         <div className="connection-message">
-          Click "Connect Wallet" to get started
+          Use the AppKit button above to connect your wallet
         </div>
       )}
     </div>
