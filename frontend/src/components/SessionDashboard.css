@@ -1,0 +1,286 @@
+/* components/SessionDashboard.css */
+.session-dashboard {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #e9ecef;
+}
+
+.dashboard-header h2 {
+  margin: 0;
+  color: #495057;
+  font-size: 1.8rem;
+}
+
+.timeframe-selector {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.timeframe-selector label {
+  font-weight: 500;
+  color: #6c757d;
+}
+
+.timeframe-selector select {
+  padding: 0.375rem 0.75rem;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  background: white;
+  font-size: 14px;
+}
+
+/* Health Status Card */
+.health-status-card {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.health-status-card h3 {
+  margin: 0 0 1rem 0;
+  color: #495057;
+}
+
+.health-indicator {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  color: white;
+  font-weight: bold;
+  font-size: 14px;
+  margin-bottom: 1rem;
+}
+
+.health-issues,
+.health-recommendations {
+  margin-top: 1rem;
+}
+
+.health-issues h4,
+.health-recommendations h4 {
+  margin: 0 0 0.5rem 0;
+  color: #dc3545;
+  font-size: 1rem;
+}
+
+.health-recommendations h4 {
+  color: #28a745;
+}
+
+.health-issues ul,
+.health-recommendations ul {
+  margin: 0;
+  padding-left: 1.5rem;
+}
+
+.health-issues li,
+.health-recommendations li {
+  margin-bottom: 0.25rem;
+  color: #6c757d;
+}
+
+/* Metrics Grid */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.metric-card {
+  background: white;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.metric-value {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #007acc;
+  margin-bottom: 0.5rem;
+}
+
+.metric-label {
+  color: #6c757d;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Events Section */
+.events-section {
+  background: white;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.events-section h3 {
+  margin: 0 0 1rem 0;
+  color: #495057;
+}
+
+.events-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.event-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem;
+  border-bottom: 1px solid #f8f9fa;
+}
+
+.event-item:last-child {
+  border-bottom: none;
+}
+
+.event-icon {
+  font-size: 1.2rem;
+  width: 30px;
+  text-align: center;
+}
+
+.event-details {
+  flex: 1;
+}
+
+.event-type {
+  font-weight: 500;
+  color: #495057;
+  text-transform: capitalize;
+}
+
+.event-meta {
+  display: flex;
+  gap: 1rem;
+  font-size: 12px;
+  color: #6c757d;
+  margin-top: 0.25rem;
+}
+
+.no-events {
+  text-align: center;
+  color: #6c757d;
+  padding: 2rem;
+  font-style: italic;
+}
+
+/* Security Section */
+.security-section {
+  background: white;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
+.security-section h3 {
+  margin: 0 0 1rem 0;
+  color: #495057;
+}
+
+.recommendations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.recommendation-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border-left: 4px solid #28a745;
+}
+
+.rec-icon {
+  font-size: 1rem;
+  margin-top: 0.1rem;
+}
+
+/* Access Denied */
+.access-denied {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+}
+
+.access-message {
+  text-align: center;
+  color: #6c757d;
+}
+
+.lock-icon {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 1rem;
+}
+
+/* Loading */
+.loading {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+  color: #6c757d;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e9ecef;
+  border-top: 4px solid #007acc;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .session-dashboard {
+    padding: 1rem;
+  }
+
+  .dashboard-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+
+  .metrics-grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+
+  .event-meta {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+}
