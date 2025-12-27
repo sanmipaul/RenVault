@@ -11,20 +11,26 @@ export const walletConnectConfig = {
       : [],
   },
   relayUrl: 'wss://relay.walletconnect.org',
+  // AppKit specific configurations
+  appKit: {
+    themeMode: 'light',
+    themeVariables: {
+      '--w3m-color-mix': '#4a80f5',
+      '--w3m-color-mix-strength': 40,
+    },
+  },
 };
 
 export const supportedChains = {
-  eip155: {
-    chains: ['eip155:1', 'eip155:137', 'eip155:42161'],
+  stacks: {
+    chains: ['stacks:1'],
     methods: [
-      'eth_sendTransaction',
-      'eth_signTransaction',
-      'eth_sign',
-      'personal_sign',
-      'eth_signTypedData',
-      'eth_signTypedData_v4',
+      'stacks_signMessage',
+      'stacks_signTransaction',
+      'stacks_getAccounts',
+      'stacks_getAddresses',
     ],
-    events: ['chainChanged', 'accountsChanged'],
+    events: ['accountsChanged', 'chainChanged'],
   },
 };
 

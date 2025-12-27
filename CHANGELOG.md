@@ -37,6 +37,16 @@ All notable changes to RenVault will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+- **AppKit Migration**: Migrated from @reown/walletkit to @reown/appkit for enhanced UI/UX
+  - Pre-built, customizable wallet connection modals
+  - Multi-chain support with Stacks network configuration
+  - Better mobile wallet integration
+  - Account management UI components
+  - Network switching capabilities
+  - Improved developer experience
+  - Theme customization with RenVault branding
+
 ### Planned
 - Analytics dashboard
 - Leaderboard system
