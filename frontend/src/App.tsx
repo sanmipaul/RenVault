@@ -77,6 +77,9 @@ function AppContent() {
   const [show2FAVerify, setShow2FAVerify] = useState<boolean>(false);
   const [showBackupCodes, setShowBackupCodes] = useState<boolean>(false);
   const [showNotificationCenter, setShowNotificationCenter] = useState<boolean>(false);
+  const [showWalletBackup, setShowWalletBackup] = useState<boolean>(false);
+  const [showWalletRecovery, setShowWalletRecovery] = useState<boolean>(false);
+  const [walletManager] = useState(() => new WalletManager());
 
   // Initialize notification service
   const notificationService = userData ? new NotificationService(userData.profile.stxAddress.mainnet) : null;
