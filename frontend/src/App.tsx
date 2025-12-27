@@ -156,6 +156,24 @@ function AppContent() {
     setTimeout(() => setStatus(''), 5000);
   };
 
+  const handleMultiSigSetupComplete = () => {
+    setShowMultiSigSetup(false);
+    setStatus('✅ Multi-signature wallet setup completed!');
+    setTimeout(() => setStatus(''), 5000);
+  };
+
+  const handleCoSignerUpdate = () => {
+    setStatus('✅ Co-signers updated successfully!');
+    setTimeout(() => setStatus(''), 3000);
+  };
+
+  const handleMultiSigTransactionSigned = (signedTx: any) => {
+    setShowMultiSigSigner(false);
+    setCurrentTransaction(null);
+    setStatus('✅ Transaction signed successfully!');
+    setTimeout(() => setStatus(''), 5000);
+  };
+
   const disconnectWallet = () => {
     if (connectionMethod === 'stacks') {
       // Disconnect Stacks wallet
