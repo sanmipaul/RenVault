@@ -54,7 +54,26 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ address }) => {
     });
 
   const formatAmount = (amount?: number) => amount ? (amount / 1000000).toFixed(6) + ' STX' : 'N/A';
-  const formatDate = (timestamp: number) => new Date(timestamp * 1000).toLocaleString();
+  const exportToCSV = () => {
+    const csvContent = [
+      ['Type', 'Amount', 'Status', 'Date', 'TxID'],
+      ...filteredAndSortedTransactions.map(tx => [
+        tx.type,
+        formatAmount(tx.amount),
+        tx.status,
+        formatDate(tx.timestamp),
+        tx.txId,
+      ]),
+    ].map(row => row.join(',')).join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'transaction-history.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   if (loading) return <div>Loading transaction history...</div>;
   if (error) return <div>Error: {error}</div>;
@@ -62,6 +81,7 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ address }) => {
   return (
     <div className="transaction-history">
       <h3>Transaction History</h3>
+      <button onClick={exportToCSV} className="export-btn">Export to CSV</button>
       <div className="filters">
         <label>
           Filter:
