@@ -83,6 +83,10 @@ function AppContent() {
   const [showWalletBackup, setShowWalletBackup] = useState<boolean>(false);
   const [showWalletRecovery, setShowWalletRecovery] = useState<boolean>(false);
   const [walletManager] = useState(() => new WalletManager());
+  const [showMultiSigSetup, setShowMultiSigSetup] = useState<boolean>(false);
+  const [showCoSignerManagement, setShowCoSignerManagement] = useState<boolean>(false);
+  const [showMultiSigSigner, setShowMultiSigSigner] = useState<boolean>(false);
+  const [currentTransaction, setCurrentTransaction] = useState<any>(null);
 
   // Initialize notification service
   const notificationService = userData ? new NotificationService(userData.profile.stxAddress.mainnet) : null;
