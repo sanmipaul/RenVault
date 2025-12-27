@@ -4,6 +4,8 @@ import { LeatherWalletProvider } from './LeatherWalletProvider';
 import { XverseWalletProvider } from './XverseWalletProvider';
 import { HiroWalletProvider } from './HiroWalletProvider';
 import { WalletConnectProvider } from './WalletConnectProvider';
+import { LedgerWalletProvider } from './LedgerWalletProvider';
+import { TrezorWalletProvider } from './TrezorWalletProvider';
 
 export class WalletManager {
   private providers: Map<WalletProviderType, WalletProvider> = new Map();
@@ -15,6 +17,8 @@ export class WalletManager {
     this.providers.set('xverse', new XverseWalletProvider());
     this.providers.set('hiro', new HiroWalletProvider());
     this.providers.set('walletconnect', new WalletConnectProvider());
+    this.providers.set('ledger', new LedgerWalletProvider());
+    this.providers.set('trezor', new TrezorWalletProvider());
   }
 
   getAvailableProviders(): WalletProvider[] {
