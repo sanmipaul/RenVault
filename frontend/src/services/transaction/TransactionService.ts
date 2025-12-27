@@ -57,6 +57,22 @@ export class TransactionService {
         );
       }
 
+      // Validate amount is not too large (prevent overflow)
+      if (amount > 1000000) { // 1M STX limit
+        throw new WalletError(
+          WalletErrorCode.INVALID_TRANSACTION,
+          'Deposit amount cannot exceed 1,000,000 STX'
+        );
+      }
+
+      // Validate contract address format
+      if (!this.isValidStacksAddress(contractAddress)) {
+        throw new WalletError(
+          WalletErrorCode.INVALID_TRANSACTION,
+          'Invalid contract address format'
+        );
+      }
+
       // Convert amount to microSTX (Stacks uses microSTX)
       const microAmount = Math.floor(amount * 1000000);
 
@@ -176,5 +192,12 @@ export class TransactionService {
 
   getNetwork(): StacksMainnet {
     return this.network;
+  }
+
+  private isValidStacksAddress(address: string): boolean {
+    // Basic Stacks address validation
+    // Stacks addresses start with SP, SM, or ST and are 28-30 characters long
+    const stacksAddressRegex = /^(SP|SM|ST)[0-9A-Z]{26,28}$/;
+    return stacksAddressRegex.test(address);
   }
 }
