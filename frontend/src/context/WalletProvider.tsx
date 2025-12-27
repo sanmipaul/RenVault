@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { WalletManager } from '../services/wallet/WalletManager';
 import { WalletProvider, WalletProviderType } from '../types/wallet';
+import { PermissionService } from '../services/permissions/PermissionService';
 
 interface WalletContextType {
   walletManager: WalletManager;
@@ -34,7 +35,16 @@ export const WalletProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     setIsLoading(true);
     setError(null);
     try {
-      return await walletManager.connect();
+      const result = await walletManager.connect();
+
+      // Initialize permissions for the connected wallet
+      if (result?.address) {
+        const permissionService = PermissionService.getInstance();
+        permissionService.initializeWalletPermissions(result.address);
+        console.log('Wallet permissions initialized for address:', result.address);
+      }
+
+      return result;
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Connection failed'));
       throw err;
@@ -47,6 +57,15 @@ export const WalletProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     setIsLoading(true);
     try {
       await walletManager.disconnect();
+
+      // Clear permissions for the disconnected wallet
+      const currentState = walletManager.getConnectionState();
+      if (currentState?.address) {
+        const permissionService = PermissionService.getInstance();
+        permissionService.clearWalletPermissions(currentState.address);
+        console.log('Wallet permissions cleared for address:', currentState.address);
+      }
+
       // Reset local state
       setSelectedProviderType(null);
       setError(null);
