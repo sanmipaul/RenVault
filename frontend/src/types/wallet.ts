@@ -27,4 +27,4 @@ export interface TransactionHistoryItem {
   memo?: string;
 }
 
-export type WalletProviderType = 'leather' | 'xverse' | 'hiro' | 'walletconnect' | 'ledger' | 'trezor';
+export type WalletProviderType = 'leather' | 'xverse' | 'hiro' | 'walletconnect' | 'ledger' | 'trezor' | 'multisig';
