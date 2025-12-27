@@ -101,6 +101,44 @@ class RecoveryManager {
       estimatedTime: `${Math.ceil(backupData.totalUsers / 10)} minutes`
     };
   }
+
+  // Wallet Backup and Recovery Methods
+  validateWalletBackup(backupData) {
+    const required = ['address', 'publicKey', 'encryptedMnemonic', 'createdAt', 'version'];
+    
+    for (const field of required) {
+      if (!backupData[field]) {
+        return { valid: false, error: `Missing field: ${field}` };
+      }
+    }
+
+    if (backupData.version !== '1.0') {
+      return { valid: false, error: 'Unsupported backup version' };
+    }
+
+    return { valid: true };
+  }
+
+  generateWalletRecoveryReport(backupData) {
+    const validation = this.validateWalletBackup(backupData);
+    
+    if (!validation.valid) {
+      return { error: validation.error };
+    }
+
+    return {
+      address: backupData.address,
+      publicKey: backupData.publicKey,
+      createdAt: backupData.createdAt,
+      version: backupData.version,
+      recoverySteps: [
+        'Decrypt backup with password',
+        'Verify mnemonic integrity',
+        'Restore wallet connection',
+        'Validate address and public key'
+      ]
+    };
+  }
 }
 
 module.exports = RecoveryManager;
