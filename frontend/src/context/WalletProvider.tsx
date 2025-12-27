@@ -46,7 +46,7 @@ export const WalletProvider: React.FC<{ children: ReactNode }> = ({ children }) 
           setIsRestoringSession(true);
           setSessionError(null);
 
-          // Set the provider type from session
+          // Set the provider from session
           setSelectedProviderType(session.providerType);
           walletManager.setProvider(session.providerType);
 
@@ -106,6 +106,7 @@ export const WalletProvider: React.FC<{ children: ReactNode }> = ({ children }) 
           providerType: selectedProviderType!,
           address: result.address,
           publicKey: result.publicKey,
+          connectedAt: Date.now(),
           metadata: {
             chainId: 'mainnet', // This should come from the provider
             network: 'stacks',
@@ -201,26 +202,6 @@ export const WalletProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     <WalletContext.Provider value={contextValue}>
       {children}
     </WalletContext.Provider>
-  );
-};
-
-  return (
-    <WalletContext.Provider value={contextValue}>
-      {children}
-    </WalletContext.Provider>
-  );
-};
-    ...value,
-    sessionProposal,
-    setSessionProposal,
-    sessionRequest,
-    setSessionRequest,
-  };
-
-  return (
-    <WalletKitContext.Provider value={contextValue}>
-      {children}
-    </WalletKitContext.Provider>
   );
 };
 
