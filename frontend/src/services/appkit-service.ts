@@ -4,6 +4,17 @@ import { walletConnectConfig } from '../config/walletconnect';
 import { logger } from '../utils/logger';
 import { WalletError, WalletErrorCode, isNetworkError } from '../utils/wallet-errors';
 
+/**
+ * AppKitService - Migrated from WalletKit to AppKit for enhanced UI/UX
+ * 
+ * This service provides a complete wallet connection UI with:
+ * - Pre-built, customizable wallet connection modals
+ * - Multi-chain support (currently configured for Stacks)
+ * - Better mobile wallet integration
+ * - Account management UI components
+ * - Network switching capabilities
+ * - Improved developer experience
+ */
 export class AppKitService {
   private static instance: AppKitService;
   private appKit: any; // Type from AppKit
