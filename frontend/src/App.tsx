@@ -21,6 +21,9 @@ import NotificationService from './services/notificationService';
 import TransactionHistory from './components/TransactionHistory';
 import { SessionStatus } from './components/SessionStatus';
 import { AutoReconnect } from './components/AutoReconnect';
+import { WalletBackup } from './components/WalletBackup';
+import { WalletRecovery } from './components/WalletRecovery';
+import { WalletManager } from './services/wallet/WalletManager';
 
 const appConfig = new AppConfig(['store_write', 'publish_data']);
 const userSession = new UserSession({ appConfig });
