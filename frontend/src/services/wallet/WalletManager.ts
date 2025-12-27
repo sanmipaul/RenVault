@@ -14,14 +14,18 @@ export class WalletManager {
   private readonly CONNECTION_TIMEOUT = 10000; // 10 seconds
 
   constructor() {
-    // Initialize only essential providers, lazy load others
-    this.providers.set('leather', new LeatherWalletProvider());
-    this.lazyLoadedProviders.add('xverse');
-    this.lazyLoadedProviders.add('hiro');
-    this.lazyLoadedProviders.add('walletconnect');
-    this.lazyLoadedProviders.add('ledger');
-    this.lazyLoadedProviders.add('trezor');
-    this.lazyLoadedProviders.add('multisig');
+    // Initialize critical providers immediately
+    this.initializeCriticalProviders();
+  }
+
+  private async initializeCriticalProviders(): Promise<void> {
+    try {
+      // Load leather provider immediately as it's most commonly used
+      const leatherProvider = await WalletProviderLoader.loadProvider('leather');
+      this.providers.set('leather', leatherProvider);
+    } catch (error) {
+      console.warn('Failed to load leather provider:', error);
+    }
   }
 
   private async lazyLoadProvider(type: WalletProviderType): Promise<WalletProvider> {
