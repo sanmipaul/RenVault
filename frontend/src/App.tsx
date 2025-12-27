@@ -127,6 +127,28 @@ function AppContent() {
     setTimeout(() => setStatus(''), 5000);
   };
 
+  const handleWalletBackupComplete = (backupData: string) => {
+    setShowWalletBackup(false);
+    setStatus('✅ Wallet backup created successfully! Store it securely.');
+    // Optionally send to backend
+    fetch('/api/wallet/backup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: userData?.profile.stxAddress.mainnet, encryptedBackup: backupData })
+    });
+    setTimeout(() => setStatus(''), 5000);
+  };
+
+  const handleWalletRecoveryComplete = () => {
+    setShowWalletRecovery(false);
+    setStatus('✅ Wallet recovered successfully!');
+    // Refresh user data
+    if (userSession.isUserSignedIn()) {
+      setUserData(userSession.loadUserData());
+    }
+    setTimeout(() => setStatus(''), 5000);
+  };
+
   const disconnectWallet = () => {
     if (connectionMethod === 'stacks') {
       // Disconnect Stacks wallet
