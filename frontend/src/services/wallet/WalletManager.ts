@@ -1,38 +1,51 @@
 // services/wallet/WalletManager.ts
 import { WalletProvider, WalletProviderType } from '../../types/wallet';
-import { LeatherWalletProvider } from './LeatherWalletProvider';
-import { XverseWalletProvider } from './XverseWalletProvider';
-import { HiroWalletProvider } from './HiroWalletProvider';
-import { WalletConnectProvider } from './WalletConnectProvider';
-import { LedgerWalletProvider } from './LedgerWalletProvider';
-import { TrezorWalletProvider } from './TrezorWalletProvider';
-import { MultiSigWalletProvider } from './MultiSigWalletProvider';
+import { WalletProviderLoader } from './WalletProviderLoader';
 import * as crypto from 'crypto';
 
 export class WalletManager {
   private providers: Map<WalletProviderType, WalletProvider> = new Map();
   private currentProvider: WalletProvider | null = null;
   private connectionState: { address: string; publicKey: string } | null = null;
+  private connectionCache: Map<string, { data: any; timestamp: number }> = new Map();
+  private lazyLoadedProviders: Set<WalletProviderType> = new Set();
+  private connectionTimeouts: Map<string, NodeJS.Timeout> = new Map();
+  private readonly CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+  private readonly CONNECTION_TIMEOUT = 10000; // 10 seconds
 
   constructor() {
-    this.providers.set('leather', new LeatherWalletProvider());
-    this.providers.set('xverse', new XverseWalletProvider());
-    this.providers.set('hiro', new HiroWalletProvider());
-    this.providers.set('walletconnect', new WalletConnectProvider());
-    this.providers.set('ledger', new LedgerWalletProvider());
-    this.providers.set('trezor', new TrezorWalletProvider());
-    this.providers.set('multisig', new MultiSigWalletProvider());
+    // Initialize critical providers immediately
+    this.initializeCriticalProviders();
+  }
+
+  private async initializeCriticalProviders(): Promise<void> {
+    try {
+      // Load leather provider immediately as it's most commonly used
+      const leatherProvider = await WalletProviderLoader.loadProvider('leather');
+      this.providers.set('leather', leatherProvider);
+    } catch (error) {
+      console.warn('Failed to load leather provider:', error);
+    }
+  }
+
+  private async lazyLoadProvider(type: WalletProviderType): Promise<WalletProvider> {
+    if (this.providers.has(type)) {
+      return this.providers.get(type)!;
+    }
+
+    const provider = await WalletProviderLoader.loadProvider(type);
+    this.providers.set(type, provider);
+    this.lazyLoadedProviders.delete(type);
+    return provider;
   }
 
   getAvailableProviders(): WalletProvider[] {
     return Array.from(this.providers.values());
   }
 
-  setProvider(type: WalletProviderType): void {
-    const provider = this.providers.get(type);
-    if (provider) {
-      this.currentProvider = provider;
-    }
+  async setProvider(type: WalletProviderType): Promise<void> {
+    const provider = await this.lazyLoadProvider(type);
+    this.currentProvider = provider;
   }
 
   getCurrentProvider(): WalletProvider | null {
@@ -51,9 +64,50 @@ export class WalletManager {
     if (!this.currentProvider) {
       throw new Error('No provider selected');
     }
-    const result = await this.currentProvider.connect();
-    this.connectionState = result;
-    return result;
+
+    // Check cache first
+    const cacheKey = `connection-${this.currentProvider.getType()}`;
+    const cached = this.connectionCache.get(cacheKey);
+    if (cached && (Date.now() - cached.timestamp) < this.CACHE_TTL) {
+      this.connectionState = cached.data;
+      return cached.data;
+    }
+
+    // Set connection timeout
+    const timeoutPromise = new Promise((_, reject) => {
+      const timeout = setTimeout(() => {
+        reject(new Error('Connection timeout'));
+      }, this.CONNECTION_TIMEOUT);
+      this.connectionTimeouts.set(cacheKey, timeout);
+    });
+
+    try {
+      const result = await Promise.race([
+        this.currentProvider.connect(),
+        timeoutPromise
+      ]);
+
+      // Cache the result
+      this.connectionState = result;
+      this.connectionCache.set(cacheKey, { data: result, timestamp: Date.now() });
+
+      // Clear timeout
+      const timeout = this.connectionTimeouts.get(cacheKey);
+      if (timeout) {
+        clearTimeout(timeout);
+        this.connectionTimeouts.delete(cacheKey);
+      }
+
+      return result;
+    } catch (error) {
+      // Clear timeout on error
+      const timeout = this.connectionTimeouts.get(cacheKey);
+      if (timeout) {
+        clearTimeout(timeout);
+        this.connectionTimeouts.delete(cacheKey);
+      }
+      throw error;
+    }
   }
 
   async disconnect(): Promise<void> {
@@ -201,5 +255,46 @@ export class WalletManager {
   getMultiSigTransactionStatus(txId: string): any {
     const multiSigProvider = this.providers.get('multisig') as MultiSigWalletProvider;
     return multiSigProvider?.getTransactionStatus(txId);
+  }
+
+  // Performance Optimization Methods
+  clearConnectionCache(): void {
+    this.connectionCache.clear();
+    this.connectionTimeouts.forEach(timeout => clearTimeout(timeout));
+    this.connectionTimeouts.clear();
+  }
+
+  getConnectionCacheStats(): { size: number; entries: string[] } {
+    return {
+      size: this.connectionCache.size,
+      entries: Array.from(this.connectionCache.keys())
+    };
+  }
+
+  preloadProvider(type: WalletProviderType): Promise<void> {
+    return this.lazyLoadProvider(type).then(() => undefined);
+  }
+
+  async preloadAllProviders(): Promise<void> {
+    const preloadPromises = Array.from(this.lazyLoadedProviders).map(type =>
+      this.lazyLoadProvider(type).catch(error =>
+        console.warn(`Failed to preload provider ${type}:`, error)
+      )
+    );
+    await Promise.all(preloadPromises);
+  }
+
+  getPerformanceMetrics(): {
+    cachedConnections: number;
+    loadedProviders: number;
+    lazyProviders: number;
+    activeTimeouts: number;
+  } {
+    return {
+      cachedConnections: this.connectionCache.size,
+      loadedProviders: this.providers.size,
+      lazyProviders: this.lazyLoadedProviders.size,
+      activeTimeouts: this.connectionTimeouts.size
+    };
   }
 }

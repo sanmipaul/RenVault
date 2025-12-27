@@ -27,6 +27,8 @@ import { WalletManager } from './services/wallet/WalletManager';
 import { MultiSigSetup } from './components/MultiSigSetup';
 import { CoSignerManagement } from './components/CoSignerManagement';
 import { MultiSigTransactionSigner } from './components/MultiSigTransactionSigner';
+import { WalletProviderLoader } from './services/wallet/WalletProviderLoader';
+import { PerformanceMonitor } from './components/PerformanceMonitor';
 
 const appConfig = new AppConfig(['store_write', 'publish_data']);
 const userSession = new UserSession({ appConfig });
@@ -87,6 +89,14 @@ function AppContent() {
   const [showCoSignerManagement, setShowCoSignerManagement] = useState<boolean>(false);
   const [showMultiSigSigner, setShowMultiSigSigner] = useState<boolean>(false);
   const [currentTransaction, setCurrentTransaction] = useState<any>(null);
+  const [showPerformanceMonitor, setShowPerformanceMonitor] = useState<boolean>(false);
+
+  // Preload critical wallet providers for better performance
+  useEffect(() => {
+    WalletProviderLoader.preloadCriticalProviders().catch(error =>
+      console.warn('Failed to preload critical providers:', error)
+    );
+  }, []);
 
   // Initialize notification service
   const notificationService = userData ? new NotificationService(userData.profile.stxAddress.mainnet) : null;
@@ -751,6 +761,13 @@ function AppContent() {
           >
             ✍️ Sign Tx
           </button>
+          <button
+            className="btn btn-outline"
+            onClick={() => setShowPerformanceMonitor(true)}
+            title="Performance Monitor"
+          >
+            ⚡ Perf
+          </button>
           {detectedNetwork && (
             <div className="network-indicator">
               <span className={`network-badge ${detectedNetwork}`}>
@@ -1012,6 +1029,21 @@ function AppContent() {
             onSigned={handleMultiSigTransactionSigned}
             onCancel={() => setShowMultiSigSigner(false)}
           />
+        </div>
+      )}
+
+      {showPerformanceMonitor && (
+        <div className="modal-overlay">
+          <PerformanceMonitor
+            walletManager={walletManager}
+            isVisible={showPerformanceMonitor}
+          />
+          <button
+            className="modal-close"
+            onClick={() => setShowPerformanceMonitor(false)}
+          >
+            ✕
+          </button>
         </div>
       )}
     </div>
