@@ -20,13 +20,14 @@ export class WalletManager {
   private readonly CONNECTION_TIMEOUT = 10000; // 10 seconds
 
   constructor() {
+    // Initialize only essential providers, lazy load others
     this.providers.set('leather', new LeatherWalletProvider());
-    this.providers.set('xverse', new XverseWalletProvider());
-    this.providers.set('hiro', new HiroWalletProvider());
-    this.providers.set('walletconnect', new WalletConnectProvider());
-    this.providers.set('ledger', new LedgerWalletProvider());
-    this.providers.set('trezor', new TrezorWalletProvider());
-    this.providers.set('multisig', new MultiSigWalletProvider());
+    this.lazyLoadedProviders.add('xverse');
+    this.lazyLoadedProviders.add('hiro');
+    this.lazyLoadedProviders.add('walletconnect');
+    this.lazyLoadedProviders.add('ledger');
+    this.lazyLoadedProviders.add('trezor');
+    this.lazyLoadedProviders.add('multisig');
   }
 
   getAvailableProviders(): WalletProvider[] {
