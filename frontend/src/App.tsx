@@ -627,9 +627,7 @@ function AppContent() {
           <div className="card">
             <h2>Connect Your Wallet</h2>
             <p>Connect your Stacks wallet to start saving STX and earning commitment points.</p>
-            <button className="btn btn-primary" onClick={connectWallet}>
-              Connect Wallet
-            </button>
+            <appkit-button />
           </div>
         )}
 
@@ -790,6 +788,11 @@ function AppContent() {
         walletAddress={userData?.profile?.stxAddress?.mainnet}
         onDisconnect={disconnectWallet}
       />
+
+      <div className="appkit-controls">
+        <appkit-account-button />
+        <appkit-network-button />
+      </div>
 
       {detectedNetwork === 'mainnet' && (
         <div className="card success">

@@ -677,3 +677,20 @@ main {
   font-size: 14px;
   color: #2d3748;
 }
+
+/* AppKit Controls */
+.appkit-controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 20px;
+  justify-content: flex-end;
+}
+
+.appkit-controls appkit-account-button,
+.appkit-controls appkit-network-button {
+  --appkit-button-border-radius: 8px;
+  --appkit-button-font-family: inherit;
+  --appkit-button-font-size: 14px;
+  --appkit-button-padding: 8px 16px;
+}
