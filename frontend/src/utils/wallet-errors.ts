@@ -21,6 +21,15 @@ export enum WalletErrorCode {
   SESSION_EXPIRED = 'SESSION_EXPIRED',
   SESSION_NOT_FOUND = 'SESSION_NOT_FOUND',
   
+  // Transaction errors
+  TRANSACTION_SIGNING_FAILED = 'TRANSACTION_SIGNING_FAILED',
+  TRANSACTION_SIGNING_CANCELLED = 'TRANSACTION_SIGNING_CANCELLED',
+  TRANSACTION_BROADCAST_FAILED = 'TRANSACTION_BROADCAST_FAILED',
+  TRANSACTION_PREPARATION_FAILED = 'TRANSACTION_PREPARATION_FAILED',
+  INVALID_TRANSACTION = 'INVALID_TRANSACTION',
+  INSUFFICIENT_FUNDS = 'INSUFFICIENT_FUNDS',
+  WALLET_NOT_CONNECTED = 'WALLET_NOT_CONNECTED',
+  
   // General errors
   UNKNOWN_ERROR = 'UNKNOWN_ERROR',
   WALLET_NOT_FOUND = 'WALLET_NOT_FOUND',
@@ -91,6 +100,27 @@ export const getFriendlyErrorMessage = (error: unknown): string => {
       
     case WalletErrorCode.WALLET_INIT_FAILED:
       return 'Failed to initialize the wallet. Please try again or contact support if the issue persists.';
+      
+    case WalletErrorCode.TRANSACTION_SIGNING_FAILED:
+      return 'Failed to sign the transaction. Please try again or check your wallet.';
+      
+    case WalletErrorCode.TRANSACTION_SIGNING_CANCELLED:
+      return 'Transaction signing was cancelled.';
+      
+    case WalletErrorCode.TRANSACTION_BROADCAST_FAILED:
+      return 'Failed to broadcast the transaction to the network. Please try again.';
+      
+    case WalletErrorCode.TRANSACTION_PREPARATION_FAILED:
+      return 'Failed to prepare the transaction. Please check your input and try again.';
+      
+    case WalletErrorCode.INVALID_TRANSACTION:
+      return 'The transaction parameters are invalid. Please check your input.';
+      
+    case WalletErrorCode.INSUFFICIENT_FUNDS:
+      return 'Insufficient funds for this transaction. Please check your balance.';
+      
+    case WalletErrorCode.WALLET_NOT_CONNECTED:
+      return 'Please connect your wallet first.';
       
     case WalletErrorCode.INVALID_REQUEST:
     case WalletErrorCode.METHOD_NOT_SUPPORTED:
