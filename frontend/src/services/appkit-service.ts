@@ -109,26 +109,46 @@ export class AppKitService {
   }
 
   async openModal() {
-    this.appKit.open();
+    try {
+      await this.appKit.open();
+    } catch (error) {
+      throw new WalletError(
+        WalletErrorCode.MODAL_OPEN_FAILED,
+        'Failed to open wallet modal',
+        error
+      );
+    }
   }
 
   async closeModal() {
-    this.appKit.close();
+    try {
+      await this.appKit.close();
+    } catch (error) {
+      logger.warn('Error closing modal:', error);
+    }
   }
 
   getActiveSessions() {
-    return this.appKit.getActiveSessions ? this.appKit.getActiveSessions() : [];
+    try {
+      return this.appKit.getActiveSessions ? this.appKit.getActiveSessions() : [];
+    } catch (error) {
+      logger.warn('Error getting active sessions:', error);
+      return [];
+    }
   }
 
   async disconnect() {
     try {
       await this.appKit.disconnect();
+      logger.info('Successfully disconnected from wallet');
     } catch (error) {
-      throw new WalletError(
+      const walletError = new WalletError(
         WalletErrorCode.UNKNOWN_ERROR,
         'Failed to disconnect',
         error
       );
+      logger.error('Disconnect error:', walletError);
+      throw walletError;
     }
   }
 
