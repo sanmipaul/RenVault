@@ -1031,6 +1031,21 @@ function AppContent() {
           />
         </div>
       )}
+
+      {showPerformanceMonitor && (
+        <div className="modal-overlay">
+          <PerformanceMonitor
+            walletManager={walletManager}
+            isVisible={showPerformanceMonitor}
+          />
+          <button
+            className="modal-close"
+            onClick={() => setShowPerformanceMonitor(false)}
+          >
+            ✕
+          </button>
+        </div>
+      )}
     </div>
   );
 }
