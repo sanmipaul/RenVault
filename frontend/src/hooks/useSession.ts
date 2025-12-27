@@ -29,6 +29,10 @@ export interface UseSessionReturn {
   // Session events
   onSessionRestored: (callback: (session: WalletSession) => Promise<void>) => void;
   onSessionExpired: (callback: () => void) => void;
+
+  // Additional utilities
+  validateSessionIntegrity: () => boolean;
+  clearAllWalletData: () => void;
 }
 
 export const useSession = (): UseSessionReturn => {
@@ -49,6 +53,7 @@ export const useSession = (): UseSessionReturn => {
         console.log('Session restored in hook:', session.providerType);
       },
       () => {
+        // Session expired
         setCurrentSession(null);
         setHasSession(false);
         setSessionError('Session expired');
@@ -138,6 +143,19 @@ export const useSession = (): UseSessionReturn => {
     sessionManager.initialize(sessionManager['onSessionRestored'], callback);
   }, []);
 
+  // Validate session integrity
+  const validateSessionIntegrity = useCallback(() => {
+    return sessionManager['sessionStorage'].validateSessionIntegrity();
+  }, []);
+
+  // Clear all wallet data
+  const clearAllWalletData = useCallback(() => {
+    sessionManager['sessionStorage'].clearAllWalletData();
+    setCurrentSession(null);
+    setHasSession(false);
+    setSessionError(null);
+  }, []);
+
   return {
     hasSession,
     currentSession,
@@ -149,6 +167,8 @@ export const useSession = (): UseSessionReturn => {
     extendSession,
     getSessionStatus,
     onSessionRestored,
-    onSessionExpired
+    onSessionExpired,
+    validateSessionIntegrity,
+    clearAllWalletData
   };
 };
