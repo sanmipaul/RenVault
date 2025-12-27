@@ -627,7 +627,7 @@ function AppContent() {
           <div className="card">
             <h2>Connect Your Wallet</h2>
             <p>Connect your Stacks wallet to start saving STX and earning commitment points.</p>
-            <appkit-button />
+            <appkit-button aria-label="Open wallet connection modal" />
           </div>
         )}
 
@@ -789,9 +789,9 @@ function AppContent() {
         onDisconnect={disconnectWallet}
       />
 
-      <div className="appkit-controls">
-        <appkit-account-button />
-        <appkit-network-button />
+      <div className="appkit-controls" role="region" aria-label="Wallet controls">
+        <appkit-account-button aria-label="Account management and balance" />
+        <appkit-network-button aria-label="Switch blockchain network" />
       </div>
 
       {detectedNetwork === 'mainnet' && (
