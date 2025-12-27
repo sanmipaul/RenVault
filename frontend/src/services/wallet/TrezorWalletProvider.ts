@@ -2,6 +2,7 @@
 import TrezorConnect from '@trezor/connect-web';
 import { BaseWalletProvider } from './BaseWalletProvider';
 import { WalletConnection } from '../../types/wallet';
+import { WalletError, WalletErrorCode } from '../../utils/wallet-errors';
 
 export class TrezorWalletProvider extends BaseWalletProvider {
   id = 'trezor';
@@ -28,10 +29,10 @@ export class TrezorWalletProvider extends BaseWalletProvider {
           publicKey: result.payload.publicKey,
         };
       } else {
-        throw new Error(result.payload.error);
+        throw new WalletError(WalletErrorCode.HARDWARE_WALLET_CONNECTION_FAILED, result.payload.error);
       }
     } catch (error) {
-      throw new Error('Failed to connect to Trezor: ' + error.message);
+      throw new WalletError(WalletErrorCode.HARDWARE_WALLET_NOT_FOUND, 'Failed to connect to Trezor: ' + error.message);
     }
   }
 
