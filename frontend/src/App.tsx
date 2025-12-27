@@ -1061,6 +1061,7 @@ function AppContent() {
 
 function App() {
   const [appKitInitialized, setAppKitInitialized] = useState(false);
+  const [appKitError, setAppKitError] = useState<string | null>(null);
 
   useEffect(() => {
     const initAppKit = async () => {
@@ -1069,13 +1070,36 @@ function App() {
         const { AppKitService } = await import('./services/appkit-service');
         await AppKitService.init();
         setAppKitInitialized(true);
+        setAppKitError(null);
       } catch (error) {
         console.error('Failed to initialize AppKit:', error);
+        setAppKitError('Failed to initialize wallet service. Please refresh the page.');
       }
     };
 
     initAppKit();
   }, []);
+
+  if (appKitError) {
+    return (
+      <div className="container">
+        <div className="header">
+          <h1>RenVault 🏦</h1>
+          <p>Wallet Service Error</p>
+        </div>
+        <div className="card error">
+          <h3>❌ Initialization Failed</h3>
+          <p>{appKitError}</p>
+          <button
+            className="btn btn-primary"
+            onClick={() => window.location.reload()}
+          >
+            Refresh Page
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (!appKitInitialized) {
     return (
@@ -1083,6 +1107,12 @@ function App() {
         <div className="header">
           <h1>RenVault 🏦</h1>
           <p>Initializing AppKit...</p>
+        </div>
+        <div className="card">
+          <div style={{ textAlign: 'center', padding: '20px' }}>
+            <div style={{ fontSize: '24px', marginBottom: '16px' }}>🔄</div>
+            <p>Loading wallet service...</p>
+          </div>
         </div>
       </div>
     );
