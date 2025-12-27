@@ -21,6 +21,7 @@ export class WalletManager {
     this.providers.set('walletconnect', new WalletConnectProvider());
     this.providers.set('ledger', new LedgerWalletProvider());
     this.providers.set('trezor', new TrezorWalletProvider());
+    this.providers.set('multisig', new MultiSigWalletProvider());
   }
 
   getAvailableProviders(): WalletProvider[] {
