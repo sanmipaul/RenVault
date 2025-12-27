@@ -15,6 +15,8 @@ import { useWalletKit } from './hooks/useWalletKit';
 import ConnectionStatus from './components/ConnectionStatus';
 import TwoFactorAuthSetup from './components/TwoFactorAuthSetup';
 import TwoFactorAuthVerify from './components/TwoFactorAuthVerify';
+import { SessionStatus } from './components/SessionStatus';
+import { AutoReconnect } from './components/AutoReconnect';
 import NotificationService from './services/notificationService';
 import { SessionStatus } from './components/SessionStatus';
 import { AutoReconnect } from './components/AutoReconnect';
