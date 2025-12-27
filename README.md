@@ -41,6 +41,7 @@ npm start
 - ✅ **Hardware Wallet Support**: Secure transactions with Ledger and Trezor
 - ✅ **Transaction History**: View and filter wallet transaction history
 - ✅ **Notification System**: Real-time alerts for transactions and security
+- ✅ **Wallet Backup & Recovery**: Secure encrypted backup creation and recovery process
 - ✅ **Mainnet Deployed**: Live contracts ready for interaction
 - ✅ **Open Source**: Comprehensive documentation & tests
 
