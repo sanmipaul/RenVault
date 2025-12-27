@@ -7,7 +7,7 @@ import { AppKitConfig, StacksNetwork } from '../types/appkit';
 
 /**
  * AppKitService - Migrated from WalletKit to AppKit for enhanced UI/UX
- * 
+ *
  * This service provides a complete wallet connection UI with:
  * - Pre-built, customizable wallet connection modals
  * - Multi-chain support (currently configured for Stacks)
@@ -18,9 +18,9 @@ import { AppKitConfig, StacksNetwork } from '../types/appkit';
  */
 export class AppKitService {
   private static instance: AppKitService;
-  private appKit: any; // Type from AppKit
+  private appKit: ReturnType<typeof createAppKit>;
 
-  private constructor(appKit: any) {
+  private constructor(appKit: ReturnType<typeof createAppKit>) {
     this.appKit = appKit;
   }
 
@@ -104,7 +104,7 @@ export class AppKitService {
     return AppKitService.instance;
   }
 
-  public getAppKit(): any {
+  public getAppKit(): ReturnType<typeof createAppKit> {
     return this.appKit;
   }
 
