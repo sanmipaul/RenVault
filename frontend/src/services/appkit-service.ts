@@ -3,6 +3,7 @@ import { CoreService } from './core-service';
 import { walletConnectConfig } from '../config/walletconnect';
 import { logger } from '../utils/logger';
 import { WalletError, WalletErrorCode, isNetworkError } from '../utils/wallet-errors';
+import { AppKitConfig, StacksNetwork } from '../types/appkit';
 
 /**
  * AppKitService - Migrated from WalletKit to AppKit for enhanced UI/UX
