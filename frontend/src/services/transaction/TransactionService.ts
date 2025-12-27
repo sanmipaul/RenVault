@@ -1,15 +1,25 @@
 // services/transaction/TransactionService.ts
 import { WalletManager } from '../wallet/WalletManager';
 import { WalletError, WalletErrorCode } from '../../utils/wallet-errors';
+import {
+  makeContractCall,
+  broadcastTransaction,
+  AnchorMode,
+  PostConditionMode,
+  uintCV
+} from '@stacks/transactions';
+import { StacksMainnet } from '@stacks/network';
 
 export interface TransactionDetails {
   contractAddress: string;
   contractName: string;
   functionName: string;
   functionArgs: any[];
-  amount?: number;
+  amount: number;
   fee?: number;
-  network?: string;
+  network: string;
+  anchorMode?: AnchorMode;
+  postConditionMode?: PostConditionMode;
 }
 
 export interface SignedTransaction {
@@ -21,6 +31,7 @@ export interface SignedTransaction {
 export class TransactionService {
   private static instance: TransactionService;
   private walletManager: WalletManager;
+  private network = new StacksMainnet();
 
   private constructor() {
     this.walletManager = WalletManager.getInstance();
@@ -37,20 +48,37 @@ export class TransactionService {
     amount: number,
     contractAddress: string = 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ren-vault'
   ): Promise<TransactionDetails> {
-    // Convert amount to microSTX (Stacks uses microSTX)
-    const microAmount = Math.floor(amount * 1000000);
+    try {
+      // Validate amount
+      if (amount <= 0) {
+        throw new WalletError(
+          WalletErrorCode.INVALID_TRANSACTION,
+          'Deposit amount must be greater than 0'
+        );
+      }
 
-    const details: TransactionDetails = {
-      contractAddress,
-      contractName: 'ren-vault',
-      functionName: 'deposit',
-      functionArgs: [microAmount],
-      amount: microAmount,
-      fee: 1000, // Default fee in microSTX
-      network: 'mainnet'
-    };
+      // Convert amount to microSTX (Stacks uses microSTX)
+      const microAmount = Math.floor(amount * 1000000);
 
-    return details;
+      const details: TransactionDetails = {
+        contractAddress,
+        contractName: 'ren-vault',
+        functionName: 'deposit',
+        functionArgs: [uintCV(microAmount)],
+        amount: microAmount,
+        fee: 1000, // Default fee in microSTX
+        network: 'mainnet',
+        anchorMode: AnchorMode.Any,
+        postConditionMode: PostConditionMode.Allow
+      };
+
+      return details;
+    } catch (error) {
+      throw new WalletError(
+        WalletErrorCode.TRANSACTION_PREPARATION_FAILED,
+        `Failed to prepare deposit transaction: ${error.message}`
+      );
+    }
   }
 
   async signDepositTransaction(details: TransactionDetails): Promise<SignedTransaction> {
@@ -62,20 +90,31 @@ export class TransactionService {
         );
       }
 
-      // Create the transaction object for Stacks
-      const tx = {
+      // Create the contract call transaction
+      const txOptions = {
         contractAddress: details.contractAddress,
         contractName: details.contractName,
         functionName: details.functionName,
         functionArgs: details.functionArgs,
-        network: details.network
+        network: this.network,
+        anchorMode: details.anchorMode || AnchorMode.Any,
+        postConditionMode: details.postConditionMode || PostConditionMode.Allow,
+        onFinish: (data: any) => {
+          console.log('Transaction signed:', data);
+        },
+        onCancel: () => {
+          throw new WalletError(
+            WalletErrorCode.TRANSACTION_SIGNING_CANCELLED,
+            'Transaction signing was cancelled by user'
+          );
+        }
       };
 
-      // Sign the transaction using the current wallet provider
-      const signedTx = await this.walletManager.signTransaction(tx);
+      // Use the wallet manager to sign the transaction
+      const signedTx = await this.walletManager.signTransaction(txOptions);
 
       const signedTransaction: SignedTransaction = {
-        txId: this.generateTxId(),
+        txId: signedTx.txId || this.generateTxId(),
         signedTx,
         details
       };
@@ -83,6 +122,9 @@ export class TransactionService {
       return signedTransaction;
     } catch (error) {
       console.error('Transaction signing failed:', error);
+      if (error instanceof WalletError) {
+        throw error;
+      }
       throw new WalletError(
         WalletErrorCode.TRANSACTION_SIGNING_FAILED,
         `Failed to sign transaction: ${error.message}`
@@ -92,14 +134,22 @@ export class TransactionService {
 
   async broadcastTransaction(signedTx: SignedTransaction): Promise<string> {
     try {
-      // In a real implementation, this would broadcast to the Stacks network
-      // For now, we'll simulate the broadcast
-      console.log('Broadcasting transaction:', signedTx);
+      console.log('Broadcasting transaction to Stacks network:', signedTx);
 
-      // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Broadcast the transaction using Stacks.js
+      const broadcastResponse = await broadcastTransaction({
+        transaction: signedTx.signedTx,
+        network: this.network
+      });
 
-      return signedTx.txId;
+      if (broadcastResponse.error) {
+        throw new Error(broadcastResponse.error);
+      }
+
+      const txId = broadcastResponse.txid || signedTx.txId;
+      console.log('Transaction broadcast successful, txId:', txId);
+
+      return txId;
     } catch (error) {
       console.error('Transaction broadcast failed:', error);
       throw new WalletError(
@@ -122,5 +172,9 @@ export class TransactionService {
       details.amount &&
       details.amount > 0
     );
+  }
+
+  getNetwork(): StacksMainnet {
+    return this.network;
   }
 }
