@@ -1,6 +1,7 @@
 // services/session/SessionManager.ts
 import { WalletProviderType } from '../../types/wallet';
 import { SessionStorageService, WalletSession } from './SessionStorageService';
+import { SessionMonitor } from './SessionMonitor';
 
 export interface SessionManagerConfig {
   autoReconnect: boolean;
@@ -18,9 +19,11 @@ export class SessionManager {
   private cleanupTimer?: NodeJS.Timeout;
   private onSessionRestored?: (session: WalletSession) => Promise<void>;
   private onSessionExpired?: () => void;
+  private sessionMonitor: SessionMonitor;
 
   private constructor() {
     this.sessionStorage = SessionStorageService.getInstance();
+    this.sessionMonitor = SessionMonitor.getInstance();
     this.config = {
       autoReconnect: true,
       reconnectDelay: 1000, // 1 second
@@ -62,6 +65,11 @@ export class SessionManager {
       if (this.onSessionRestored) {
         await this.onSessionRestored(storedSession);
         console.log('Wallet session restored successfully');
+        this.sessionMonitor.recordEvent({
+          type: 'restored',
+          sessionId: storedSession.sessionId,
+          providerType: storedSession.providerType
+        });
         return true;
       }
 
@@ -69,6 +77,10 @@ export class SessionManager {
     } catch (error) {
       console.error('Failed to restore wallet session:', error);
       this.sessionStorage.clearSession();
+      this.sessionMonitor.recordEvent({
+        type: 'failed',
+        metadata: { operation: 'restore', error: error instanceof Error ? error.message : 'Unknown error' }
+      });
       return false;
     }
   }
@@ -77,12 +89,31 @@ export class SessionManager {
   storeSession(sessionData: Omit<WalletSession, 'expiresAt' | 'sessionId'>): void {
     this.sessionStorage.storeSession(sessionData);
     this.resetReconnectAttempts();
+
+    const session = this.sessionStorage.getStoredSession();
+    if (session) {
+      this.sessionMonitor.recordEvent({
+        type: 'created',
+        sessionId: session.sessionId,
+        providerType: session.providerType,
+        metadata: session.metadata
+      });
+    }
   }
 
   // Clear current session
   clearSession(): void {
+    const currentSession = this.getCurrentSession();
     this.sessionStorage.clearSession();
     this.resetReconnectAttempts();
+
+    if (currentSession) {
+      this.sessionMonitor.recordEvent({
+        type: 'cleared',
+        sessionId: currentSession.sessionId,
+        providerType: currentSession.providerType
+      });
+    }
 
     if (this.onSessionExpired) {
       this.onSessionExpired();
@@ -142,6 +173,11 @@ export class SessionManager {
         if (success) {
           console.log('Reconnection successful');
           this.resetReconnectAttempts();
+          this.sessionMonitor.recordEvent({
+            type: 'reconnected',
+            sessionId: this.getCurrentSession()?.sessionId,
+            providerType: this.getCurrentSession()?.providerType
+          });
         } else {
           // Try again if not at max attempts
           if (this.reconnectAttempts < this.config.maxReconnectAttempts) {
@@ -149,6 +185,10 @@ export class SessionManager {
           } else {
             console.log('Reconnection failed - max attempts reached');
             this.clearSession();
+            this.sessionMonitor.recordEvent({
+              type: 'failed',
+              metadata: { operation: 'reconnection', reason: 'max_attempts_reached' }
+            });
           }
         }
       } catch (error) {
@@ -157,6 +197,10 @@ export class SessionManager {
           this.attemptReconnection();
         } else {
           this.clearSession();
+          this.sessionMonitor.recordEvent({
+            type: 'failed',
+            metadata: { operation: 'reconnection', error: error instanceof Error ? error.message : 'Unknown error' }
+          });
         }
       }
     }, this.config.reconnectDelay * this.reconnectAttempts); // Exponential backoff
