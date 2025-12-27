@@ -89,6 +89,7 @@ function AppContent() {
   const [showCoSignerManagement, setShowCoSignerManagement] = useState<boolean>(false);
   const [showMultiSigSigner, setShowMultiSigSigner] = useState<boolean>(false);
   const [currentTransaction, setCurrentTransaction] = useState<any>(null);
+  const [showPerformanceMonitor, setShowPerformanceMonitor] = useState<boolean>(false);
 
   // Preload critical wallet providers for better performance
   useEffect(() => {
