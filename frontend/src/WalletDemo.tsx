@@ -5,6 +5,7 @@ import { useWallet } from './hooks/useWallet';
 import DisconnectModal from './components/DisconnectModal';
 import AddressDisplay from './components/AddressDisplay';
 import BalanceDisplay from './components/BalanceDisplay';
+import DepositForm from './components/DepositForm';
 import './App.css';
 
 const AppContent: React.FC = () => {
@@ -44,6 +45,7 @@ const AppContent: React.FC = () => {
       <main>
         <WalletConnect />
         <BalanceDisplay />
+        <DepositForm />
       </main>
       <DisconnectModal
         isOpen={showDisconnectModal}
