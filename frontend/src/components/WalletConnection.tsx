@@ -3,6 +3,13 @@ import { useAppKit, useAppKitAccount } from '@reown/appkit/react';
 import { WalletError, WalletErrorCode, getFriendlyErrorMessage } from '../utils/wallet-errors';
 import { logger } from '../utils/logger';
 
+/**
+ * WalletConnection - Updated to use AppKit hooks
+ * 
+ * This component now leverages AppKit's built-in modal system
+ * instead of custom QR code generation and session proposal modals.
+ * The connection flow is simplified and provides a better UX.
+ */
 interface WalletConnectionProps {
   onConnect?: (address: string) => void;
   onDisconnect?: () => void;
