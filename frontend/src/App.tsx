@@ -761,6 +761,13 @@ function AppContent() {
           >
             ✍️ Sign Tx
           </button>
+          <button
+            className="btn btn-outline"
+            onClick={() => setShowPerformanceMonitor(true)}
+            title="Performance Monitor"
+          >
+            ⚡ Perf
+          </button>
           {detectedNetwork && (
             <div className="network-indicator">
               <span className={`network-badge ${detectedNetwork}`}>
