@@ -15,7 +15,11 @@ import { useWalletKit } from './hooks/useWalletKit';
 import ConnectionStatus from './components/ConnectionStatus';
 import TwoFactorAuthSetup from './components/TwoFactorAuthSetup';
 import TwoFactorAuthVerify from './components/TwoFactorAuthVerify';
+import { SessionStatus } from './components/SessionStatus';
+import { AutoReconnect } from './components/AutoReconnect';
 import NotificationService from './services/notificationService';
+import { SessionStatus } from './components/SessionStatus';
+import { AutoReconnect } from './components/AutoReconnect';
 
 const appConfig = new AppConfig(['store_write', 'publish_data']);
 const userSession = new UserSession({ appConfig });
@@ -645,6 +649,8 @@ function AppContent() {
 
   return (
     <div className="container">
+      <SessionStatus />
+      <AutoReconnect />
       <div className="header">
         <h1>RenVault 🏦</h1>
         <p>Welcome, {userData.profile.name || 'Stacker'}</p>

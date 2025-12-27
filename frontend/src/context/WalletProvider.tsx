@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { WalletManager } from '../services/wallet/WalletManager';
 import { WalletProvider, WalletProviderType } from '../types/wallet';
 import { PermissionService } from '../services/permissions/PermissionService';
@@ -16,6 +16,11 @@ interface WalletContextType {
   isConnected: boolean;
   connectionState: { address: string; publicKey: string } | null;
   refreshBalance: () => Promise<void>;
+  // Session-related properties
+  hasStoredSession: boolean;
+  isRestoringSession: boolean;
+  sessionError: string | null;
+  clearStoredSession: () => void;
 }
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
@@ -25,6 +30,63 @@ export const WalletProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   const [selectedProviderType, setSelectedProviderType] = useState<WalletProviderType | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const [hasStoredSession, setHasStoredSession] = useState(false);
+  const [isRestoringSession, setIsRestoringSession] = useState(true);
+  const [sessionError, setSessionError] = useState<string | null>(null);
+
+  const sessionManager = SessionManager.getInstance();
+
+  // Initialize session manager on mount
+  useEffect(() => {
+    sessionManager.initialize(
+      async (session: WalletSession) => {
+        // Restore wallet connection from session
+        try {
+          setIsRestoringSession(true);
+          setSessionError(null);
+
+          // Set the provider from session
+          setSelectedProviderType(session.providerType);
+          walletManager.setProvider(session.providerType);
+
+          // Attempt to restore the connection
+          // Note: This would need to be implemented in the wallet providers
+          // to support session restoration
+          console.log('Session restored, attempting to reconnect wallet...');
+
+          // For now, we'll just mark that we have a stored session
+          setHasStoredSession(true);
+        } catch (error) {
+          console.error('Failed to restore wallet connection:', error);
+          setSessionError('Failed to restore wallet connection');
+          sessionManager.clearSession();
+        } finally {
+          setIsRestoringSession(false);
+        }
+      },
+      () => {
+        // Session expired
+        setHasStoredSession(false);
+        setSessionError('Session expired');
+        console.log('Wallet session expired');
+      }
+    );
+
+    // Check for existing session on mount
+    const checkExistingSession = async () => {
+      const hasSession = sessionManager.hasValidSession();
+      setHasStoredSession(hasSession);
+
+      if (hasSession) {
+        // Attempt to restore the session
+        await sessionManager.attemptSessionRestore();
+      } else {
+        setIsRestoringSession(false);
+      }
+    };
+
+    checkExistingSession();
+  }, []);
 
   const setSelectedProvider = (type: WalletProviderType) => {
     setSelectedProviderType(type);
@@ -37,11 +99,21 @@ export const WalletProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     try {
       const result = await walletManager.connect();
 
-      // Initialize permissions for the connected wallet
-      if (result?.address) {
-        const permissionService = PermissionService.getInstance();
-        permissionService.initializeWalletPermissions(result.address);
-        console.log('Wallet permissions initialized for address:', result.address);
+      // Store session after successful connection
+      if (result && result.address && result.publicKey) {
+        sessionManager.storeSession({
+          providerType: selectedProviderType!,
+          address: result.address,
+          publicKey: result.publicKey,
+          connectedAt: Date.now(),
+          metadata: {
+            chainId: 'mainnet', // This should come from the provider
+            network: 'stacks',
+            permissions: ['read', 'write'] // Default permissions
+          }
+        });
+        setHasStoredSession(true);
+        setSessionError(null);
       }
 
       return result;
@@ -57,15 +129,10 @@ export const WalletProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     setIsLoading(true);
     try {
       await walletManager.disconnect();
-
-      // Clear permissions for the disconnected wallet
-      const currentState = walletManager.getConnectionState();
-      if (currentState?.address) {
-        const permissionService = PermissionService.getInstance();
-        permissionService.clearWalletPermissions(currentState.address);
-        console.log('Wallet permissions cleared for address:', currentState.address);
-      }
-
+      // Clear session on disconnect
+      sessionManager.clearSession();
+      setHasStoredSession(false);
+      setSessionError(null);
       // Reset local state
       setSelectedProviderType(null);
       setError(null);
@@ -82,6 +149,8 @@ export const WalletProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     setError(null);
     try {
       const result = await walletManager.signTransaction(tx);
+      // Extend session on successful transaction
+      sessionManager.extendSession();
       // Refresh balance after transaction
       setTimeout(() => refreshBalance(), 2000); // Wait 2 seconds for transaction to be mined
       return result;
@@ -96,11 +165,17 @@ export const WalletProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   const refreshBalance = async () => {
     // This will trigger balance refresh in components that listen to wallet state changes
     // The BalanceDisplay component will automatically refresh when connection state changes
-    if (isConnected && connectionState?.address && currentProvider) {
+    if (walletManager.isConnected() && walletManager.getConnectionState()?.address && walletManager.getCurrentProvider()) {
       // Force a balance refresh by updating the connection state timestamp
       // This is a simple way to trigger re-fetch without changing the actual state
       console.log('Balance refresh triggered');
     }
+  };
+
+  const clearStoredSession = () => {
+    sessionManager.clearSession();
+    setHasStoredSession(false);
+    setSessionError(null);
   };
 
   const contextValue: WalletContextType = {
@@ -116,25 +191,16 @@ export const WalletProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     isConnected: walletManager.isConnected(),
     connectionState: walletManager.getConnectionState(),
     refreshBalance,
+    hasStoredSession,
+    isRestoringSession,
+    sessionError,
+    clearStoredSession,
   };
 
   return (
     <WalletContext.Provider value={contextValue}>
       {children}
     </WalletContext.Provider>
-  );
-};
-    ...value,
-    sessionProposal,
-    setSessionProposal,
-    sessionRequest,
-    setSessionRequest,
-  };
-
-  return (
-    <WalletKitContext.Provider value={contextValue}>
-      {children}
-    </WalletKitContext.Provider>
   );
 };
 
