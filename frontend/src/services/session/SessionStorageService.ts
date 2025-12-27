@@ -192,4 +192,53 @@ export class SessionStorageService {
       this.clearSession();
     }
   }
+
+  // Clean up all wallet-related data
+  clearAllWalletData(): void {
+    try {
+      // Clear session data
+      this.clearSession();
+
+      // Clear any other wallet-related localStorage keys
+      const keysToRemove = [
+        'leather-session',
+        'xverse-session',
+        'hiro-session',
+        'walletconnect-session',
+        'renvault-wallet-state',
+        'stacks-connect-session'
+      ];
+
+      keysToRemove.forEach(key => {
+        localStorage.removeItem(key);
+      });
+
+      console.log('All wallet data cleared');
+    } catch (error) {
+      console.error('Failed to clear wallet data:', error);
+    }
+  }
+
+  // Validate session data integrity
+  validateSessionIntegrity(): boolean {
+    try {
+      const stored = localStorage.getItem(this.STORAGE_KEY);
+      if (!stored) return false;
+
+      const encryptedSession = JSON.parse(stored);
+      const session = this.decryptSession(encryptedSession);
+
+      // Check if session structure is valid
+      if (!session.providerType || !session.address || !session.publicKey || !session.expiresAt) {
+        return false;
+      }
+
+      // Check expiration
+      return !this.isSessionExpired(session);
+    } catch (error) {
+      console.error('Session integrity check failed:', error);
+      return false;
+    }
+  }
+}
 }
