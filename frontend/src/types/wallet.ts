@@ -15,4 +15,4 @@ export interface WalletConnection {
   // etc.
 }
 
-export type WalletProviderType = 'leather' | 'xverse' | 'hiro' | 'walletconnect';
+export type WalletProviderType = 'leather' | 'xverse' | 'hiro' | 'walletconnect' | 'ledger' | 'trezor';
