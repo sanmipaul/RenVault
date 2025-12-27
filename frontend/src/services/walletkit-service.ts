@@ -1,3 +1,5 @@
+import { WalletKit, WalletKitTypes } from '@walletconnect/walletkit';
+import { buildApprovedNamespaces, getSdkError } from '@walletconnect/utils';
 import { createAppKit } from '@reown/appkit';
 import { StacksAdapter } from '@reown/appkit-adapter-stacks'; // assuming it exists, or use built-in
 import { CoreService } from './core-service';
@@ -129,6 +131,56 @@ export class AppKitService {
     }
   }
 }
+
+export class WalletKitService {
+  private static instance: WalletKitService;
+  private walletKit: WalletKit;
+
+  private constructor(walletKit: WalletKit) {
+    this.walletKit = walletKit;
+  }
+
+  private static readonly MAX_RETRIES = 3;
+  private static readonly INIT_RETRY_DELAY = 1000;
+
+  static async init(retryCount = 0): Promise<WalletKitService> {
+    if (WalletKitService.instance) {
+      return WalletKitService.instance;
+    }
+
+    try {
+      const core = CoreService.getInstance();
+      const walletKit = await WalletKit.init({
+        core: core.getCore(),
+        metadata: walletConnectConfig.metadata,
+      });
+
+      WalletKitService.instance = new WalletKitService(walletKit);
+      return WalletKitService.instance;
+    } catch (error) {
+      const isNetworkIssue = isNetworkError(error);
+      const shouldRetry = isNetworkIssue && retryCount < WalletKitService.MAX_RETRIES;
+
+      if (shouldRetry) {
+        const delay = WalletKitService.INIT_RETRY_DELAY * Math.pow(2, retryCount);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        return WalletKitService.init(retryCount + 1);
+      }
+
+      throw new WalletError(
+        WalletErrorCode.WALLET_INIT_FAILED,
+        'Failed to initialize WalletKit',
+        error
+      );
+    }
+  }
+
+  static getInstance(): WalletKitService {
+    if (!WalletKitService.instance) {
+      throw new Error('WalletKitService not initialized');
+    }
+    return WalletKitService.instance;
+  }
 
   async approveSession(
     proposal: WalletKitTypes.SessionProposal,
