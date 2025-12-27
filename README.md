@@ -42,6 +42,7 @@ npm start
 - ✅ **Transaction History**: View and filter wallet transaction history
 - ✅ **Notification System**: Real-time alerts for transactions and security
 - ✅ **Wallet Backup & Recovery**: Secure encrypted backup creation and recovery process
+- ✅ **Multi-Signature Wallets**: Shared control with co-signer management and threshold-based approvals
 - ✅ **Mainnet Deployed**: Live contracts ready for interaction
 - ✅ **Open Source**: Comprehensive documentation & tests
 
@@ -117,6 +118,35 @@ Secure wallet backup and recovery system to prevent loss of access:
 - ✅ Backend API endpoints for encrypted backup storage
 - ✅ Comprehensive test suite for backup functionality
 - ✅ Recovery validation and error handling
+### 🔐 Multi-Signature Wallets
+
+Advanced multi-signature wallet support for enhanced security and shared control:
+
+**Multi-Sig Setup:**
+- ✅ Configurable signature thresholds (2-of-3, 3-of-5, etc.)
+- ✅ Co-signer management with address validation
+- ✅ Secure wallet configuration storage
+- ✅ Threshold-based transaction approvals
+
+**Co-Signer Management:**
+- ✅ Add/remove co-signers dynamically
+- ✅ Co-signer address and public key validation
+- ✅ Real-time co-signer status updates
+- ✅ Secure co-signer data encryption
+
+**Transaction Security:**
+- ✅ Multi-signature transaction signing workflow
+- ✅ Pending transaction tracking and status
+- ✅ Enhanced security for large amounts
+- ✅ Signature collection and validation
+- ✅ Threshold enforcement for approvals
+
+**Technical Implementation:**
+- ✅ MultiSigWalletProvider for wallet management
+- ✅ Backend API for multi-sig configuration and transactions
+- ✅ React components for setup, management, and signing
+- ✅ Comprehensive test suite for multi-sig functionality
+- ✅ Real-time transaction status updates
 ### �🔥 Clarity 4 Functionality
 
 RenVault showcases **6 key Clarity 4 enhancements**:
