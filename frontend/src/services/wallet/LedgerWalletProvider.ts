@@ -4,6 +4,7 @@ import StacksApp from '@ledgerhq/hw-app-stacks';
 import { BaseWalletProvider } from './BaseWalletProvider';
 import { WalletConnection } from '../../types/wallet';
 import { StacksNetwork } from '@stacks/network';
+import { WalletError, WalletErrorCode } from '../../utils/wallet-errors';
 
 export class LedgerWalletProvider extends BaseWalletProvider {
   id = 'ledger';
@@ -31,7 +32,10 @@ export class LedgerWalletProvider extends BaseWalletProvider {
         publicKey,
       };
     } catch (error) {
-      throw new Error('Failed to connect to Ledger: ' + error.message);
+      if (error.message.includes('No device selected')) {
+        throw new WalletError(WalletErrorCode.HARDWARE_WALLET_NOT_FOUND, 'Ledger device not found. Please connect your Ledger and open the Stacks app.');
+      }
+      throw new WalletError(WalletErrorCode.HARDWARE_WALLET_CONNECTION_FAILED, 'Failed to connect to Ledger: ' + error.message);
     }
   }
 
