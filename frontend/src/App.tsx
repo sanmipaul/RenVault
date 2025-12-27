@@ -24,6 +24,9 @@ import { AutoReconnect } from './components/AutoReconnect';
 import { WalletBackup } from './components/WalletBackup';
 import { WalletRecovery } from './components/WalletRecovery';
 import { WalletManager } from './services/wallet/WalletManager';
+import { MultiSigSetup } from './components/MultiSigSetup';
+import { CoSignerManagement } from './components/CoSignerManagement';
+import { MultiSigTransactionSigner } from './components/MultiSigTransactionSigner';
 
 const appConfig = new AppConfig(['store_write', 'publish_data']);
 const userSession = new UserSession({ appConfig });
@@ -80,6 +83,10 @@ function AppContent() {
   const [showWalletBackup, setShowWalletBackup] = useState<boolean>(false);
   const [showWalletRecovery, setShowWalletRecovery] = useState<boolean>(false);
   const [walletManager] = useState(() => new WalletManager());
+  const [showMultiSigSetup, setShowMultiSigSetup] = useState<boolean>(false);
+  const [showCoSignerManagement, setShowCoSignerManagement] = useState<boolean>(false);
+  const [showMultiSigSigner, setShowMultiSigSigner] = useState<boolean>(false);
+  const [currentTransaction, setCurrentTransaction] = useState<any>(null);
 
   // Initialize notification service
   const notificationService = userData ? new NotificationService(userData.profile.stxAddress.mainnet) : null;
@@ -146,6 +153,24 @@ function AppContent() {
     if (userSession.isUserSignedIn()) {
       setUserData(userSession.loadUserData());
     }
+    setTimeout(() => setStatus(''), 5000);
+  };
+
+  const handleMultiSigSetupComplete = () => {
+    setShowMultiSigSetup(false);
+    setStatus('✅ Multi-signature wallet setup completed!');
+    setTimeout(() => setStatus(''), 5000);
+  };
+
+  const handleCoSignerUpdate = () => {
+    setStatus('✅ Co-signers updated successfully!');
+    setTimeout(() => setStatus(''), 3000);
+  };
+
+  const handleMultiSigTransactionSigned = (signedTx: any) => {
+    setShowMultiSigSigner(false);
+    setCurrentTransaction(null);
+    setStatus('✅ Transaction signed successfully!');
     setTimeout(() => setStatus(''), 5000);
   };
 
@@ -705,6 +730,27 @@ function AppContent() {
           >
             🔄 Recover
           </button>
+          <button
+            className="btn btn-outline"
+            onClick={() => setShowMultiSigSetup(true)}
+            title="Setup Multi-Sig"
+          >
+            🔐 Multi-Sig
+          </button>
+          <button
+            className="btn btn-outline"
+            onClick={() => setShowCoSignerManagement(true)}
+            title="Manage Co-Signers"
+          >
+            👥 Co-Signers
+          </button>
+          <button
+            className="btn btn-outline"
+            onClick={() => setShowMultiSigSigner(true)}
+            title="Sign Multi-Sig Transactions"
+          >
+            ✍️ Sign Tx
+          </button>
           {detectedNetwork && (
             <div className="network-indicator">
               <span className={`network-badge ${detectedNetwork}`}>
@@ -934,6 +980,37 @@ function AppContent() {
             walletManager={walletManager}
             onRecoveryComplete={handleWalletRecoveryComplete}
             onCancel={() => setShowWalletRecovery(false)}
+          />
+        </div>
+      )}
+
+      {showMultiSigSetup && (
+        <div className="modal-overlay">
+          <MultiSigSetup
+            walletManager={walletManager}
+            onSetupComplete={handleMultiSigSetupComplete}
+            onCancel={() => setShowMultiSigSetup(false)}
+          />
+        </div>
+      )}
+
+      {showCoSignerManagement && (
+        <div className="modal-overlay">
+          <CoSignerManagement
+            walletManager={walletManager}
+            onUpdate={handleCoSignerUpdate}
+            onCancel={() => setShowCoSignerManagement(false)}
+          />
+        </div>
+      )}
+
+      {showMultiSigSigner && (
+        <div className="modal-overlay">
+          <MultiSigTransactionSigner
+            walletManager={walletManager}
+            transaction={currentTransaction}
+            onSigned={handleMultiSigTransactionSigned}
+            onCancel={() => setShowMultiSigSigner(false)}
           />
         </div>
       )}

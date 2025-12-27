@@ -6,6 +6,7 @@ import { HiroWalletProvider } from './HiroWalletProvider';
 import { WalletConnectProvider } from './WalletConnectProvider';
 import { LedgerWalletProvider } from './LedgerWalletProvider';
 import { TrezorWalletProvider } from './TrezorWalletProvider';
+import { MultiSigWalletProvider } from './MultiSigWalletProvider';
 import * as crypto from 'crypto';
 
 export class WalletManager {
@@ -20,6 +21,7 @@ export class WalletManager {
     this.providers.set('walletconnect', new WalletConnectProvider());
     this.providers.set('ledger', new LedgerWalletProvider());
     this.providers.set('trezor', new TrezorWalletProvider());
+    this.providers.set('multisig', new MultiSigWalletProvider());
   }
 
   getAvailableProviders(): WalletProvider[] {
@@ -151,5 +153,53 @@ export class WalletManager {
     let decrypted = decipher.update(encrypted, 'hex', 'utf8');
     decrypted += decipher.final('utf8');
     return decrypted;
+  }
+
+  // Multi-Signature Methods
+  setupMultiSigWallet(threshold: number, coSigners: any[]): void {
+    const multiSigProvider = this.providers.get('multisig') as MultiSigWalletProvider;
+    if (!multiSigProvider) {
+      throw new Error('Multi-sig provider not available');
+    }
+
+    const config = {
+      threshold,
+      totalSigners: coSigners.length + 1, // +1 for owner
+      coSigners,
+      owner: this.connectionState?.address || ''
+    };
+
+    multiSigProvider.setupMultiSig(config);
+  }
+
+  getMultiSigConfig(): any {
+    const multiSigProvider = this.providers.get('multisig') as MultiSigWalletProvider;
+    return multiSigProvider?.getConfig();
+  }
+
+  addCoSigner(coSigner: any): void {
+    const multiSigProvider = this.providers.get('multisig') as MultiSigWalletProvider;
+    if (!multiSigProvider) {
+      throw new Error('Multi-sig provider not available');
+    }
+    multiSigProvider.addCoSigner(coSigner);
+  }
+
+  removeCoSigner(address: string): void {
+    const multiSigProvider = this.providers.get('multisig') as MultiSigWalletProvider;
+    if (!multiSigProvider) {
+      throw new Error('Multi-sig provider not available');
+    }
+    multiSigProvider.removeCoSigner(address);
+  }
+
+  getPendingMultiSigTransactions(): string[] {
+    const multiSigProvider = this.providers.get('multisig') as MultiSigWalletProvider;
+    return multiSigProvider?.getPendingTransactions() || [];
+  }
+
+  getMultiSigTransactionStatus(txId: string): any {
+    const multiSigProvider = this.providers.get('multisig') as MultiSigWalletProvider;
+    return multiSigProvider?.getTransactionStatus(txId);
   }
 }

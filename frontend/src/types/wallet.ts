@@ -27,4 +27,26 @@ export interface TransactionHistoryItem {
   memo?: string;
 }
 
-export type WalletProviderType = 'leather' | 'xverse' | 'hiro' | 'walletconnect' | 'ledger' | 'trezor';
+export type WalletProviderType = 'leather' | 'xverse' | 'hiro' | 'walletconnect' | 'ledger' | 'trezor' | 'multisig';
+
+export interface CoSigner {
+  address: string;
+  publicKey: string;
+  name?: string;
+}
+
+export interface MultiSigConfig {
+  threshold: number;
+  totalSigners: number;
+  coSigners: CoSigner[];
+  owner: string;
+}
+
+export interface MultiSigTransaction {
+  txId: string;
+  transaction: any;
+  signatures: string[];
+  requiredSignatures: number;
+  status: 'pending' | 'signed' | 'executed';
+  createdAt: string;
+}
