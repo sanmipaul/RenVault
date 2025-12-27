@@ -59,6 +59,16 @@ export class AppKitService {
         projectId: walletConnectConfig.projectId,
         themeMode: walletConnectConfig.appKit.themeMode,
         themeVariables: walletConnectConfig.appKit.themeVariables,
+        features: {
+          analytics: true,
+          email: false,
+          socials: false,
+          history: true,
+        },
+        enableWalletConnect: true,
+        enableInjected: true,
+        enableEIP6963: true,
+        enableCoinbase: true,
       });
 
       AppKitService.instance = new AppKitService(appKit);

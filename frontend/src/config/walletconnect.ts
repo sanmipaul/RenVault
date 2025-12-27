@@ -17,6 +17,12 @@ export const walletConnectConfig = {
     themeVariables: {
       '--w3m-color-mix': '#4a80f5',
       '--w3m-color-mix-strength': 40,
+      '--w3m-font-family': 'system-ui, -apple-system, sans-serif',
+      '--w3m-border-radius-master': '8px',
+      '--w3m-accent': '#4a80f5',
+      '--w3m-accent-soft': '#e8f0fe',
+      '--w3m-background': '#ffffff',
+      '--w3m-overlay': 'rgba(0, 0, 0, 0.5)',
     },
   },
 };
