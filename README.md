@@ -41,6 +41,7 @@ npm start
 - ✅ **Hardware Wallet Support**: Secure transactions with Ledger and Trezor
 - ✅ **Transaction History**: View and filter wallet transaction history
 - ✅ **Notification System**: Real-time alerts for transactions and security
+- ✅ **Wallet Backup & Recovery**: Secure encrypted backup creation and recovery process
 - ✅ **Mainnet Deployed**: Live contracts ready for interaction
 - ✅ **Open Source**: Comprehensive documentation & tests
 
@@ -89,7 +90,33 @@ Comprehensive notification system for wallet events and security with customizab
 - ✅ Service worker for background push notifications
 - ✅ Local storage for offline preference persistence
 - ✅ Real-time notification center with unread counters
+### 🛡️ Wallet Backup & Recovery
 
+Secure wallet backup and recovery system to prevent loss of access:
+
+**Backup Creation Flow:**
+- ✅ Encrypted mnemonic phrase generation
+- ✅ Password-protected backup creation
+- ✅ Secure key management with PBKDF2 encryption
+- ✅ Local storage and optional backend persistence
+
+**Recovery Process:**
+- ✅ Encrypted backup data import
+- ✅ Password-based decryption
+- ✅ Wallet state restoration
+- ✅ Address and public key validation
+
+**Security Features:**
+- ✅ AES-256-CBC encryption for sensitive data
+- ✅ Salted password hashing
+- ✅ Secure random key generation
+- ✅ Backup data integrity verification
+
+**Technical Implementation:**
+- ✅ Frontend components for backup/recovery UI
+- ✅ Backend API endpoints for encrypted backup storage
+- ✅ Comprehensive test suite for backup functionality
+- ✅ Recovery validation and error handling
 ### �🔥 Clarity 4 Functionality
 
 RenVault showcases **6 key Clarity 4 enhancements**:

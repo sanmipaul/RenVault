@@ -21,6 +21,9 @@ import NotificationService from './services/notificationService';
 import TransactionHistory from './components/TransactionHistory';
 import { SessionStatus } from './components/SessionStatus';
 import { AutoReconnect } from './components/AutoReconnect';
+import { WalletBackup } from './components/WalletBackup';
+import { WalletRecovery } from './components/WalletRecovery';
+import { WalletManager } from './services/wallet/WalletManager';
 
 const appConfig = new AppConfig(['store_write', 'publish_data']);
 const userSession = new UserSession({ appConfig });
@@ -74,6 +77,9 @@ function AppContent() {
   const [show2FAVerify, setShow2FAVerify] = useState<boolean>(false);
   const [showBackupCodes, setShowBackupCodes] = useState<boolean>(false);
   const [showNotificationCenter, setShowNotificationCenter] = useState<boolean>(false);
+  const [showWalletBackup, setShowWalletBackup] = useState<boolean>(false);
+  const [showWalletRecovery, setShowWalletRecovery] = useState<boolean>(false);
+  const [walletManager] = useState(() => new WalletManager());
 
   // Initialize notification service
   const notificationService = userData ? new NotificationService(userData.profile.stxAddress.mainnet) : null;
@@ -118,6 +124,28 @@ function AppContent() {
       notificationService.testTwoFactorDisabledNotification();
     }
     
+    setTimeout(() => setStatus(''), 5000);
+  };
+
+  const handleWalletBackupComplete = (backupData: string) => {
+    setShowWalletBackup(false);
+    setStatus('✅ Wallet backup created successfully! Store it securely.');
+    // Optionally send to backend
+    fetch('/api/wallet/backup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: userData?.profile.stxAddress.mainnet, encryptedBackup: backupData })
+    });
+    setTimeout(() => setStatus(''), 5000);
+  };
+
+  const handleWalletRecoveryComplete = () => {
+    setShowWalletRecovery(false);
+    setStatus('✅ Wallet recovered successfully!');
+    // Refresh user data
+    if (userSession.isUserSignedIn()) {
+      setUserData(userSession.loadUserData());
+    }
     setTimeout(() => setStatus(''), 5000);
   };
 
@@ -663,6 +691,20 @@ function AppContent() {
           >
             🔔
           </button>
+          <button
+            className="btn btn-outline"
+            onClick={() => setShowWalletBackup(true)}
+            title="Backup Wallet"
+          >
+            🛡️ Backup
+          </button>
+          <button
+            className="btn btn-outline"
+            onClick={() => setShowWalletRecovery(true)}
+            title="Recover Wallet"
+          >
+            🔄 Recover
+          </button>
           {detectedNetwork && (
             <div className="network-indicator">
               <span className={`network-badge ${detectedNetwork}`}>
@@ -875,6 +917,26 @@ function AppContent() {
         isOpen={showNotificationCenter}
         onClose={() => setShowNotificationCenter(false)}
       />
+
+      {showWalletBackup && (
+        <div className="modal-overlay">
+          <WalletBackup
+            walletManager={walletManager}
+            onBackupComplete={handleWalletBackupComplete}
+            onCancel={() => setShowWalletBackup(false)}
+          />
+        </div>
+      )}
+
+      {showWalletRecovery && (
+        <div className="modal-overlay">
+          <WalletRecovery
+            walletManager={walletManager}
+            onRecoveryComplete={handleWalletRecoveryComplete}
+            onCancel={() => setShowWalletRecovery(false)}
+          />
+        </div>
+      )}
     </div>
   );
 }
