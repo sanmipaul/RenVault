@@ -32,6 +32,14 @@ export class AppKitService {
       return AppKitService.instance;
     }
 
+    // Validate configuration before initialization
+    if (!walletConnectConfig.projectId) {
+      throw new WalletError(
+        WalletErrorCode.CONFIGURATION_ERROR,
+        'WalletConnect project ID is required'
+      );
+    }
+
     try {
       logger.info('Initializing AppKit...');
       const core = CoreService.getInstance();
