@@ -1,10 +1,108 @@
+type NotificationType = 'transaction' | 'security' | 'reward' | 'system' | 'wallet_session' | 'wallet_request' | 'wallet_error';
+
+export interface Notification {
+  id: string;
+  type: NotificationType;
+  title: string;
+  message: string;
+  timestamp: Date;
+  read: boolean;
+  priority?: 'low' | 'medium' | 'high';
+  actions?: string[];
+  data?: any;
+}
+
 class NotificationService {
+  private static instance: NotificationService;
   private userId: string;
   private baseUrl: string;
+  private listeners: ((notification: Notification) => void)[] = [];
 
   constructor(userId: string) {
     this.userId = userId;
     this.baseUrl = 'http://localhost:3003/api/notifications';
+  }
+
+  static getInstance(userId: string): NotificationService {
+    if (!NotificationService.instance) {
+      NotificationService.instance = new NotificationService(userId);
+    }
+    return NotificationService.instance;
+  }
+
+  subscribe(listener: (notification: Notification) => void) {
+    this.listeners.push(listener);
+    return () => {
+      this.listeners = this.listeners.filter(l => l !== listener);
+    };
+  }
+
+  private notify(notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) {
+    const fullNotification: Notification = {
+      ...notification,
+      id: Math.random().toString(36).substring(7),
+      timestamp: new Date(),
+      read: false
+    };
+
+    // Save to local storage
+    const saved = localStorage.getItem(`notifications_${this.userId}`);
+    const notifications = saved ? JSON.parse(saved) : [];
+    notifications.unshift(fullNotification);
+    localStorage.setItem(`notifications_${this.userId}`, JSON.stringify(notifications));
+
+    // Notify listeners
+    this.listeners.forEach(l => l(fullNotification));
+  }
+
+  // WalletKit Notifications
+  notifySessionProposal(proposerName: string, metadata: any) {
+    this.notify({
+      type: 'wallet_session',
+      title: 'New Connection Request',
+      message: `${proposerName} wants to connect to your wallet`,
+      priority: 'high',
+      actions: ['Approve', 'Reject'],
+      data: { metadata }
+    });
+  }
+
+  notifySessionRequest(method: string, data: any) {
+    this.notify({
+      type: 'wallet_request',
+      title: 'Signature Request',
+      message: `New request: ${method}`,
+      priority: 'high',
+      actions: ['Approve', 'Reject'],
+      data
+    });
+  }
+
+  notifySessionDelete() {
+    this.notify({
+      type: 'wallet_session',
+      title: 'Session Ended',
+      message: 'Wallet disconnected',
+      priority: 'medium'
+    });
+  }
+
+  notifySessionExpire() {
+    this.notify({
+      type: 'wallet_session',
+      title: 'Session Expired',
+      message: 'Please reconnect your wallet',
+      priority: 'medium'
+    });
+  }
+
+  notifyConnectionError(error: string) {
+    this.notify({
+      type: 'wallet_error',
+      title: 'Connection Failed',
+      message: error,
+      priority: 'high'
+    });
   }
 
   // Subscribe to push notifications
