@@ -1,8 +1,7 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { WalletManager } from '../services/wallet/WalletManager';
 import { WalletProvider, WalletProviderType } from '../types/wallet';
-import { SessionManager } from '../services/session/SessionManager';
-import { WalletSession } from '../services/session/SessionStorageService';
+import { PermissionService } from '../services/permissions/PermissionService';
 
 interface WalletContextType {
   walletManager: WalletManager;
