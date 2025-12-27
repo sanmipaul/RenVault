@@ -17,6 +17,8 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ address }) => {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [page, setPage] = useState(0);
   const [total, setTotal] = useState(0);
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
   const pageSize = 20;
 
   useEffect(() => {
@@ -39,7 +41,12 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ address }) => {
   };
 
   const filteredAndSortedTransactions = transactions
-    .filter(tx => filter === 'all' || tx.type === filter)
+    .filter(tx => {
+      if (filter !== 'all' && tx.type !== filter) return false;
+      if (dateFrom && tx.timestamp < new Date(dateFrom).getTime() / 1000) return false;
+      if (dateTo && tx.timestamp > new Date(dateTo).getTime() / 1000) return false;
+      return true;
+    })
     .sort((a, b) => {
       const aValue = sortBy === 'timestamp' ? a.timestamp : a.amount || 0;
       const bValue = sortBy === 'timestamp' ? b.timestamp : b.amount || 0;
@@ -78,6 +85,14 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ address }) => {
             <option value="desc">Newest First</option>
             <option value="asc">Oldest First</option>
           </select>
+        </label>
+        <label>
+          From Date:
+          <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
+        </label>
+        <label>
+          To Date:
+          <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
         </label>
       </div>
       <table>
