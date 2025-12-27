@@ -15,4 +15,16 @@ export interface WalletConnection {
   // etc.
 }
 
+export interface TransactionHistoryItem {
+  txId: string;
+  type: 'sent' | 'received' | 'contract_call';
+  amount?: number;
+  timestamp: number;
+  status: 'pending' | 'success' | 'failed';
+  to?: string;
+  from?: string;
+  fee: number;
+  memo?: string;
+}
+
 export type WalletProviderType = 'leather' | 'xverse' | 'hiro' | 'walletconnect' | 'ledger' | 'trezor';
