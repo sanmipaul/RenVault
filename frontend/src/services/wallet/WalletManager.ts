@@ -13,6 +13,11 @@ export class WalletManager {
   private providers: Map<WalletProviderType, WalletProvider> = new Map();
   private currentProvider: WalletProvider | null = null;
   private connectionState: { address: string; publicKey: string } | null = null;
+  private connectionCache: Map<string, { data: any; timestamp: number }> = new Map();
+  private lazyLoadedProviders: Set<WalletProviderType> = new Set();
+  private connectionTimeouts: Map<string, NodeJS.Timeout> = new Map();
+  private readonly CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+  private readonly CONNECTION_TIMEOUT = 10000; // 10 seconds
 
   constructor() {
     this.providers.set('leather', new LeatherWalletProvider());
