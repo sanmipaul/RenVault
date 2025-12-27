@@ -6,6 +6,7 @@ import { HiroWalletProvider } from './HiroWalletProvider';
 import { WalletConnectProvider } from './WalletConnectProvider';
 import { LedgerWalletProvider } from './LedgerWalletProvider';
 import { TrezorWalletProvider } from './TrezorWalletProvider';
+import * as crypto from 'crypto';
 
 export class WalletManager {
   private providers: Map<WalletProviderType, WalletProvider> = new Map();
