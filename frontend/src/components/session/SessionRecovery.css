@@ -1,0 +1,226 @@
+/* components/session/SessionRecovery.css */
+.session-recovery {
+  padding: 20px;
+  background: var(--card-background, #ffffff);
+  border-radius: 12px;
+  border: 1px solid var(--border-color, #e1e5e9);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.recovery-header {
+  margin-bottom: 24px;
+}
+
+.recovery-header h3 {
+  margin: 0 0 8px 0;
+  color: var(--text-primary, #1a202c);
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.recovery-header p {
+  margin: 0;
+  color: var(--text-secondary, #718096);
+  font-size: 0.875rem;
+}
+
+.recovery-stats {
+  margin-bottom: 24px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.stat-item {
+  padding: 16px;
+  background: var(--background-secondary, #f7fafc);
+  border-radius: 8px;
+  border: 1px solid var(--border-color, #e1e5e9);
+}
+
+.stat-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-secondary, #718096);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.stat-value {
+  display: block;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary, #1a202c);
+}
+
+.recovery-actions {
+  margin-bottom: 24px;
+}
+
+.recovery-actions .btn-primary {
+  padding: 12px 24px;
+  background: var(--primary-color, #4299e1);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.recovery-actions .btn-primary:hover:not(:disabled) {
+  background: var(--primary-hover, #3182ce);
+  transform: translateY(-1px);
+}
+
+.recovery-actions .btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.backup-list h4 {
+  margin: 0 0 16px 0;
+  color: var(--text-primary, #1a202c);
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.loading, .no-backups {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-secondary, #718096);
+  font-style: italic;
+}
+
+.backup-items {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.backup-item {
+  padding: 16px;
+  background: var(--background-secondary, #f7fafc);
+  border-radius: 8px;
+  border: 1px solid var(--border-color, #e1e5e9);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.2s ease;
+}
+
+.backup-item:hover {
+  border-color: var(--primary-color, #4299e1);
+  box-shadow: 0 2px 4px rgba(66, 153, 225, 0.1);
+}
+
+.backup-info {
+  flex: 1;
+}
+
+.backup-id {
+  font-family: 'Monaco', 'Menlo', monospace;
+  font-size: 0.875rem;
+  color: var(--text-primary, #1a202c);
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.backup-details {
+  display: flex;
+  gap: 16px;
+  font-size: 0.75rem;
+  color: var(--text-secondary, #718096);
+  margin-bottom: 8px;
+}
+
+.backup-options {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.option-tag {
+  padding: 2px 8px;
+  background: var(--tag-background, #edf2f7);
+  color: var(--tag-text, #4a5568);
+  border-radius: 12px;
+  font-size: 0.625rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.backup-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.backup-actions .btn-secondary {
+  padding: 8px 16px;
+  background: var(--secondary-color, #e2e8f0);
+  color: var(--text-primary, #1a202c);
+  border: 1px solid var(--border-color, #cbd5e0);
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.backup-actions .btn-secondary:hover:not(:disabled) {
+  background: var(--secondary-hover, #cbd5e0);
+}
+
+.backup-actions .btn-secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.backup-actions .btn-danger {
+  padding: 8px 16px;
+  background: var(--danger-color, #e53e3e);
+  color: white;
+  border: 1px solid var(--danger-border, #c53030);
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.backup-actions .btn-danger:hover {
+  background: var(--danger-hover, #c53030);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .session-recovery {
+    padding: 16px;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .backup-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .backup-actions {
+    justify-content: center;
+  }
+
+  .backup-details {
+    flex-direction: column;
+    gap: 4px;
+  }
+}
