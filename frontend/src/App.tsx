@@ -691,6 +691,20 @@ function AppContent() {
           >
             🔔
           </button>
+          <button
+            className="btn btn-outline"
+            onClick={() => setShowWalletBackup(true)}
+            title="Backup Wallet"
+          >
+            🛡️ Backup
+          </button>
+          <button
+            className="btn btn-outline"
+            onClick={() => setShowWalletRecovery(true)}
+            title="Recover Wallet"
+          >
+            🔄 Recover
+          </button>
           {detectedNetwork && (
             <div className="network-indicator">
               <span className={`network-badge ${detectedNetwork}`}>
