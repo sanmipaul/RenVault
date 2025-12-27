@@ -1,12 +1,6 @@
 // services/wallet/WalletManager.ts
 import { WalletProvider, WalletProviderType } from '../../types/wallet';
-import { LeatherWalletProvider } from './LeatherWalletProvider';
-import { XverseWalletProvider } from './XverseWalletProvider';
-import { HiroWalletProvider } from './HiroWalletProvider';
-import { WalletConnectProvider } from './WalletConnectProvider';
-import { LedgerWalletProvider } from './LedgerWalletProvider';
-import { TrezorWalletProvider } from './TrezorWalletProvider';
-import { MultiSigWalletProvider } from './MultiSigWalletProvider';
+import { WalletProviderLoader } from './WalletProviderLoader';
 import * as crypto from 'crypto';
 
 export class WalletManager {
