@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { AppConfig, UserSession, showConnect, UserData, openContractCall } from '@stacks/connect';
 import { StacksMainnet, StacksTestnet } from '@stacks/network';
 import { 
@@ -226,15 +226,22 @@ function AppContent() {
     }
   }, []);
 
+  // Memoize network detection to avoid unnecessary recalculations
+  const detectedNetwork = useMemo(() => {
+    if (!userData?.profile?.stxAddress?.mainnet) return null;
+    return detectNetworkFromAddress(userData.profile.stxAddress.mainnet);
+  }, [userData?.profile?.stxAddress?.mainnet]);
+
+  const networkMismatch = useMemo(() => {
+    return detectedNetwork !== 'mainnet';
+  }, [detectedNetwork]);
+
   useEffect(() => {
-    if (userData) {
-      const network = detectNetworkFromAddress(userData.profile.stxAddress.mainnet);
-      setDetectedNetwork(network);
-      setNetworkMismatch(network !== 'mainnet');
-      console.log('Detected network:', network, 'Address:', userData.profile.stxAddress.mainnet);
+    if (userData && detectedNetwork) {
+      console.log('Detected network:', detectedNetwork, 'Address:', userData.profile.stxAddress.mainnet);
       fetchUserStats();
     }
-  }, [userData]);
+  }, [userData, detectedNetwork]);
 
   useEffect(() => {
     if (status) {
