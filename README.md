@@ -38,6 +38,7 @@ npm start
 - ✅ **On-chain Activity**: Fee generation on every deposit
 - ✅ **User Engagement**: Simple deposit/withdraw flow
 - ✅ **React Frontend**: Complete web interface with wallet integration
+- ✅ **AppKit Integration**: Enhanced wallet connection UI with @reown/appkit for better UX
 - ✅ **Hardware Wallet Support**: Secure transactions with Ledger and Trezor
 - ✅ **Transaction History**: View and filter wallet transaction history
 - ✅ **Notification System**: Real-time alerts for transactions and security
