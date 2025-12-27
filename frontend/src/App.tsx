@@ -90,11 +90,14 @@ function AppContent() {
   const [currentTransaction, setCurrentTransaction] = useState<any>(null);
   const [showPerformanceMonitor, setShowPerformanceMonitor] = useState<boolean>(false);
 
-  // Preload critical wallet providers for better performance
+  // Cleanup effect for component unmount
   useEffect(() => {
-    WalletProviderLoader.preloadCriticalProviders().catch(error =>
-      console.warn('Failed to preload critical providers:', error)
-    );
+    return () => {
+      // Cleanup any pending operations
+      if (withdrawTxDetails) {
+        setWithdrawTxDetails(null);
+      }
+    };
   }, []);
 
   // Initialize notification service
