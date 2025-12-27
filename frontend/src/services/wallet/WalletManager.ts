@@ -291,4 +291,45 @@ export class WalletManager {
     const multiSigProvider = this.providers.get('multisig') as MultiSigWalletProvider;
     return multiSigProvider?.getTransactionStatus(txId);
   }
+
+  // Performance Optimization Methods
+  clearConnectionCache(): void {
+    this.connectionCache.clear();
+    this.connectionTimeouts.forEach(timeout => clearTimeout(timeout));
+    this.connectionTimeouts.clear();
+  }
+
+  getConnectionCacheStats(): { size: number; entries: string[] } {
+    return {
+      size: this.connectionCache.size,
+      entries: Array.from(this.connectionCache.keys())
+    };
+  }
+
+  preloadProvider(type: WalletProviderType): Promise<void> {
+    return this.lazyLoadProvider(type).then(() => undefined);
+  }
+
+  async preloadAllProviders(): Promise<void> {
+    const preloadPromises = Array.from(this.lazyLoadedProviders).map(type =>
+      this.lazyLoadProvider(type).catch(error =>
+        console.warn(`Failed to preload provider ${type}:`, error)
+      )
+    );
+    await Promise.all(preloadPromises);
+  }
+
+  getPerformanceMetrics(): {
+    cachedConnections: number;
+    loadedProviders: number;
+    lazyProviders: number;
+    activeTimeouts: number;
+  } {
+    return {
+      cachedConnections: this.connectionCache.size,
+      loadedProviders: this.providers.size,
+      lazyProviders: this.lazyLoadedProviders.size,
+      activeTimeouts: this.connectionTimeouts.size
+    };
+  }
 }
