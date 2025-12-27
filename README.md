@@ -42,6 +42,7 @@ npm start
 - ✅ **Transaction History**: View and filter wallet transaction history
 - ✅ **Notification System**: Real-time alerts for transactions and security
 - ✅ **Wallet Backup & Recovery**: Secure encrypted backup creation and recovery process
+- ✅ **Multi-Signature Wallets**: Shared control with co-signer management and threshold-based approvals
 - ✅ **Mainnet Deployed**: Live contracts ready for interaction
 - ✅ **Open Source**: Comprehensive documentation & tests
 
