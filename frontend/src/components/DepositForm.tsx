@@ -5,6 +5,7 @@ import { useWallet } from '../hooks/useWallet';
 import { WalletError } from '../utils/wallet-errors';
 import { getFriendlyErrorMessage } from '../utils/wallet-errors';
 import TransactionSuccess from './TransactionSuccess';
+import { PermissionService, PermissionType } from '../services/permissions/PermissionService';
 import TransactionSigner from './TransactionSigner';
 import './DepositForm.css';
 
@@ -43,6 +44,17 @@ const DepositForm: React.FC<DepositFormProps> = ({
     if (!isConnected) {
       setError('Please connect your wallet first');
       return;
+    }
+
+    // Check transaction signing permission
+    if (connectionState?.address) {
+      const permissionService = PermissionService.getInstance();
+      const hasPermission = permissionService.isPermissionGranted(connectionState.address, PermissionType.TRANSACTION_SIGN);
+
+      if (!hasPermission) {
+        setError('Transaction signing permission required. Please grant permission in wallet settings.');
+        return;
+      }
     }
 
     setIsPreparing(true);
