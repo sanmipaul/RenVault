@@ -39,6 +39,7 @@ npm start
 - ✅ **User Engagement**: Simple deposit/withdraw flow
 - ✅ **React Frontend**: Complete web interface with wallet integration
 - ✅ **Hardware Wallet Support**: Secure transactions with Ledger and Trezor
+- ✅ **Transaction History**: View and filter wallet transaction history
 - ✅ **Notification System**: Real-time alerts for transactions and security
 - ✅ **Mainnet Deployed**: Live contracts ready for interaction
 - ✅ **Open Source**: Comprehensive documentation & tests
