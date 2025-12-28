@@ -28,6 +28,7 @@ import { CoSignerManagement } from './components/CoSignerManagement';
 import { MultiSigTransactionSigner } from './components/MultiSigTransactionSigner';
 import { WalletProviderLoader } from './services/wallet/WalletProviderLoader';
 import { PerformanceMonitor } from './components/PerformanceMonitor';
+import { AuthProvider } from './context/AuthContext';
 
 const appConfig = new AppConfig(['store_write', 'publish_data']);
 const userSession = new UserSession({ appConfig });
@@ -1132,10 +1133,10 @@ function App() {
   }
 
   return (
-    <>
+    <AuthProvider>
       <AppContent />
       <AppKit />
-    </>
+    </AuthProvider>
   );
 }
 
