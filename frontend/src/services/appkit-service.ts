@@ -69,8 +69,8 @@ export class AppKitService {
         themeVariables: walletConnectConfig.appKit.themeVariables,
         features: {
           analytics: true,
-          email: false,
-          socials: false,
+          email: true,
+          socials: ['google', 'x', 'discord', 'github'],
           history: true,
         },
         enableWalletConnect: true,
