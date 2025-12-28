@@ -1,6 +1,7 @@
 import React, { createContext, useContext, ReactNode } from 'react';
 import { useAppKitAccount } from '@reown/appkit/react';
 import { WalletProvider, WalletProviderType } from '../types/wallet';
+import { useAuth, AuthMethod } from './AuthContext';
 
 interface WalletContextType {
   currentProvider: WalletProvider | null;
@@ -19,12 +20,17 @@ interface WalletContextType {
   isRestoringSession: boolean;
   sessionError: string | null;
   clearStoredSession: () => void;
+  // Email/Social auth properties
+  authMethod: AuthMethod | null;
+  isEmailAuth: boolean;
+  isSocialAuth: boolean;
 }
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
 
 export const WalletProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { address, isConnected, status } = useAppKitAccount();
+  const { user, isLoading: authLoading } = useAuth();
 
   const setSelectedProvider = (type: WalletProviderType) => {
     // AppKit handles provider selection internally
@@ -53,6 +59,10 @@ export const WalletProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     // Clear session
   };
 
+  const authMethod = user?.method || null;
+  const isEmailAuth = authMethod === 'email';
+  const isSocialAuth = authMethod === 'social';
+
   const contextValue: WalletContextType = {
     currentProvider: null, // AppKit manages this
     selectedProviderType: null,
@@ -60,7 +70,7 @@ export const WalletProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     connect,
     disconnect,
     signTransaction,
-    isLoading: status === 'connecting',
+    isLoading: status === 'connecting' || authLoading,
     error: null,
     isConnected,
     connectionState: isConnected ? { address: address || '', publicKey: '' } : null,
@@ -69,6 +79,9 @@ export const WalletProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     isRestoringSession: false,
     sessionError: null,
     clearStoredSession,
+    authMethod,
+    isEmailAuth,
+    isSocialAuth,
   };
 
   return (
