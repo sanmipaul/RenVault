@@ -121,3 +121,102 @@
     points: (default-to u0 (map-get? commitment-points user))
   })
 )
+
+;; Bulk Operations
+
+;; Bulk deposit multiple amounts in one transaction (up to 10 deposits)
+(define-private (deposit-single (deposit-amount uint))
+  (let (
+    (sender tx-sender)
+    (fee (calculate-fee deposit-amount))
+    (user-amount (calculate-user-amount deposit-amount))
+    (current-balance (default-to u0 (map-get? user-balances sender)))
+    (current-points (default-to u0 (map-get? commitment-points sender)))
+  )
+    ;; Validate amount
+    (asserts! (> deposit-amount u0) err-invalid-amount)
+
+    ;; Transfer STX from user to contract
+    (try! (stx-transfer? deposit-amount sender (as-contract tx-sender)))
+
+    ;; Update user balance (99% of deposit)
+    (map-set user-balances sender (+ current-balance user-amount))
+
+    ;; Increment commitment points (Clarity 4 arithmetic) - 1 point per deposit
+    (map-set commitment-points sender (+ current-points u1))
+
+    ;; Add fee to total collected
+    (var-set total-fees-collected (+ (var-get total-fees-collected) fee))
+
+    ;; Return deposit details
+    (ok {
+      deposited: user-amount,
+      fee: fee,
+      new-balance: (+ current-balance user-amount),
+      commitment-points: (+ current-points u1)
+    })
+  )
+)
+
+(define-public (bulk-deposit (amounts (list 10 uint)))
+  (let (
+    (total-deposited u0)
+    (total-fees u0)
+    (points-earned u0)
+  )
+    ;; Basic validations
+    (asserts! (> (len amounts) u0) err-invalid-amount)
+
+    ;; Process all deposits - each will validate individually
+    (let ((results (map deposit-single amounts)))
+      ;; Calculate totals from results
+      (ok {
+        total-deposits: (len amounts),
+        results: results
+      })
+    )
+  )
+)
+
+;; Bulk withdraw multiple amounts in one transaction (up to 5 withdrawals)
+(define-private (withdraw-single (withdraw-amount uint))
+  (let (
+    (sender tx-sender)
+    (current-balance (default-to u0 (map-get? user-balances sender)))
+  )
+    ;; Validate amount
+    (asserts! (> withdraw-amount u0) err-invalid-amount)
+    (asserts! (>= current-balance withdraw-amount) err-insufficient-balance)
+
+    ;; Update user balance
+    (map-set user-balances sender (- current-balance withdraw-amount))
+
+    ;; Transfer STX from contract to user
+    (try! (as-contract (stx-transfer? withdraw-amount tx-sender sender)))
+
+    ;; Return withdrawal details
+    (ok {
+      withdrawn: withdraw-amount,
+      remaining-balance: (- current-balance withdraw-amount)
+    })
+  )
+)
+
+(define-public (bulk-withdraw (amounts (list 5 uint)))
+  (let (
+    (sender tx-sender)
+    (total-withdrawn u0)
+  )
+    ;; Basic validations
+    (asserts! (> (len amounts) u0) err-invalid-amount)
+
+    ;; Process all withdrawals - each will validate individually
+    (let ((results (map withdraw-single amounts)))
+      ;; Calculate total withdrawn
+      (ok {
+        total-withdrawals: (len amounts),
+        results: results
+      })
+    )
+  )
+)
