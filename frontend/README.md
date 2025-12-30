@@ -29,6 +29,14 @@ RenVault uses **@reown/appkit** for wallet connectivity, providing:
 cd frontend
 npm install
 npm start
+
+### AppKit On-Ramp (optional)
+
+To enable the AppKit on-ramp (fiat-to-crypto) flow, set the following environment variables:
+
+- `REACT_APP_APPKIT_ENABLED=true`
+- `REACT_APP_APPKIT_API_KEY=your_appkit_api_key_here`
+- `REACT_APP_APPKIT_PROVIDER_URL=https://onramp.provider/checkout`
 ```
 
 ## Contract Integration
