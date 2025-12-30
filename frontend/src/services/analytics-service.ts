@@ -32,6 +32,10 @@ export enum AnalyticsEventType {
   // Error Events
   CONNECTION_ERROR = 'connection_error',
   TRANSACTION_ERROR = 'transaction_error',
+  // On-Ramp Events
+  ONRAMP_PURCHASE_INITIATED = 'onramp_purchase_initiated',
+  ONRAMP_PURCHASE_SUCCESS = 'onramp_purchase_success',
+  ONRAMP_PURCHASE_FAILED = 'onramp_purchase_failed',
 }
 
 export interface AnalyticsEventPayload {
@@ -183,6 +187,20 @@ class AnalyticsService {
       network: metrics.network,
       duration: metrics.duration,
       gas_estimate: metrics.gasEstimate,
+    });
+  }
+
+  /**
+   * Track on-ramp purchase lifecycle
+   */
+  trackOnRampEvent(event: 'initiated' | 'success' | 'failed', payload?: AnalyticsEventPayload): void {
+    if (this.isOptedOut) return;
+    let type = AnalyticsEventType.ONRAMP_PURCHASE_INITIATED;
+    if (event === 'success') type = AnalyticsEventType.ONRAMP_PURCHASE_SUCCESS;
+    if (event === 'failed') type = AnalyticsEventType.ONRAMP_PURCHASE_FAILED;
+
+    this.trackEvent(type, {
+      ...payload,
     });
   }
 
