@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import '../styles/onramp.css';
 import { onRampService } from '../services/onramp-service';
 import { BalanceService } from '../services/balance/BalanceService';
 import { useWallet } from '../hooks/useWallet';
