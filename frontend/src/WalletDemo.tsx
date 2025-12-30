@@ -1,35 +1,75 @@
-import React from 'react';
-import { useWalletKit } from './hooks/useWalletKit';
-import { WalletKitProvider, useWalletKitContext } from './context/WalletKitProvider';
+import React, { useState } from 'react';
+import { WalletProvider } from './context/WalletProvider';
 import { WalletConnect } from './components/WalletConnect';
+import { useWallet } from './hooks/useWallet';
+import DisconnectModal from './components/DisconnectModal';
+import AddressDisplay from './components/AddressDisplay';
+import BalanceDisplay from './components/BalanceDisplay';
+import DepositForm from './components/DepositForm';
+import PermissionManager from './components/PermissionManager';
 import './App.css';
 
 const AppContent: React.FC = () => {
-  const { isLoading, error } = useWalletKitContext();
+  const { isConnected, disconnect, connectionState, currentProvider } = useWallet();
+  const [showDisconnectModal, setShowDisconnectModal] = useState(false);
+  const [showPermissionManager, setShowPermissionManager] = useState(false);
 
-  if (isLoading) return <div className='loading'>Initializing WalletKit...</div>;
-  if (error) return <div className='error'>Error: {error.message}</div>;
+  const handleDisconnectClick = () => {
+    setShowDisconnectModal(true);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await disconnect();
+      // Additional logout logic if needed
+      setShowDisconnectModal(false);
+    } catch (err) {
+      console.error('Logout failed:', err);
+    }
+  };
+
+  const handleDisconnectCancel = () => {
+    setShowDisconnectModal(false);
+  };
 
   return (
     <div className='app-container'>
       <header>
         <h1>RenVault Wallet</h1>
-        <p>WalletConnect Integration</p>
+        <p>Multi-Provider Wallet Integration</p>
+        {isConnected && (
+          <div className="header-actions">
+            <AddressDisplay address={connectionState?.address || ''} />
+            <button onClick={() => setShowPermissionManager(true)} className="permission-btn">🔐 Permissions</button>
+            <button onClick={handleDisconnectClick} className="disconnect-btn">Disconnect</button>
+          </div>
+        )}
       </header>
       <main>
         <WalletConnect />
+        <BalanceDisplay />
+        <DepositForm />
       </main>
+      <DisconnectModal
+        isOpen={showDisconnectModal}
+        onConfirm={handleDisconnectConfirm}
+        onCancel={handleDisconnectCancel}
+        onLogout={handleLogout}
+        providerName={currentProvider?.name || 'wallet'}
+      />
+      <PermissionManager
+        isOpen={showPermissionManager}
+        onClose={() => setShowPermissionManager(false)}
+      />
     </div>
   );
 };
 
 const App: React.FC = () => {
-  const { walletKit, loading, error } = useWalletKit();
-
   return (
-    <WalletKitProvider value={{ walletKit, isLoading: loading, error }}>
+    <WalletProvider>
       <AppContent />
-    </WalletKitProvider>
+    </WalletProvider>
   );
 };
 

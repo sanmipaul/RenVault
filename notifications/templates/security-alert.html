@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>RenVault Security Alert</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 8px; }
+        .header { background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%); color: white; padding: 30px; text-align: center; }
+        .content { padding: 30px; }
+        .alert-box { background: #fed7d7; border: 1px solid #feb2b2; border-radius: 6px; padding: 20px; margin: 20px 0; }
+        .alert-title { color: #c53030; font-weight: bold; margin-bottom: 10px; }
+        .details { background: #f7fafc; padding: 15px; border-radius: 4px; margin: 15px 0; }
+        .warning { color: #d69e2e; font-weight: bold; }
+        .footer { background: #f8f9fa; padding: 20px; text-align: center; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚨 RenVault Security Alert</h1>
+            <h2>Failed Login Attempt Detected</h2>
+        </div>
+        <div class="content">
+            <div class="alert-box">
+                <div class="alert-title">⚠️ Security Notice</div>
+                <p>We detected a failed login attempt to your RenVault account. If this wasn't you, please take immediate action to secure your account.</p>
+            </div>
+
+            <div class="details">
+                <p><strong>IP Address:</strong> {{ipAddress}}</p>
+                <p><strong>User Agent:</strong> {{userAgent}}</p>
+                <p><strong>Time:</strong> {{timestamp}}</p>
+            </div>
+
+            <div class="warning">
+                <p>🔐 <strong>Recommended Actions:</strong></p>
+                <ul>
+                    <li>Change your password if you suspect unauthorized access</li>
+                    <li>Enable two-factor authentication if not already enabled</li>
+                    <li>Review your recent account activity</li>
+                    <li>Contact support if you need assistance</li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer">
+            <p>RenVault - Your Security is Our Priority</p>
+            <p>If you have any concerns, please contact our support team immediately.</p>
+        </div>
+    </div>
+</body>
+</html>

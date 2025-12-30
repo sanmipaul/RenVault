@@ -36,3 +36,7 @@ export const hexToUtf8 = (hex: string): string => {
   }
   return decodeURIComponent(utf8);
 };
+
+export const isValidWcUri = (uri: string): boolean => {
+  return uri.startsWith('wc:');
+};

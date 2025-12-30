@@ -1,27 +1,134 @@
-.app-container {
-  max-width: 1200px;
-  margin: 0 auto;
+.app-container header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   padding: 20px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 12px 12px 0 0;
+  margin-bottom: 20px;
 }
 
-header {
-  text-align: center;
-  margin-bottom: 40px;
-}
-
-header h1 {
+.app-container header h1 {
   margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.app-container header p {
+  margin: 5px 0 0 0;
+  opacity: 0.9;
+  font-size: 14px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.permission-btn,
+.disconnect-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.permission-btn {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.permission-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.disconnect-btn {
+  background: rgba(239, 68, 68, 0.9);
+  color: white;
+}
+
+.disconnect-btn:hover {
+  background: rgba(239, 68, 68, 1);
+  transform: translateY(-1px);
+}
+
+.provider-selector h3 {
+  margin-bottom: 10px;
   color: #333;
 }
 
-header p {
-  margin: 10px 0 0;
-  color: #666;
+.provider-list {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.provider-button {
+  padding: 10px 15px;
+  border: 2px solid #ddd;
+  background: white;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+
+.provider-button:hover {
+  border-color: #4299e1;
+  background: #f0f8ff;
+}
+
+.provider-button.selected {
+  border-color: #4299e1;
+  background: #4299e1;
+  color: white;
+}
+
+.connect-section {
+  text-align: center;
+}
+
+.connect-section button {
+  padding: 12px 24px;
+  background: #4299e1;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  margin: 10px;
+  transition: background 0.2s;
+}
+
+.connect-section button:hover:not(:disabled) {
+  background: #3182ce;
+}
+
+.connect-section button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.error {
+  color: red;
+  margin-top: 10px;
+}
+
+.notification-button:hover {
+  background: #3182ce;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(66, 153, 225, 0.4);
 }
 
 main {
@@ -44,6 +151,86 @@ main {
 
 .loading {
   color: #1976d2;
+}
+
+.card.error {
+  border: 1px solid #d32f2f;
+  background: #ffebee;
+}
+
+.toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #333;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 20px;
+  background: #e0e0e0;
+  border-radius: 10px;
+  margin-top: 10px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #1976d2;
+  transition: width 0.5s ease;
+}
+
+.progress-text {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  color: white;
+  font-size: 12px;
+  line-height: 20px;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.security-options {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.security-item {
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #f9f9f9;
+}
+
+.security-item h4 {
+  margin: 0 0 8px 0;
+  color: #333;
+}
+
+.security-item p {
+  margin: 0 0 12px 0;
+  color: #666;
+  font-size: 0.9em;
 }
 
 .btn {
@@ -231,4 +418,356 @@ main {
 
 .scan-instructions li {
   margin-bottom: 5px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 16px;
+  font-size: 14px;
+  color: #666;
+}
+
+.disconnect-btn {
+  background: #e53e3e;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s;
+}
+
+.disconnect-btn:hover {
+  background: #c53030;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+}
+
+.modal-content h3 {
+  margin-top: 0;
+  color: #333;
+}
+
+.modal-content p {
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.cancel-btn {
+  background: #e2e8f0;
+  color: #4a5568;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 20px;
+  cursor: pointer;
+}
+
+.confirm-btn {
+  background: #e53e3e;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 20px;
+  cursor: pointer;
+}
+
+.confirm-btn:hover {
+  background: #c53030;
+}
+
+.logout-btn {
+  background: #2d3748;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 20px;
+  cursor: pointer;
+}
+
+.logout-btn:hover {
+  background: #1a202c;
+}
+
+.address-display {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #f7fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-family: monospace;
+  font-size: 14px;
+  color: #2d3748;
+}
+
+.address-text {
+  cursor: pointer;
+  user-select: text;
+}
+
+.copy-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: background 0.2s;
+  font-size: 16px;
+}
+
+.copy-button:hover {
+  background: #e2e8f0;
+}
+
+.copy-button:active {
+  transform: scale(0.95);
+}
+
+.copy-button.copied {
+  background: #48bb78;
+  color: white;
+  animation: copySuccess 0.3s ease;
+}
+
+.copy-button.error {
+  background: #e53e3e;
+  color: white;
+  animation: copyError 0.3s ease;
+}
+
+.expand-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: background 0.2s;
+  font-size: 16px;
+}
+
+.expand-button:hover {
+  background: #e2e8f0;
+}
+
+.balance-display {
+  background: #f7fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 20px;
+  max-width: 400px;
+}
+
+.balance-display h3 {
+  margin: 0 0 16px 0;
+  color: #2d3748;
+  font-size: 18px;
+}
+
+.balance-content {
+  margin-bottom: 16px;
+}
+
+.stx-balance {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.currency {
+  font-weight: bold;
+  color: #4a5568;
+}
+
+.amount {
+  font-size: 24px;
+  font-weight: bold;
+  color: #2d3748;
+}
+
+.token-balances h4 {
+  margin: 12px 0 8px 0;
+  color: #4a5568;
+  font-size: 14px;
+}
+
+.token-balance {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  font-size: 14px;
+}
+
+.token-name {
+  color: #4a5568;
+  font-family: monospace;
+}
+
+.token-amount {
+  color: #2d3748;
+  font-weight: 500;
+}
+
+.last-updated {
+  font-size: 12px;
+  color: #718096;
+  margin-top: 8px;
+}
+
+.refresh-button {
+  background: #4299e1;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s;
+}
+
+.refresh-button:hover:not(:disabled) {
+  background: #3182ce;
+}
+
+.refresh-button:disabled {
+  background: #a0aec0;
+  cursor: not-allowed;
+}
+
+.loading {
+  color: #718096;
+  font-style: italic;
+}
+
+.balance-loading {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid #e2e8f0;
+  border-radius: 50%;
+  border-top-color: #4299e1;
+  animation: spin 1s ease-in-out infinite;
+  margin-right: 8px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes copySuccess {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+@keyframes copyError {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}
+
+.connected-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.connected-state p {
+  margin: 0;
+  font-weight: 500;
+}
+
+.address-tooltip {
+  position: absolute;
+  background: #2d3748;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: monospace;
+  white-space: nowrap;
+  z-index: 100;
+  margin-top: 5px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.address-display {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #f7fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-family: monospace;
+  font-size: 14px;
+  color: #2d3748;
+}
+
+/* AppKit Controls */
+.appkit-controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 20px;
+  justify-content: flex-end;
+}
+
+.appkit-controls appkit-account-button,
+.appkit-controls appkit-network-button {
+  --appkit-button-border-radius: 8px;
+  --appkit-button-font-family: inherit;
+  --appkit-button-font-size: 14px;
+  --appkit-button-padding: 8px 16px;
+}
+
+/* Mobile responsiveness for AppKit controls */
+@media (max-width: 768px) {
+  .appkit-controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .appkit-controls appkit-account-button,
+  .appkit-controls appkit-network-button {
+    --appkit-button-font-size: 16px;
+    --appkit-button-padding: 12px 16px;
+    width: 100%;
+  }
 }

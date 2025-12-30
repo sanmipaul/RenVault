@@ -42,6 +42,55 @@ app.post('/api/notifications/test-deposit', async (req, res) => {
   res.json({ success: true, message: 'Test deposit notification sent' });
 });
 
+app.post('/api/notifications/test-withdrawal', async (req, res) => {
+  const { userId, amount, balance } = req.body;
+  
+  await notificationManager.notifyWithdrawal(userId, amount, balance);
+  res.json({ success: true, message: 'Test withdrawal notification sent' });
+});
+
+app.post('/api/notifications/test-staking-reward', async (req, res) => {
+  const { userId, amount, stakedAmount } = req.body;
+  
+  await notificationManager.notifyStakingReward(userId, amount, stakedAmount);
+  res.json({ success: true, message: 'Test staking reward notification sent' });
+});
+
+app.post('/api/notifications/test-liquidity-reward', async (req, res) => {
+  const { userId, amount, poolName } = req.body;
+  
+  await notificationManager.notifyLiquidityReward(userId, amount, poolName);
+  res.json({ success: true, message: 'Test liquidity reward notification sent' });
+});
+
+app.post('/api/notifications/test-failed-login', async (req, res) => {
+  const { userId, ipAddress, userAgent } = req.body;
+  
+  await notificationManager.notifyFailedLogin(userId, ipAddress, userAgent);
+  res.json({ success: true, message: 'Test failed login notification sent' });
+});
+
+app.post('/api/notifications/test-suspicious-activity', async (req, res) => {
+  const { userId, activity, ipAddress } = req.body;
+  
+  await notificationManager.notifySuspiciousActivity(userId, activity, ipAddress);
+  res.json({ success: true, message: 'Test suspicious activity notification sent' });
+});
+
+app.post('/api/notifications/test-2fa-enabled', async (req, res) => {
+  const { userId } = req.body;
+  
+  await notificationManager.notifyTwoFactorEnabled(userId);
+  res.json({ success: true, message: 'Test 2FA enabled notification sent' });
+});
+
+app.post('/api/notifications/test-2fa-disabled', async (req, res) => {
+  const { userId } = req.body;
+  
+  await notificationManager.notifyTwoFactorDisabled(userId);
+  res.json({ success: true, message: 'Test 2FA disabled notification sent' });
+});
+
 app.get('/api/notifications/stats', (req, res) => {
   const stats = notificationManager.getStats();
   res.json(stats);
