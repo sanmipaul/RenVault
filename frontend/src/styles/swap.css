@@ -1,0 +1,6 @@
+.swap-widget { background: white; padding: 12px; border-radius: 8px; border: 1px solid #e6e6e6; }
+.swap-row { margin-bottom: 8px; display:flex; gap:8px; align-items:center }
+.swap-row label { width: 120px; font-weight:600 }
+.swap-actions { display:flex; gap:8px; margin-top:8px }
+.swap-quote { margin-top:8px; padding:8px; background:#f8f9fa; border-radius:6px }
+.swap-result { margin-top:8px; font-weight:700 }
