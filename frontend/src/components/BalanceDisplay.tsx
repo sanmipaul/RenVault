@@ -4,6 +4,8 @@ import { BalanceService, Balance } from '../services/balance/BalanceService';
 import { useWallet } from '../hooks/useWallet';
 import { usePermissions } from '../hooks/usePermissions';
 import { PermissionType } from '../services/permissions/PermissionService';
+import BuySTXButton from './BuySTXButton';
+import walletConnectConfig from '../config/walletconnect';
 
 interface BalanceDisplayProps {
   className?: string;
@@ -115,6 +117,11 @@ const BalanceDisplay: React.FC<BalanceDisplayProps> = ({
           <div className="last-updated">
             Last updated: {balance.lastUpdated.toLocaleTimeString()}
           </div>
+        </div>
+      )}
+      {walletConnectConfig.appKit?.enabled && (
+        <div className="buy-stx">
+          <BuySTXButton />
         </div>
       )}
       {showRefreshButton && (
