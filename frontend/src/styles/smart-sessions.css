@@ -1,0 +1,393 @@
+/**
+ * Smart Sessions Styles
+ */
+
+.smart-session-config {
+  padding: 16px;
+  border-radius: 8px;
+  background: #f5f5f5;
+  margin: 16px 0;
+}
+
+.smart-session-config h3 {
+  margin-top: 0;
+  font-size: 18px;
+  color: #333;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: #555;
+}
+
+.form-group select,
+.form-group input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.operations-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkbox-label input {
+  width: auto;
+  margin: 0;
+}
+
+.form-group.checkbox label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 400;
+}
+
+.form-group.checkbox input {
+  width: auto;
+  margin: 0;
+}
+
+.create-button {
+  background: #4a80f5;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.create-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Session Monitor */
+
+.session-monitor {
+  padding: 16px;
+  border-radius: 8px;
+  background: white;
+  border: 1px solid #e0e0e0;
+  margin: 16px 0;
+}
+
+.session-monitor h3 {
+  margin-top: 0;
+  font-size: 18px;
+  color: #333;
+}
+
+.sessions-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.session-card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 16px;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.session-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 12px;
+}
+
+.session-header h4 {
+  margin: 0;
+  font-size: 14px;
+  color: #333;
+}
+
+.status {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status-active {
+  background: #d4edda;
+  color: #155724;
+}
+
+.status-revoked {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.status-expired {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.session-details {
+  margin: 12px 0;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  margin-bottom: 6px;
+  padding: 4px 0;
+}
+
+.detail-row label {
+  font-weight: 600;
+  color: #666;
+  margin: 0;
+}
+
+.detail-row span {
+  color: #333;
+}
+
+.revoke-button {
+  width: 100%;
+  padding: 8px;
+  margin-top: 12px;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.revoke-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Admin Dashboard */
+
+.admin-session-dashboard {
+  padding: 24px;
+  background: white;
+}
+
+.dashboard-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin: 24px 0;
+}
+
+.stat-card {
+  padding: 20px;
+  border-radius: 8px;
+  background: #f8f9fa;
+  border-left: 4px solid #4a80f5;
+}
+
+.stat-card.alert {
+  border-left-color: #ffc107;
+}
+
+.stat-card.critical {
+  border-left-color: #dc3545;
+}
+
+.stat-value {
+  font-size: 32px;
+  font-weight: 700;
+  color: #333;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #666;
+  margin-top: 4px;
+  text-transform: uppercase;
+}
+
+.dashboard-content {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.sessions-table {
+  overflow-x: auto;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin-top: 12px;
+}
+
+.sessions-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.sessions-table th {
+  background: #f5f5f5;
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 1px solid #ddd;
+}
+
+.sessions-table td {
+  padding: 12px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.sessions-table tr:hover {
+  background: #f8f9fa;
+  cursor: pointer;
+}
+
+.btn-small {
+  padding: 4px 8px;
+  font-size: 12px;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.anomalies-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.anomaly-card {
+  padding: 12px;
+  border-radius: 6px;
+  background: #f8f9fa;
+  border-left: 3px solid #6c757d;
+}
+
+.anomaly-card.severity-high {
+  border-left-color: #dc3545;
+  background: #f8d7da;
+}
+
+.anomaly-card.severity-medium {
+  border-left-color: #ffc107;
+  background: #fff3cd;
+}
+
+.anomaly-card.severity-low {
+  border-left-color: #17a2b8;
+  background: #d1ecf1;
+}
+
+.anomaly-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.severity {
+  font-size: 11px;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-weight: 700;
+}
+
+.severity-high {
+  background: #dc3545;
+  color: white;
+}
+
+.severity-medium {
+  background: #ffc107;
+  color: white;
+}
+
+.severity-low {
+  background: #17a2b8;
+  color: white;
+}
+
+.anomaly-card p {
+  margin: 4px 0;
+  font-size: 13px;
+  color: #333;
+}
+
+.anomaly-card .timestamp {
+  font-size: 11px;
+  color: #666;
+  margin-top: 8px;
+}
+
+.loading {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+}
+
+.no-sessions,
+.no-anomalies {
+  text-align: center;
+  padding: 20px;
+  color: #999;
+  font-style: italic;
+}
+
+.error-message {
+  background: #f8d7da;
+  color: #721c24;
+  padding: 12px;
+  border-radius: 4px;
+  margin-bottom: 12px;
+  border: 1px solid #f5c6cb;
+}
+
+@media (max-width: 768px) {
+  .dashboard-content {
+    grid-template-columns: 1fr;
+  }
+
+  .operations-list {
+    grid-template-columns: 1fr;
+  }
+
+  .sessions-list {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-stats {
+    grid-template-columns: 1fr 1fr;
+  }
+}
