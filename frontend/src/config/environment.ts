@@ -11,6 +11,9 @@ export const environment = {
     apiKey: process.env.REACT_APP_APPKIT_API_KEY || '',
     providerUrl: process.env.REACT_APP_APPKIT_PROVIDER_URL || ''
   },
+  appKitSwap: {
+    enabled: process.env.REACT_APP_APPKIT_SWAP_ENABLED === 'true'
+  },
   isDev: process.env.NODE_ENV === 'development',
   isProd: process.env.NODE_ENV === 'production',
 };

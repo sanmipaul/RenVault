@@ -36,6 +36,10 @@ export enum AnalyticsEventType {
   ONRAMP_PURCHASE_INITIATED = 'onramp_purchase_initiated',
   ONRAMP_PURCHASE_SUCCESS = 'onramp_purchase_success',
   ONRAMP_PURCHASE_FAILED = 'onramp_purchase_failed',
+  // Swap Events
+  SWAP_INITIATED = 'swap_initiated',
+  SWAP_COMPLETED = 'swap_completed',
+  SWAP_FAILED = 'swap_failed',
 }
 
 export interface AnalyticsEventPayload {

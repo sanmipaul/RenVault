@@ -5,6 +5,7 @@ import { useWallet } from '../hooks/useWallet';
 import { usePermissions } from '../hooks/usePermissions';
 import { PermissionType } from '../services/permissions/PermissionService';
 import BuySTXButton from './BuySTXButton';
+import SwapWidget from './SwapWidget';
 import walletConnectConfig from '../config/walletconnect';
 
 interface BalanceDisplayProps {
@@ -122,6 +123,11 @@ const BalanceDisplay: React.FC<BalanceDisplayProps> = ({
       {walletConnectConfig.appKit?.enabled && (
         <div className="buy-stx">
           <BuySTXButton />
+        </div>
+      )}
+      {walletConnectConfig.appKitSwap?.enabled && (
+        <div className="swap-widget-container">
+          <SwapWidget />
         </div>
       )}
       {showRefreshButton && (
