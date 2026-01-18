@@ -2,6 +2,7 @@
   "name": "ren-vault",
   "version": "1.0.0",
   "description": "Clarity 4 DeFi protocol with micro-savings and governance",
+  "author": "Adekunle Bamz",
   "scripts": {
     "test": "clarinet test",
     "test:coverage": "clarinet test --coverage",
