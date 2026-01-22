@@ -181,4 +181,65 @@ class EmailService {
     }
   }
 
+  async sendLargeTransactionAlert(userEmail, amount, type) {
+    const mailOptions = {
+      from: process.env.FROM_EMAIL || 'noreply@renvault.com',
+      to: userEmail,
+      subject: '🚨 Large Transaction Alert',
+      html: `
+        <h2>Security Alert: Large Transaction</h2>
+        <p>A large ${type} transaction of <strong>${amount} STX</strong> has been detected.</p>
+        <p>If this was not you, please secure your account immediately.</p>
+      `
+    };
+
+    try {
+      await this.transporter.sendMail(mailOptions);
+      console.log(`✅ Large transaction alert sent to ${userEmail}`);
+    } catch (error) {
+      console.error('❌ Email send failed:', error.message);
+    }
+  }
+
+  async sendMultisigAlert(userEmail, requestId, action) {
+    const mailOptions = {
+      from: process.env.FROM_EMAIL || 'noreply@renvault.com',
+      to: userEmail,
+      subject: '🔐 Multi-signature Request',
+      html: `
+        <h2>Multi-signature Approval Required</h2>
+        <p>Request ID: <strong>${requestId}</strong></p>
+        <p>Action: <strong>${action}</strong></p>
+        <p>Your approval is required for this multi-signature transaction.</p>
+      `
+    };
+
+    try {
+      await this.transporter.sendMail(mailOptions);
+      console.log(`✅ Multisig alert sent to ${userEmail}`);
+    } catch (error) {
+      console.error('❌ Email send failed:', error.message);
+    }
+  }
+
+  async sendSessionExpirationAlert(userEmail, minutesRemaining) {
+    const mailOptions = {
+      from: process.env.FROM_EMAIL || 'noreply@renvault.com',
+      to: userEmail,
+      subject: '⏳ Session Expiration Warning',
+      html: `
+        <h2>Session Expiring Soon</h2>
+        <p>Your session will expire in <strong>${minutesRemaining} minutes</strong>.</p>
+        <p>Please save your work or extend your session to avoid losing progress.</p>
+      `
+    };
+
+    try {
+      await this.transporter.sendMail(mailOptions);
+      console.log(`✅ Session expiration alert sent to ${userEmail}`);
+    } catch (error) {
+      console.error('❌ Email send failed:', error.message);
+    }
+  }
+
 module.exports = EmailService;
