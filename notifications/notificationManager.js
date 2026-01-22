@@ -1,5 +1,6 @@
 const EmailService = require('./emailService');
 const PushNotificationService = require('./pushService');
+const BlockchainEventListener = require('./blockchainEventListener');
 
 class NotificationManager {
   constructor() {
@@ -7,6 +8,7 @@ class NotificationManager {
     this.pushService = new PushNotificationService();
     this.userPreferences = new Map();
     this.notificationHistory = new Map(); // Track notification history
+    this.blockchainListener = new BlockchainEventListener(this);
   }
 
   setUserPreferences(userId, preferences) {
@@ -221,9 +223,46 @@ class NotificationManager {
       totalUsers: this.userPreferences.size,
       pushSubscribers: this.pushService.getSubscriberCount(),
       emailUsers: Array.from(this.userPreferences.values())
-        .filter(p => p.emailEnabled).length
+        .filter(p => p.emailEnabled).length,
+      blockchainListener: this.blockchainListener.getStats()
     };
   }
-}
+
+  async startBlockchainListener() {
+    await this.blockchainListener.startListening();
+  }
+
+  stopBlockchainListener() {
+    this.blockchainListener.stopListening();
+  }
+
+  // Methods for testing/simulating blockchain events
+  simulateVaultCreated(userId, vaultId, vaultType) {
+    this.blockchainListener.simulateVaultCreated(userId, vaultId, vaultType);
+  }
+
+  simulateDeposit(userId, vaultId, amount, balance) {
+    this.blockchainListener.simulateDeposit(userId, vaultId, amount, balance);
+  }
+
+  simulateWithdrawal(userId, vaultId, amount, balance) {
+    this.blockchainListener.simulateWithdrawal(userId, vaultId, amount, balance);
+  }
+
+  simulateRewardsDistributed(vaultId, recipients) {
+    this.blockchainListener.simulateRewardsDistributed(vaultId, recipients);
+  }
+
+  simulateVaultUpdated(vaultId, changes, userId) {
+    this.blockchainListener.simulateVaultUpdated(vaultId, changes, userId);
+  }
+
+  simulateLargeTransaction(userId, amount, type) {
+    this.blockchainListener.simulateLargeTransaction(userId, amount, type);
+  }
+
+  simulateMultisigRequest(userId, requestId, action) {
+    this.blockchainListener.simulateMultisigRequest(userId, requestId, action);
+  }
 
 module.exports = NotificationManager;
