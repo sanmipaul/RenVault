@@ -103,7 +103,7 @@ class NotificationManager {
     await Promise.allSettled(promises);
   }
 
-  async notifyVaultUpdated(userId, vaultId, changes) {
+  async notifyRewardsDistributed(userId, vaultId, amount) {
     const prefs = this.userPreferences.get(userId);
     if (!prefs) return;
 
@@ -111,13 +111,55 @@ class NotificationManager {
 
     if (prefs.emailEnabled && prefs.email) {
       promises.push(
-        this.emailService.sendVaultUpdatedAlert(prefs.email, vaultId, changes)
+        this.emailService.sendRewardsDistributedAlert(prefs.email, vaultId, amount)
       );
     }
 
     if (prefs.pushEnabled) {
       promises.push(
-        this.pushService.sendVaultUpdatedNotification(userId, vaultId, changes)
+        this.pushService.sendRewardsNotification(userId, vaultId, amount)
+      );
+    }
+
+    await Promise.allSettled(promises);
+  }
+
+  async notifyVaultMaturity(userId, vaultId, daysRemaining) {
+    const prefs = this.userPreferences.get(userId);
+    if (!prefs) return;
+
+    const promises = [];
+
+    if (prefs.emailEnabled && prefs.email) {
+      promises.push(
+        this.emailService.sendVaultMaturityAlert(prefs.email, vaultId, daysRemaining)
+      );
+    }
+
+    if (prefs.pushEnabled) {
+      promises.push(
+        this.pushService.sendVaultMaturityNotification(userId, vaultId, daysRemaining)
+      );
+    }
+
+    await Promise.allSettled(promises);
+  }
+
+  async notifyPriceAlert(userId, asset, price, change) {
+    const prefs = this.userPreferences.get(userId);
+    if (!prefs) return;
+
+    const promises = [];
+
+    if (prefs.emailEnabled && prefs.email) {
+      promises.push(
+        this.emailService.sendPriceAlert(prefs.email, asset, price, change)
+      );
+    }
+
+    if (prefs.pushEnabled) {
+      promises.push(
+        this.pushService.sendPriceAlertNotification(userId, asset, price, change)
       );
     }
 
