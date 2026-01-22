@@ -6,6 +6,7 @@ class NotificationManager {
     this.emailService = new EmailService();
     this.pushService = new PushNotificationService();
     this.userPreferences = new Map();
+    this.notificationHistory = new Map(); // Track notification history
   }
 
   setUserPreferences(userId, preferences) {
@@ -13,6 +14,7 @@ class NotificationManager {
       email: preferences.email || null,
       emailEnabled: preferences.emailEnabled || false,
       pushEnabled: preferences.pushEnabled || false,
+      web3Enabled: preferences.web3Enabled || false, // New Web3 notifications
       ...preferences
     });
   }
