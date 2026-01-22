@@ -138,4 +138,47 @@ class EmailService {
     }
   }
 
+  async sendVaultMaturityAlert(userEmail, vaultId, daysRemaining) {
+    const mailOptions = {
+      from: process.env.FROM_EMAIL || 'noreply@renvault.com',
+      to: userEmail,
+      subject: '⏰ Vault Maturity Approaching',
+      html: `
+        <h2>Vault Maturity Notice</h2>
+        <p>Your vault <strong>${vaultId}</strong> is approaching maturity.</p>
+        <p>Days remaining: <strong>${daysRemaining}</strong></p>
+        <p>Please consider your next steps for this vault.</p>
+      `
+    };
+
+    try {
+      await this.transporter.sendMail(mailOptions);
+      console.log(`✅ Vault maturity alert sent to ${userEmail}`);
+    } catch (error) {
+      console.error('❌ Email send failed:', error.message);
+    }
+  }
+
+  async sendPriceAlert(userEmail, asset, price, change) {
+    const mailOptions = {
+      from: process.env.FROM_EMAIL || 'noreply@renvault.com',
+      to: userEmail,
+      subject: '📈 Price Alert',
+      html: `
+        <h2>Price Alert Triggered</h2>
+        <p>Asset: <strong>${asset}</strong></p>
+        <p>Current Price: <strong>${price}</strong></p>
+        <p>Change: <strong>${change}%</strong></p>
+        <p>This is based on your configured price alert settings.</p>
+      `
+    };
+
+    try {
+      await this.transporter.sendMail(mailOptions);
+      console.log(`✅ Price alert sent to ${userEmail}`);
+    } catch (error) {
+      console.error('❌ Email send failed:', error.message);
+    }
+  }
+
 module.exports = EmailService;
