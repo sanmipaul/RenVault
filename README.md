@@ -38,6 +38,13 @@ npm start
 - ✅ **On-chain Activity**: Fee generation on every deposit
 - ✅ **User Engagement**: Simple deposit/withdraw flow
 - ✅ **React Frontend**: Complete web interface with wallet integration
+- ✅ **AppKit Integration**: Enhanced wallet connection UI with @reown/appkit for better UX
+- ✅ **Hardware Wallet Support**: Secure transactions with Ledger and Trezor
+- ✅ **Transaction History**: View and filter wallet transaction history
+- ✅ **Notification System**: Real-time alerts for transactions and security
+- ✅ **Wallet Backup & Recovery**: Secure encrypted backup creation and recovery process
+- ✅ **Multi-Signature Wallets**: Shared control with co-signer management and threshold-based approvals
+- ✅ **Optimized Performance**: Fast wallet connections with lazy loading, caching, and code splitting
 - ✅ **Mainnet Deployed**: Live contracts ready for interaction
 - ✅ **Open Source**: Comprehensive documentation & tests
 
@@ -58,7 +65,131 @@ Every deposit increments a user's "commitment score" using Clarity 4's new arith
 A small portion of each deposit goes to the contract owner.
 This ensures sustainable protocol operation through fee collection.
 
-### 🔥 Clarity 4 Functionality
+### 🔔 Notification System
+
+Comprehensive notification system for wallet events and security with customizable preferences:
+
+**Transaction Notifications:**
+- ✅ Deposit and withdrawal confirmations with amounts and transaction hashes
+- ✅ Staking and liquidity reward alerts
+- ✅ Balance change notifications with real-time updates
+
+**Security Alerts:**
+- ✅ Failed login attempt warnings with IP tracking
+- ✅ Suspicious activity detection and alerts
+- ✅ Two-factor authentication enable/disable notifications
+- ✅ Account security updates and password changes
+
+**Customizable Preferences:**
+- ✅ Granular notification controls (email/push/sound)
+- ✅ Real-time preference management via settings panel
+- ✅ Theme selection (light/dark/auto) with system preference detection
+- ✅ Sound settings with volume control
+- ✅ Search and filter functionality for notification history
+
+**Technical Implementation:**
+- ✅ Multi-channel delivery (email, push notifications, in-app)
+- ✅ HTML email templates with responsive design
+- ✅ Service worker for background push notifications
+- ✅ Local storage for offline preference persistence
+- ✅ Real-time notification center with unread counters
+### 🛡️ Wallet Backup & Recovery
+
+Secure wallet backup and recovery system to prevent loss of access:
+
+**Backup Creation Flow:**
+- ✅ Encrypted mnemonic phrase generation
+- ✅ Password-protected backup creation
+- ✅ Secure key management with PBKDF2 encryption
+- ✅ Local storage and optional backend persistence
+
+**Recovery Process:**
+- ✅ Encrypted backup data import
+- ✅ Password-based decryption
+- ✅ Wallet state restoration
+- ✅ Address and public key validation
+
+**Security Features:**
+- ✅ AES-256-CBC encryption for sensitive data
+- ✅ Salted password hashing
+- ✅ Secure random key generation
+- ✅ Backup data integrity verification
+
+**Technical Implementation:**
+- ✅ Frontend components for backup/recovery UI
+- ✅ Backend API endpoints for encrypted backup storage
+- ✅ Comprehensive test suite for backup functionality
+- ✅ Recovery validation and error handling
+### 🔐 Multi-Signature Wallets
+
+Advanced multi-signature wallet support for enhanced security and shared control:
+
+**Multi-Sig Setup:**
+- ✅ Configurable signature thresholds (2-of-3, 3-of-5, etc.)
+- ✅ Co-signer management with address validation
+- ✅ Secure wallet configuration storage
+- ✅ Threshold-based transaction approvals
+
+**Co-Signer Management:**
+- ✅ Add/remove co-signers dynamically
+- ✅ Co-signer address and public key validation
+- ✅ Real-time co-signer status updates
+- ✅ Secure co-signer data encryption
+
+**Transaction Security:**
+- ✅ Multi-signature transaction signing workflow
+- ✅ Pending transaction tracking and status
+- ✅ Enhanced security for large amounts
+- ✅ Signature collection and validation
+- ✅ Threshold enforcement for approvals
+
+**Technical Implementation:**
+- ✅ MultiSigWalletProvider for wallet management
+- ✅ Backend API for multi-sig configuration and transactions
+- ✅ React components for setup, management, and signing
+- ✅ Comprehensive test suite for multi-sig functionality
+- ✅ Real-time transaction status updates
+### ⚡ Performance Optimizations
+
+Advanced performance optimizations for fast wallet connections and efficient resource usage:
+
+**Lazy Loading & Code Splitting:**
+- ✅ Dynamic imports for wallet providers
+- ✅ On-demand provider initialization
+- ✅ Reduced initial bundle size
+- ✅ Faster application startup
+
+**Connection Caching:**
+- ✅ Intelligent connection result caching
+- ✅ Configurable cache TTL (5 minutes)
+- ✅ Reduced redundant connection attempts
+- ✅ Faster subsequent connections
+
+**Timeout Management:**
+- ✅ Connection timeout handling (10 seconds)
+- ✅ Automatic timeout cleanup
+- ✅ Graceful failure handling
+- ✅ Improved user experience
+
+**Provider Preloading:**
+- ✅ Critical provider preloading on app start
+- ✅ Background loading of commonly used providers
+- ✅ Optimized loading order
+- ✅ Reduced loading latency
+
+**Performance Monitoring:**
+- ✅ Real-time performance metrics
+- ✅ Cache statistics and monitoring
+- ✅ Provider loading status
+- ✅ Connection timeout tracking
+
+**Technical Implementation:**
+- ✅ WalletProviderLoader for optimized loading
+- ✅ PerformanceMonitor component for metrics
+- ✅ Connection caching with TTL
+- ✅ Lazy loading with dynamic imports
+- ✅ Comprehensive performance test suite
+### �🔥 Clarity 4 Functionality
 
 RenVault showcases **6 key Clarity 4 enhancements**:
 

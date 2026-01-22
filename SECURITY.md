@@ -68,6 +68,58 @@ If you discover a security vulnerability in RenVault, please report it responsib
 - **Community Review**: Ongoing
 - **External Audit**: Planned for Q2 2024
 
+### Audit Status
+
+- **Internal Review**: Completed
+- **Community Review**: Ongoing
+- **External Audit**: Planned for Q2 2024
+
+## Two-Factor Authentication (2FA)
+
+RenVault implements comprehensive 2FA security features to protect user accounts and transactions.
+
+### Features
+- **TOTP-based 2FA**: Time-based One-Time Passwords using authenticator apps
+- **Backup Codes**: Single-use recovery codes for account access
+- **Secure Storage**: Client-side encryption of 2FA secrets
+- **Rate Limiting**: Protection against brute force attacks
+- **Session Security**: Automatic logout and secure session management
+
+### Setup Process
+1. User initiates 2FA setup from security settings
+2. System generates secret and QR code
+3. User scans QR code with authenticator app
+4. User verifies setup with initial code
+5. System generates and displays backup codes
+6. User securely stores backup codes
+
+### API Endpoints
+- `POST /api/2fa/generate` - Generate 2FA secret
+- `POST /api/2fa/verify` - Verify 2FA code
+- `POST /api/2fa/backup-codes` - Generate backup codes
+- `POST /api/2fa/verify-backup` - Verify backup code
+- `GET /api/2fa/status/:userId` - Check 2FA status
+
+### Security Best Practices
+- Rate limiting on all 2FA endpoints (5 attempts per 5 minutes)
+- Input validation and sanitization
+- Content Security Policy (CSP) headers
+- HTTPS-only communication
+- Secure session management
+- Automatic cleanup of sensitive data
+
+### Backup Codes
+- Generated during 2FA setup
+- Single-use codes for account recovery
+- Secure storage recommended (password manager, safe)
+- Automatic invalidation after use
+
+### Session Management
+- Secure logout clears all session data
+- 2FA verification required for sensitive operations
+- Automatic session timeout
+- Cross-device session management
+
 ### Responsible Disclosure
 
 We follow responsible disclosure practices:

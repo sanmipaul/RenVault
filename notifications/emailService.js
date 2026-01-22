@@ -1,4 +1,6 @@
 const nodemailer = require('nodemailer');
+const fs = require('fs');
+const path = require('path');
 
 class EmailService {
   constructor() {
@@ -14,16 +16,14 @@ class EmailService {
   }
 
   async sendDepositAlert(userEmail, amount, balance) {
+    const template = this.loadTemplate('deposit.html');
+    const html = this.renderTemplate(template, { amount, balance });
+
     const mailOptions = {
       from: process.env.FROM_EMAIL || 'noreply@renvault.com',
       to: userEmail,
       subject: '🏦 RenVault Deposit Confirmed',
-      html: `
-        <h2>Deposit Successful!</h2>
-        <p>Your deposit of <strong>${amount} STX</strong> has been confirmed.</p>
-        <p>New vault balance: <strong>${balance} STX</strong></p>
-        <p>Thank you for using RenVault!</p>
-      `
+      html
     };
 
     try {
@@ -35,15 +35,19 @@ class EmailService {
   }
 
   async sendWithdrawAlert(userEmail, amount, balance) {
+    const template = this.loadTemplate('deposit.html'); // Reuse deposit template structure
+    const html = this.renderTemplate(template, {
+      amount,
+      balance,
+      title: 'Withdrawal Confirmed',
+      message: 'Your STX withdrawal has been processed successfully.'
+    });
+
     const mailOptions = {
       from: process.env.FROM_EMAIL || 'noreply@renvault.com',
       to: userEmail,
       subject: '💰 RenVault Withdrawal Confirmed',
-      html: `
-        <h2>Withdrawal Successful!</h2>
-        <p>Your withdrawal of <strong>${amount} STX</strong> has been processed.</p>
-        <p>Remaining vault balance: <strong>${balance} STX</strong></p>
-      `
+      html: html.replace('Deposit Confirmed', 'Withdrawal Confirmed').replace('Deposit Successful', 'Withdrawal Successful')
     };
 
     try {
