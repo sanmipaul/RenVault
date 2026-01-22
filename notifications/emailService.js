@@ -74,6 +74,26 @@ class EmailService {
       console.error('❌ Email send failed:', error.message);
     }
   }
-}
+
+  async sendVaultCreatedAlert(userEmail, vaultId, vaultType) {
+    const mailOptions = {
+      from: process.env.FROM_EMAIL || 'noreply@renvault.com',
+      to: userEmail,
+      subject: '🏦 New Vault Created',
+      html: `
+        <h2>Vault Created Successfully!</h2>
+        <p>A new ${vaultType} vault has been created.</p>
+        <p>Vault ID: <strong>${vaultId}</strong></p>
+        <p>You can now start depositing assets into this vault.</p>
+      `
+    };
+
+    try {
+      await this.transporter.sendMail(mailOptions);
+      console.log(`✅ Vault created alert sent to ${userEmail}`);
+    } catch (error) {
+      console.error('❌ Email send failed:', error.message);
+    }
+  }
 
 module.exports = EmailService;
