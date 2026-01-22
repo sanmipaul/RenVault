@@ -42,6 +42,62 @@ app.post('/api/notifications/test-deposit', async (req, res) => {
   res.json({ success: true, message: 'Test deposit notification sent' });
 });
 
+app.post('/api/notifications/test-vault-created', async (req, res) => {
+  const { userId, vaultId, vaultType } = req.body;
+  
+  await notificationManager.notifyVaultCreated(userId, vaultId, vaultType);
+  res.json({ success: true, message: 'Test vault created notification sent' });
+});
+
+app.post('/api/notifications/test-vault-updated', async (req, res) => {
+  const { userId, vaultId, changes } = req.body;
+  
+  await notificationManager.notifyVaultUpdated(userId, vaultId, changes);
+  res.json({ success: true, message: 'Test vault updated notification sent' });
+});
+
+app.post('/api/notifications/test-rewards', async (req, res) => {
+  const { userId, vaultId, amount } = req.body;
+  
+  await notificationManager.notifyRewardsDistributed(userId, vaultId, amount);
+  res.json({ success: true, message: 'Test rewards notification sent' });
+});
+
+app.post('/api/notifications/test-maturity', async (req, res) => {
+  const { userId, vaultId, daysRemaining } = req.body;
+  
+  await notificationManager.notifyVaultMaturity(userId, vaultId, daysRemaining);
+  res.json({ success: true, message: 'Test maturity notification sent' });
+});
+
+app.post('/api/notifications/test-price-alert', async (req, res) => {
+  const { userId, asset, price, change } = req.body;
+  
+  await notificationManager.notifyPriceAlert(userId, asset, price, change);
+  res.json({ success: true, message: 'Test price alert notification sent' });
+});
+
+app.post('/api/notifications/test-large-transaction', async (req, res) => {
+  const { userId, amount, type } = req.body;
+  
+  await notificationManager.notifyLargeTransaction(userId, amount, type);
+  res.json({ success: true, message: 'Test large transaction notification sent' });
+});
+
+app.post('/api/notifications/test-multisig', async (req, res) => {
+  const { userId, requestId, action } = req.body;
+  
+  await notificationManager.notifyMultisigRequest(userId, requestId, action);
+  res.json({ success: true, message: 'Test multisig notification sent' });
+});
+
+app.post('/api/notifications/test-session-expiration', async (req, res) => {
+  const { userId, minutesRemaining } = req.body;
+  
+  await notificationManager.notifySessionExpiration(userId, minutesRemaining);
+  res.json({ success: true, message: 'Test session expiration notification sent' });
+});
+
 app.get('/api/notifications/stats', (req, res) => {
   const stats = notificationManager.getStats();
   res.json(stats);
