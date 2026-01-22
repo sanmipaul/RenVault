@@ -42,53 +42,112 @@ app.post('/api/notifications/test-deposit', async (req, res) => {
   res.json({ success: true, message: 'Test deposit notification sent' });
 });
 
-app.post('/api/notifications/test-withdrawal', async (req, res) => {
-  const { userId, amount, balance } = req.body;
+app.post('/api/notifications/test-vault-created', async (req, res) => {
+  const { userId, vaultId, vaultType } = req.body;
   
-  await notificationManager.notifyWithdrawal(userId, amount, balance);
-  res.json({ success: true, message: 'Test withdrawal notification sent' });
+  await notificationManager.notifyVaultCreated(userId, vaultId, vaultType);
+  res.json({ success: true, message: 'Test vault created notification sent' });
 });
 
-app.post('/api/notifications/test-staking-reward', async (req, res) => {
-  const { userId, amount, stakedAmount } = req.body;
+app.post('/api/notifications/test-vault-updated', async (req, res) => {
+  const { userId, vaultId, changes } = req.body;
   
-  await notificationManager.notifyStakingReward(userId, amount, stakedAmount);
-  res.json({ success: true, message: 'Test staking reward notification sent' });
+  await notificationManager.notifyVaultUpdated(userId, vaultId, changes);
+  res.json({ success: true, message: 'Test vault updated notification sent' });
 });
 
-app.post('/api/notifications/test-liquidity-reward', async (req, res) => {
-  const { userId, amount, poolName } = req.body;
+app.post('/api/notifications/test-rewards', async (req, res) => {
+  const { userId, vaultId, amount } = req.body;
   
-  await notificationManager.notifyLiquidityReward(userId, amount, poolName);
-  res.json({ success: true, message: 'Test liquidity reward notification sent' });
+  await notificationManager.notifyRewardsDistributed(userId, vaultId, amount);
+  res.json({ success: true, message: 'Test rewards notification sent' });
 });
 
-app.post('/api/notifications/test-failed-login', async (req, res) => {
-  const { userId, ipAddress, userAgent } = req.body;
+app.post('/api/notifications/test-maturity', async (req, res) => {
+  const { userId, vaultId, daysRemaining } = req.body;
   
-  await notificationManager.notifyFailedLogin(userId, ipAddress, userAgent);
-  res.json({ success: true, message: 'Test failed login notification sent' });
+  await notificationManager.notifyVaultMaturity(userId, vaultId, daysRemaining);
+  res.json({ success: true, message: 'Test maturity notification sent' });
 });
 
-app.post('/api/notifications/test-suspicious-activity', async (req, res) => {
-  const { userId, activity, ipAddress } = req.body;
+app.post('/api/notifications/test-price-alert', async (req, res) => {
+  const { userId, asset, price, change } = req.body;
   
-  await notificationManager.notifySuspiciousActivity(userId, activity, ipAddress);
-  res.json({ success: true, message: 'Test suspicious activity notification sent' });
+  await notificationManager.notifyPriceAlert(userId, asset, price, change);
+  res.json({ success: true, message: 'Test price alert notification sent' });
 });
 
-app.post('/api/notifications/test-2fa-enabled', async (req, res) => {
-  const { userId } = req.body;
+app.post('/api/notifications/test-large-transaction', async (req, res) => {
+  const { userId, amount, type } = req.body;
   
-  await notificationManager.notifyTwoFactorEnabled(userId);
-  res.json({ success: true, message: 'Test 2FA enabled notification sent' });
+  await notificationManager.notifyLargeTransaction(userId, amount, type);
+  res.json({ success: true, message: 'Test large transaction notification sent' });
 });
 
-app.post('/api/notifications/test-2fa-disabled', async (req, res) => {
-  const { userId } = req.body;
+app.post('/api/notifications/test-multisig', async (req, res) => {
+  const { userId, requestId, action } = req.body;
   
-  await notificationManager.notifyTwoFactorDisabled(userId);
-  res.json({ success: true, message: 'Test 2FA disabled notification sent' });
+  await notificationManager.notifyMultisigRequest(userId, requestId, action);
+  res.json({ success: true, message: 'Test multisig notification sent' });
+});
+
+app.post('/api/notifications/test-session-expiration', async (req, res) => {
+  const { userId, minutesRemaining } = req.body;
+  
+  await notificationManager.notifySessionExpiration(userId, minutesRemaining);
+  res.json({ success: true, message: 'Test session expiration notification sent' });
+});
+
+app.post('/api/notifications/start-blockchain-listener', async (req, res) => {
+  await notificationManager.startBlockchainListener();
+  res.json({ success: true, message: 'Blockchain event listener started' });
+});
+
+app.post('/api/notifications/stop-blockchain-listener', (req, res) => {
+  notificationManager.stopBlockchainListener();
+  res.json({ success: true, message: 'Blockchain event listener stopped' });
+});
+
+app.post('/api/notifications/simulate/vault-created', (req, res) => {
+  const { userId, vaultId, vaultType } = req.body;
+  notificationManager.simulateVaultCreated(userId, vaultId, vaultType);
+  res.json({ success: true, message: 'Vault created event simulated' });
+});
+
+app.post('/api/notifications/simulate/deposit', (req, res) => {
+  const { userId, vaultId, amount, balance } = req.body;
+  notificationManager.simulateDeposit(userId, vaultId, amount, balance);
+  res.json({ success: true, message: 'Deposit event simulated' });
+});
+
+app.post('/api/notifications/simulate/withdrawal', (req, res) => {
+  const { userId, vaultId, amount, balance } = req.body;
+  notificationManager.simulateWithdrawal(userId, vaultId, amount, balance);
+  res.json({ success: true, message: 'Withdrawal event simulated' });
+});
+
+app.post('/api/notifications/simulate/rewards', (req, res) => {
+  const { vaultId, recipients } = req.body;
+  notificationManager.simulateRewardsDistributed(vaultId, recipients);
+  res.json({ success: true, message: 'Rewards distributed event simulated' });
+});
+
+app.post('/api/notifications/simulate/vault-updated', (req, res) => {
+  const { vaultId, changes, userId } = req.body;
+  notificationManager.simulateVaultUpdated(vaultId, changes, userId);
+  res.json({ success: true, message: 'Vault updated event simulated' });
+});
+
+app.post('/api/notifications/simulate/large-transaction', (req, res) => {
+  const { userId, amount, type } = req.body;
+  notificationManager.simulateLargeTransaction(userId, amount, type);
+  res.json({ success: true, message: 'Large transaction event simulated' });
+});
+
+app.post('/api/notifications/simulate/multisig', (req, res) => {
+  const { userId, requestId, action } = req.body;
+  notificationManager.simulateMultisigRequest(userId, requestId, action);
+  res.json({ success: true, message: 'Multisig request event simulated' });
 });
 
 app.get('/api/notifications/stats', (req, res) => {

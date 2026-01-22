@@ -79,158 +79,171 @@ class EmailService {
     }
   }
 
-  async sendStakingRewardAlert(userEmail, amount, stakedAmount) {
-    const template = this.loadTemplate('staking-reward.html');
-    const html = this.renderTemplate(template, {
-      amount,
-      stakedAmount,
-      rewardRate: '12.5' // This could be dynamic based on current rates
-    });
-
+  async sendVaultCreatedAlert(userEmail, vaultId, vaultType) {
     const mailOptions = {
       from: process.env.FROM_EMAIL || 'noreply@renvault.com',
       to: userEmail,
-      subject: '🌱 RenVault Staking Reward Earned',
-      html
-    };
-
-    try {
-      await this.transporter.sendMail(mailOptions);
-      console.log(`✅ Staking reward alert sent to ${userEmail}`);
-    } catch (error) {
-      console.error('❌ Email send failed:', error.message);
-    }
-  }
-
-  async sendLiquidityRewardAlert(userEmail, amount, poolName) {
-    const mailOptions = {
-      from: process.env.FROM_EMAIL || 'noreply@renvault.com',
-      to: userEmail,
-      subject: '💧 RenVault Liquidity Reward Earned',
+      subject: '🏦 New Vault Created',
       html: `
-        <h2>Liquidity Reward Received!</h2>
-        <p>You've earned <strong>${amount} STX</strong> from liquidity provision!</p>
-        <p>Pool: <strong>${poolName}</strong></p>
-        <p>Thank you for providing liquidity to RenVault!</p>
+        <h2>Vault Created Successfully!</h2>
+        <p>A new ${vaultType} vault has been created.</p>
+        <p>Vault ID: <strong>${vaultId}</strong></p>
+        <p>You can now start depositing assets into this vault.</p>
       `
     };
 
     try {
       await this.transporter.sendMail(mailOptions);
-      console.log(`✅ Liquidity reward alert sent to ${userEmail}`);
+      console.log(`✅ Vault created alert sent to ${userEmail}`);
     } catch (error) {
       console.error('❌ Email send failed:', error.message);
     }
   }
 
-  async sendFailedLoginAlert(userEmail, ipAddress, userAgent) {
-    const template = this.loadTemplate('security-alert.html');
-    const html = this.renderTemplate(template, {
-      ipAddress,
-      userAgent,
-      timestamp: new Date().toLocaleString()
-    });
-
+  async sendVaultUpdatedAlert(userEmail, vaultId, changes) {
     const mailOptions = {
       from: process.env.FROM_EMAIL || 'noreply@renvault.com',
       to: userEmail,
-      subject: '🚨 RenVault Security Alert: Failed Login Attempt',
-      html
-    };
-
-    try {
-      await this.transporter.sendMail(mailOptions);
-      console.log(`✅ Failed login alert sent to ${userEmail}`);
-    } catch (error) {
-      console.error('❌ Email send failed:', error.message);
-    }
-  }
-
-  async sendSuspiciousActivityAlert(userEmail, activity, ipAddress) {
-    const mailOptions = {
-      from: process.env.FROM_EMAIL || 'noreply@renvault.com',
-      to: userEmail,
-      subject: '🚨 RenVault Security Alert: Suspicious Activity',
+      subject: '🔄 Vault Parameters Updated',
       html: `
-        <h2>Security Alert: Suspicious Activity Detected</h2>
-        <p>We detected suspicious activity on your RenVault account.</p>
-        <p><strong>Activity:</strong> ${activity}</p>
-        <p><strong>IP Address:</strong> ${ipAddress}</p>
-        <p><strong>Time:</strong> ${new Date().toLocaleString()}</p>
-        <p>If this wasn't you, please contact support immediately.</p>
+        <h2>Vault Updated!</h2>
+        <p>Vault ID: <strong>${vaultId}</strong></p>
+        <p>Changes: <strong>${changes}</strong></p>
+        <p>Please review the updated vault parameters.</p>
       `
     };
 
     try {
       await this.transporter.sendMail(mailOptions);
-      console.log(`✅ Suspicious activity alert sent to ${userEmail}`);
+      console.log(`✅ Vault updated alert sent to ${userEmail}`);
     } catch (error) {
       console.error('❌ Email send failed:', error.message);
     }
   }
 
-  async sendTwoFactorEnabledAlert(userEmail) {
-    const template = this.loadTemplate('2fa-update.html');
-    const html = this.renderTemplate(template, {
-      status: 'Enabled',
-      statusIcon: '✅',
-      statusMessage: 'Two-Factor Authentication Enabled',
-      description: 'Two-factor authentication has been successfully enabled on your RenVault account. Your account is now more secure.',
-      backupCodes: null // No backup codes for enable notification
-    });
-
+  async sendRewardsDistributedAlert(userEmail, vaultId, amount) {
     const mailOptions = {
       from: process.env.FROM_EMAIL || 'noreply@renvault.com',
       to: userEmail,
-      subject: '🔐 RenVault Security: 2FA Enabled',
-      html
+      subject: '💰 Rewards Distributed',
+      html: `
+        <h2>Rewards Earned!</h2>
+        <p>You've received <strong>${amount} STX</strong> in rewards.</p>
+        <p>Vault ID: <strong>${vaultId}</strong></p>
+        <p>Thank you for participating in the RenVault ecosystem!</p>
+      `
     };
 
     try {
       await this.transporter.sendMail(mailOptions);
-      console.log(`✅ 2FA enabled alert sent to ${userEmail}`);
+      console.log(`✅ Rewards distributed alert sent to ${userEmail}`);
     } catch (error) {
       console.error('❌ Email send failed:', error.message);
     }
   }
 
-  async sendTwoFactorDisabledAlert(userEmail) {
-    const template = this.loadTemplate('2fa-update.html');
-    const html = this.renderTemplate(template, {
-      status: 'Disabled',
-      statusIcon: '⚠️',
-      statusMessage: 'Two-Factor Authentication Disabled',
-      description: 'Two-factor authentication has been disabled on your RenVault account. Your account now has reduced security protection.'
-    });
-
+  async sendVaultMaturityAlert(userEmail, vaultId, daysRemaining) {
     const mailOptions = {
       from: process.env.FROM_EMAIL || 'noreply@renvault.com',
       to: userEmail,
-      subject: '⚠️ RenVault Security: 2FA Disabled',
-      html
+      subject: '⏰ Vault Maturity Approaching',
+      html: `
+        <h2>Vault Maturity Notice</h2>
+        <p>Your vault <strong>${vaultId}</strong> is approaching maturity.</p>
+        <p>Days remaining: <strong>${daysRemaining}</strong></p>
+        <p>Please consider your next steps for this vault.</p>
+      `
     };
 
     try {
       await this.transporter.sendMail(mailOptions);
-      console.log(`✅ 2FA disabled alert sent to ${userEmail}`);
+      console.log(`✅ Vault maturity alert sent to ${userEmail}`);
     } catch (error) {
       console.error('❌ Email send failed:', error.message);
     }
   }
 
-  loadTemplate(templateName) {
-    const templatePath = path.join(__dirname, 'templates', templateName);
-    return fs.readFileSync(templatePath, 'utf8');
+  async sendPriceAlert(userEmail, asset, price, change) {
+    const mailOptions = {
+      from: process.env.FROM_EMAIL || 'noreply@renvault.com',
+      to: userEmail,
+      subject: '📈 Price Alert',
+      html: `
+        <h2>Price Alert Triggered</h2>
+        <p>Asset: <strong>${asset}</strong></p>
+        <p>Current Price: <strong>${price}</strong></p>
+        <p>Change: <strong>${change}%</strong></p>
+        <p>This is based on your configured price alert settings.</p>
+      `
+    };
+
+    try {
+      await this.transporter.sendMail(mailOptions);
+      console.log(`✅ Price alert sent to ${userEmail}`);
+    } catch (error) {
+      console.error('❌ Email send failed:', error.message);
+    }
   }
 
-  renderTemplate(template, data) {
-    let rendered = template;
-    for (const [key, value] of Object.entries(data)) {
-      const regex = new RegExp(`{{${key}}}`, 'g');
-      rendered = rendered.replace(regex, value);
+  async sendLargeTransactionAlert(userEmail, amount, type) {
+    const mailOptions = {
+      from: process.env.FROM_EMAIL || 'noreply@renvault.com',
+      to: userEmail,
+      subject: '🚨 Large Transaction Alert',
+      html: `
+        <h2>Security Alert: Large Transaction</h2>
+        <p>A large ${type} transaction of <strong>${amount} STX</strong> has been detected.</p>
+        <p>If this was not you, please secure your account immediately.</p>
+      `
+    };
+
+    try {
+      await this.transporter.sendMail(mailOptions);
+      console.log(`✅ Large transaction alert sent to ${userEmail}`);
+    } catch (error) {
+      console.error('❌ Email send failed:', error.message);
     }
-    return rendered;
   }
-}
+
+  async sendMultisigAlert(userEmail, requestId, action) {
+    const mailOptions = {
+      from: process.env.FROM_EMAIL || 'noreply@renvault.com',
+      to: userEmail,
+      subject: '🔐 Multi-signature Request',
+      html: `
+        <h2>Multi-signature Approval Required</h2>
+        <p>Request ID: <strong>${requestId}</strong></p>
+        <p>Action: <strong>${action}</strong></p>
+        <p>Your approval is required for this multi-signature transaction.</p>
+      `
+    };
+
+    try {
+      await this.transporter.sendMail(mailOptions);
+      console.log(`✅ Multisig alert sent to ${userEmail}`);
+    } catch (error) {
+      console.error('❌ Email send failed:', error.message);
+    }
+  }
+
+  async sendSessionExpirationAlert(userEmail, minutesRemaining) {
+    const mailOptions = {
+      from: process.env.FROM_EMAIL || 'noreply@renvault.com',
+      to: userEmail,
+      subject: '⏳ Session Expiration Warning',
+      html: `
+        <h2>Session Expiring Soon</h2>
+        <p>Your session will expire in <strong>${minutesRemaining} minutes</strong>.</p>
+        <p>Please save your work or extend your session to avoid losing progress.</p>
+      `
+    };
+
+    try {
+      await this.transporter.sendMail(mailOptions);
+      console.log(`✅ Session expiration alert sent to ${userEmail}`);
+    } catch (error) {
+      console.error('❌ Email send failed:', error.message);
+    }
+  }
 
 module.exports = EmailService;

@@ -70,63 +70,76 @@ class PushNotificationService {
     );
   }
 
-  async sendStakingRewardNotification(userId, amount) {
+  async sendVaultCreatedNotification(userId, vaultId, vaultType) {
     return this.sendPushNotification(
       userId,
-      '🌱 Staking Reward Earned',
-      `You've earned ${amount} STX in staking rewards!`,
-      { type: 'staking_reward', amount }
+      '🏦 Vault Created',
+      `New ${vaultType} vault ${vaultId} has been created successfully!`,
+      { type: 'vault_created', vaultId, vaultType }
     );
   }
 
-  async sendLiquidityRewardNotification(userId, amount, poolName) {
+  async sendVaultUpdatedNotification(userId, vaultId, changes) {
     return this.sendPushNotification(
       userId,
-      '💧 Liquidity Reward Earned',
-      `You've earned ${amount} STX from ${poolName} pool!`,
-      { type: 'liquidity_reward', amount, poolName }
+      '🔄 Vault Updated',
+      `Vault ${vaultId} parameters have been updated.`,
+      { type: 'vault_updated', vaultId, changes }
     );
   }
 
-  async sendFailedLoginNotification(userId, ipAddress) {
+  async sendRewardsNotification(userId, vaultId, amount) {
+    return this.sendPushNotification(
+      userId,
+      '💰 Rewards Earned',
+      `You've received ${amount} STX in rewards from vault ${vaultId}!`,
+      { type: 'rewards', vaultId, amount }
+    );
+  }
+
+  async sendVaultMaturityNotification(userId, vaultId, daysRemaining) {
+    return this.sendPushNotification(
+      userId,
+      '⏰ Vault Maturity',
+      `Vault ${vaultId} matures in ${daysRemaining} days.`,
+      { type: 'maturity', vaultId, daysRemaining }
+    );
+  }
+
+  async sendPriceAlertNotification(userId, asset, price, change) {
+    return this.sendPushNotification(
+      userId,
+      '📈 Price Alert',
+      `${asset} price: ${price} (${change > 0 ? '+' : ''}${change}%)`,
+      { type: 'price_alert', asset, price, change }
+    );
+  }
+
+  async sendLargeTransactionNotification(userId, amount, type) {
     return this.sendPushNotification(
       userId,
       '🚨 Security Alert',
-      `Failed login attempt detected from ${ipAddress}`,
-      { type: 'security', alertType: 'failed_login', ipAddress }
+      `Large ${type} transaction: ${amount} STX detected!`,
+      { type: 'security', transactionType: type, amount }
     );
   }
 
-  async sendSuspiciousActivityNotification(userId, activity) {
+  async sendMultisigNotification(userId, requestId, action) {
     return this.sendPushNotification(
       userId,
-      '🚨 Security Alert',
-      `Suspicious activity detected: ${activity}`,
-      { type: 'security', alertType: 'suspicious_activity', activity }
+      '🔐 Multi-sig Request',
+      `Approval needed for: ${action} (ID: ${requestId})`,
+      { type: 'multisig', requestId, action }
     );
   }
 
-  async sendTwoFactorEnabledNotification(userId) {
+  async sendSessionExpirationNotification(userId, minutesRemaining) {
     return this.sendPushNotification(
       userId,
-      '🔐 Security Enhanced',
-      'Two-factor authentication has been enabled',
-      { type: 'security', alertType: '2fa_enabled' }
+      '⏳ Session Warning',
+      `Your session expires in ${minutesRemaining} minutes.`,
+      { type: 'session', minutesRemaining }
     );
   }
-
-  async sendTwoFactorDisabledNotification(userId) {
-    return this.sendPushNotification(
-      userId,
-      '⚠️ Security Changed',
-      'Two-factor authentication has been disabled',
-      { type: 'security', alertType: '2fa_disabled' }
-    );
-  }
-
-  getSubscriberCount() {
-    return this.subscribers.size;
-  }
-}
 
 module.exports = PushNotificationService;
