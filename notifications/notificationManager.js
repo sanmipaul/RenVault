@@ -145,7 +145,7 @@ class NotificationManager {
     await Promise.allSettled(promises);
   }
 
-  async notifyPriceAlert(userId, asset, price, change) {
+  async notifyLargeTransaction(userId, amount, type) {
     const prefs = this.userPreferences.get(userId);
     if (!prefs) return;
 
@@ -153,13 +153,55 @@ class NotificationManager {
 
     if (prefs.emailEnabled && prefs.email) {
       promises.push(
-        this.emailService.sendPriceAlert(prefs.email, asset, price, change)
+        this.emailService.sendLargeTransactionAlert(prefs.email, amount, type)
       );
     }
 
     if (prefs.pushEnabled) {
       promises.push(
-        this.pushService.sendPriceAlertNotification(userId, asset, price, change)
+        this.pushService.sendLargeTransactionNotification(userId, amount, type)
+      );
+    }
+
+    await Promise.allSettled(promises);
+  }
+
+  async notifyMultisigRequest(userId, requestId, action) {
+    const prefs = this.userPreferences.get(userId);
+    if (!prefs) return;
+
+    const promises = [];
+
+    if (prefs.emailEnabled && prefs.email) {
+      promises.push(
+        this.emailService.sendMultisigAlert(prefs.email, requestId, action)
+      );
+    }
+
+    if (prefs.pushEnabled) {
+      promises.push(
+        this.pushService.sendMultisigNotification(userId, requestId, action)
+      );
+    }
+
+    await Promise.allSettled(promises);
+  }
+
+  async notifySessionExpiration(userId, minutesRemaining) {
+    const prefs = this.userPreferences.get(userId);
+    if (!prefs) return;
+
+    const promises = [];
+
+    if (prefs.emailEnabled && prefs.email) {
+      promises.push(
+        this.emailService.sendSessionExpirationAlert(prefs.email, minutesRemaining)
+      );
+    }
+
+    if (prefs.pushEnabled) {
+      promises.push(
+        this.pushService.sendSessionExpirationNotification(userId, minutesRemaining)
       );
     }
 
