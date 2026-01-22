@@ -117,4 +117,25 @@ class EmailService {
     }
   }
 
+  async sendRewardsDistributedAlert(userEmail, vaultId, amount) {
+    const mailOptions = {
+      from: process.env.FROM_EMAIL || 'noreply@renvault.com',
+      to: userEmail,
+      subject: '💰 Rewards Distributed',
+      html: `
+        <h2>Rewards Earned!</h2>
+        <p>You've received <strong>${amount} STX</strong> in rewards.</p>
+        <p>Vault ID: <strong>${vaultId}</strong></p>
+        <p>Thank you for participating in the RenVault ecosystem!</p>
+      `
+    };
+
+    try {
+      await this.transporter.sendMail(mailOptions);
+      console.log(`✅ Rewards distributed alert sent to ${userEmail}`);
+    } catch (error) {
+      console.error('❌ Email send failed:', error.message);
+    }
+  }
+
 module.exports = EmailService;
