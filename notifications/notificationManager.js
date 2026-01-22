@@ -82,6 +82,48 @@ class NotificationManager {
     await Promise.allSettled(promises);
   }
 
+  async notifyVaultCreated(userId, vaultId, vaultType) {
+    const prefs = this.userPreferences.get(userId);
+    if (!prefs) return;
+
+    const promises = [];
+
+    if (prefs.emailEnabled && prefs.email) {
+      promises.push(
+        this.emailService.sendVaultCreatedAlert(prefs.email, vaultId, vaultType)
+      );
+    }
+
+    if (prefs.pushEnabled) {
+      promises.push(
+        this.pushService.sendVaultCreatedNotification(userId, vaultId, vaultType)
+      );
+    }
+
+    await Promise.allSettled(promises);
+  }
+
+  async notifyVaultUpdated(userId, vaultId, changes) {
+    const prefs = this.userPreferences.get(userId);
+    if (!prefs) return;
+
+    const promises = [];
+
+    if (prefs.emailEnabled && prefs.email) {
+      promises.push(
+        this.emailService.sendVaultUpdatedAlert(prefs.email, vaultId, changes)
+      );
+    }
+
+    if (prefs.pushEnabled) {
+      promises.push(
+        this.pushService.sendVaultUpdatedNotification(userId, vaultId, changes)
+      );
+    }
+
+    await Promise.allSettled(promises);
+  }
+
   subscribeToPush(userId, endpoint, keys) {
     this.pushService.subscribe(userId, endpoint, keys);
   }
