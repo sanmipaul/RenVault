@@ -96,4 +96,25 @@ class EmailService {
     }
   }
 
+  async sendVaultUpdatedAlert(userEmail, vaultId, changes) {
+    const mailOptions = {
+      from: process.env.FROM_EMAIL || 'noreply@renvault.com',
+      to: userEmail,
+      subject: '🔄 Vault Parameters Updated',
+      html: `
+        <h2>Vault Updated!</h2>
+        <p>Vault ID: <strong>${vaultId}</strong></p>
+        <p>Changes: <strong>${changes}</strong></p>
+        <p>Please review the updated vault parameters.</p>
+      `
+    };
+
+    try {
+      await this.transporter.sendMail(mailOptions);
+      console.log(`✅ Vault updated alert sent to ${userEmail}`);
+    } catch (error) {
+      console.error('❌ Email send failed:', error.message);
+    }
+  }
+
 module.exports = EmailService;
