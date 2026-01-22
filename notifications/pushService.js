@@ -70,9 +70,76 @@ class PushNotificationService {
     );
   }
 
-  getSubscriberCount() {
-    return this.subscribers.size;
+  async sendVaultCreatedNotification(userId, vaultId, vaultType) {
+    return this.sendPushNotification(
+      userId,
+      '🏦 Vault Created',
+      `New ${vaultType} vault ${vaultId} has been created successfully!`,
+      { type: 'vault_created', vaultId, vaultType }
+    );
   }
-}
+
+  async sendVaultUpdatedNotification(userId, vaultId, changes) {
+    return this.sendPushNotification(
+      userId,
+      '🔄 Vault Updated',
+      `Vault ${vaultId} parameters have been updated.`,
+      { type: 'vault_updated', vaultId, changes }
+    );
+  }
+
+  async sendRewardsNotification(userId, vaultId, amount) {
+    return this.sendPushNotification(
+      userId,
+      '💰 Rewards Earned',
+      `You've received ${amount} STX in rewards from vault ${vaultId}!`,
+      { type: 'rewards', vaultId, amount }
+    );
+  }
+
+  async sendVaultMaturityNotification(userId, vaultId, daysRemaining) {
+    return this.sendPushNotification(
+      userId,
+      '⏰ Vault Maturity',
+      `Vault ${vaultId} matures in ${daysRemaining} days.`,
+      { type: 'maturity', vaultId, daysRemaining }
+    );
+  }
+
+  async sendPriceAlertNotification(userId, asset, price, change) {
+    return this.sendPushNotification(
+      userId,
+      '📈 Price Alert',
+      `${asset} price: ${price} (${change > 0 ? '+' : ''}${change}%)`,
+      { type: 'price_alert', asset, price, change }
+    );
+  }
+
+  async sendLargeTransactionNotification(userId, amount, type) {
+    return this.sendPushNotification(
+      userId,
+      '🚨 Security Alert',
+      `Large ${type} transaction: ${amount} STX detected!`,
+      { type: 'security', transactionType: type, amount }
+    );
+  }
+
+  async sendMultisigNotification(userId, requestId, action) {
+    return this.sendPushNotification(
+      userId,
+      '🔐 Multi-sig Request',
+      `Approval needed for: ${action} (ID: ${requestId})`,
+      { type: 'multisig', requestId, action }
+    );
+  }
+
+  async sendSessionExpirationNotification(userId, minutesRemaining) {
+    return this.sendPushNotification(
+      userId,
+      '⏳ Session Warning',
+      `Your session expires in ${minutesRemaining} minutes.`,
+      { type: 'session', minutesRemaining }
+    );
+  }
 
 module.exports = PushNotificationService;
