@@ -62,6 +62,7 @@ class NotificationService {
   private playNotificationSound(priority?: string) {
     const prefs = this.getUserPreferences(this.userId);
     if (prefs?.soundEnabled === false) return;
+    if (prefs?.doNotDisturb && priority !== 'high') return;
 
     try {
       const audio = new Audio(priority === 'high' ? '/sounds/alert.mp3' : '/sounds/notification.mp3');
@@ -74,6 +75,7 @@ class NotificationService {
   private vibrate(priority?: string) {
     const prefs = this.getUserPreferences(this.userId);
     if (prefs?.vibrationEnabled === false) return;
+    if (prefs?.doNotDisturb && priority !== 'high') return;
 
     if ('vibrate' in navigator) {
       if (priority === 'high') {
