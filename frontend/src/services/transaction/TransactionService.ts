@@ -18,6 +18,9 @@ export interface TransactionDetails {
   amount: number;
   fee?: number;
   network: string;
+  isSponsored?: boolean;
+  sponsorAddress?: string;
+  sponsorSignature?: string;
   anchorMode?: AnchorMode;
   postConditionMode?: PostConditionMode;
 }
@@ -46,6 +49,7 @@ export class TransactionService {
 
   async prepareDepositTransaction(
     amount: number,
+    isSponsored: boolean = false,
     contractAddress: string = 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ren-vault'
   ): Promise<TransactionDetails> {
     try {
@@ -82,8 +86,9 @@ export class TransactionService {
         functionName: 'deposit',
         functionArgs: [uintCV(microAmount)],
         amount: microAmount,
-        fee: 1000, // Default fee in microSTX
+        fee: isSponsored ? 0 : 1000, // Zero fee if sponsored
         network: 'mainnet',
+        isSponsored,
         anchorMode: AnchorMode.Any,
         postConditionMode: PostConditionMode.Allow
       };
@@ -107,7 +112,7 @@ export class TransactionService {
       }
 
       // Create the contract call transaction
-      const txOptions = {
+      const txOptions: any = {
         contractAddress: details.contractAddress,
         contractName: details.contractName,
         functionName: details.functionName,
@@ -115,6 +120,7 @@ export class TransactionService {
         network: this.network,
         anchorMode: details.anchorMode || AnchorMode.Any,
         postConditionMode: details.postConditionMode || PostConditionMode.Allow,
+        sponsored: details.isSponsored,
         onFinish: (data: any) => {
           console.log('Transaction signed:', data);
         },
@@ -125,6 +131,10 @@ export class TransactionService {
           );
         }
       };
+
+      if (details.isSponsored && details.sponsorAddress) {
+        txOptions.sponsorAddress = details.sponsorAddress;
+      }
 
       // Use the wallet manager to sign the transaction
       const signedTx = await this.walletManager.signTransaction(txOptions);

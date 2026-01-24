@@ -47,6 +47,8 @@ export const WalletProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     const sponsorshipService = SponsorshipService.getInstance();
     return await sponsorshipService.isEligible(operation, value);
   };
+
+  useEffect(() => {
     const initWalletKit = async () => {
       try {
         const walletKitService = await WalletKitService.init();

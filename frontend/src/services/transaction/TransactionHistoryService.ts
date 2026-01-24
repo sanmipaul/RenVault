@@ -11,6 +11,7 @@ export interface TransactionHistoryItem {
   from?: string;
   fee: number;
   memo?: string;
+  isSponsored?: boolean;
 }
 
 export class TransactionHistoryService {
@@ -51,6 +52,7 @@ export class TransactionHistoryService {
         from: tx.sender_address,
         fee: parseInt(tx.fee_rate),
         memo: tx.tx_type === 'token_transfer' ? tx.token_transfer.memo : undefined,
+        isSponsored: !!tx.sponsor_address,
       }));
 
       return {
