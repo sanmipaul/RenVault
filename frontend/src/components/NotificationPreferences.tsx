@@ -19,6 +19,7 @@ interface NotificationPreferences {
   soundEnabled: boolean;
   soundVolume: number;
   vibrationEnabled: boolean;
+  doNotDisturb: boolean;
 }
 
 interface NotificationPreferencesProps {
@@ -44,7 +45,8 @@ const NotificationPreferencesComponent: React.FC<NotificationPreferencesProps> =
     twoFactorAlerts: true,
     soundEnabled: true,
     soundVolume: 50,
-    vibrationEnabled: true
+    vibrationEnabled: true,
+    doNotDisturb: false
   });
 
   const [loading, setLoading] = useState(false);
@@ -345,6 +347,22 @@ const NotificationPreferencesComponent: React.FC<NotificationPreferencesProps> =
                 />
                 Enable vibration
               </label>
+            </div>
+          </div>
+
+          {/* Do Not Disturb */}
+          <div className="preference-section">
+            <h3>🌙 Quiet Mode</h3>
+            <div className="preference-item">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={preferences.doNotDisturb}
+                  onChange={(e) => handlePreferenceChange('doNotDisturb', e.target.checked)}
+                />
+                Enable Do Not Disturb
+              </label>
+              <p className="preference-hint">Mutes all notifications except high priority security alerts.</p>
             </div>
           </div>
         </div>
