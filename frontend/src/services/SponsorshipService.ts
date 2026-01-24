@@ -103,6 +103,12 @@ class SponsorshipService {
 
   async isEligible(operation: string, value?: number): Promise<boolean> {
     try {
+      // Check rate limiting first
+      if (this.isRateLimited()) {
+        logger.warn('Sponsorship request rate limited');
+        return false;
+      }
+
       const quota = await this.getQuota();
       if (quota.remaining <= 0) return false;
 
@@ -114,10 +120,35 @@ class SponsorshipService {
         return false;
       }
 
+      this.recordRequest();
       return true;
     } catch (error) {
       return false;
     }
+  }
+
+  private lastRequestTime: number = 0;
+  private requestsInWindow: number = 0;
+  private readonly WINDOW_SIZE = 60000; // 1 minute
+  private readonly MAX_REQUESTS = 3;
+
+  private isRateLimited(): boolean {
+    const now = Date.now();
+    if (now - this.lastRequestTime > this.WINDOW_SIZE) {
+      this.requestsInWindow = 0;
+      return false;
+    }
+    return this.requestsInWindow >= this.MAX_REQUESTS;
+  }
+
+  private recordRequest() {
+    const now = Date.now();
+    if (now - this.lastRequestTime > this.WINDOW_SIZE) {
+      this.requestsInWindow = 1;
+    } else {
+      this.requestsInWindow++;
+    }
+    this.lastRequestTime = now;
   }
 
   async trackSponsorship(txHash: string, operation: string) {
