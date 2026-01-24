@@ -41,29 +41,58 @@ class SponsorshipService {
     if (!this.userId) throw new Error('User ID not set');
     
     try {
-      // In a real app, this would be an API call
       const saved = localStorage.getItem(`sponsorship_quota_${this.userId}`);
+      let quota: SponsorshipQuota;
+
       if (saved) {
-        const parsed = JSON.parse(saved);
-        return {
-          ...parsed,
-          resetDate: new Date(parsed.resetDate)
-        };
+        quota = JSON.parse(saved);
+        quota.resetDate = new Date(quota.resetDate);
+        
+        // Check for reset
+        if (new Date() > quota.resetDate) {
+          quota = this.getDefaultQuota();
+        }
+      } else {
+        quota = this.getDefaultQuota();
       }
 
-      // Default quota for new users
-      const defaultQuota: SponsorshipQuota = {
-        total: 5,
-        used: 0,
-        remaining: 5,
-        resetDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days from now
-      };
-      this.saveQuota(defaultQuota);
-      return defaultQuota;
+      this.saveQuota(quota);
+      return quota;
     } catch (error) {
       logger.error('Failed to fetch sponsorship quota', error);
       throw error;
     }
+  }
+
+  private getDefaultQuota(): SponsorshipQuota {
+    return {
+      total: 5,
+      used: 0,
+      remaining: 5,
+      resetDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+    };
+  }
+
+  async getPolicies(): Promise<SponsorshipPolicy[]> {
+    return [
+      {
+        id: 'onboarding-free',
+        name: 'New User Onboarding',
+        description: 'First 5 transactions are free for all new users.',
+        type: 'onboarding',
+        maxTransactions: 5,
+        eligibleOperations: ['deposit', 'vault_creation']
+      },
+      {
+        id: 'small-withdrawals',
+        name: 'Small Withdrawal Sponsorship',
+        description: 'Withdrawals under 10 STX are sponsored to reduce friction.',
+        type: 'operation',
+        maxTransactions: 10,
+        eligibleOperations: ['withdrawal'],
+        maxTransactionValue: 10000000 // 10 STX
+      }
+    ];
   }
 
   private saveQuota(quota: SponsorshipQuota) {
