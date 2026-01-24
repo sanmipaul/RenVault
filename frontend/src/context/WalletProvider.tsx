@@ -65,15 +65,22 @@ export const WalletProvider: React.FC<{ children: ReactNode }> = ({ children }) 
           notificationService.notifySessionExpire(data.topic);
         });
 
+        const unsubRequestExpiration = walletKitService.on('session_request_expire', (data) => {
+          notificationService.notifySessionExpire(data.topic);
+        });
+
         return () => {
           unsubProposal();
           unsubRequest();
           unsubUpdate();
           unsubDelete();
           unsubExpire();
+          unsubRequestExpiration();
         };
       } catch (error) {
         console.error('Failed to initialize WalletKit events:', error);
+        const notificationService = NotificationService.getInstance(userId);
+        notificationService.notifyConnectionError(error instanceof Error ? error.message : 'Unknown connection error');
       }
     };
 
