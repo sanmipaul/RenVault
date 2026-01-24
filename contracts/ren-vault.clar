@@ -48,6 +48,8 @@
     ;; Add fee to total collected
     (var-set total-fees-collected (+ (var-get total-fees-collected) fee))
     
+    ;; Emit deposit event
+    (print {event: "deposit", user: sender, amount: user-amount, fee: fee, new-balance: (+ current-balance user-amount), commitment-points: (+ current-points u1)})
     (ok {
       deposited: user-amount,
       fee: fee,
@@ -70,6 +72,8 @@
     ;; Update user balance
     (map-set user-balances sender (- current-balance amount))
     
+    ;; Emit withdraw event
+    (print {event: "withdraw", user: sender, amount: amount, new-balance: (- current-balance amount)})
     ;; Transfer STX from contract to user
     (as-contract (stx-transfer? amount tx-sender sender))
   )
@@ -87,6 +91,8 @@
     ;; Reset fees to zero
     (var-set total-fees-collected u0)
     
+    ;; Emit owner-withdraw-fees event
+    (print {event: "owner-withdraw-fees", owner: tx-sender, amount: fees})
     ;; Transfer fees to owner
     (as-contract (stx-transfer? fees tx-sender contract-owner))
   )

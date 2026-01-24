@@ -14,6 +14,7 @@
   )
 )
 
+
 (define-public (claim-milestone-reward (points uint))
   (let (
     (reward-amount (default-to u0 (map-get? milestone-rewards points)))
@@ -21,9 +22,9 @@
   )
     (asserts! (> reward-amount u0) err-no-rewards)
     (asserts! (not already-claimed) err-already-claimed)
-    
     (map-set claimed-rewards tx-sender true)
     (map-set user-rewards tx-sender reward-amount)
+    (print {event: "claim-milestone-reward", user: tx-sender, points: points, reward: reward-amount})
     (ok reward-amount)
   )
 )
