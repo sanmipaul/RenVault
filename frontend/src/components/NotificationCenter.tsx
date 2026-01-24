@@ -176,16 +176,32 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
 
-    if (minutes < 60) {
-      return `${minutes}m ago`;
-    } else if (hours < 24) {
-      return `${hours}h ago`;
-    } else {
-      return `${days}d ago`;
-    }
+    if (minutes < 1) return 'Just now';
+    if (minutes < 60) return `${minutes}m ago`;
+    if (hours < 24) return `${hours}h ago`;
+    return `${days}d ago`;
+  };
+
+  const groupNotificationsByDate = (notifications: Notification[]) => {
+    const groups: { [key: string]: Notification[] } = {};
+    notifications.forEach(n => {
+      const date = n.timestamp.toDateString();
+      const today = new Date().toDateString();
+      const yesterday = new Date(Date.now() - 86400000).toDateString();
+      
+      let label = date;
+      if (date === today) label = 'Today';
+      else if (date === yesterday) label = 'Yesterday';
+      
+      if (!groups[label]) groups[label] = [];
+      groups[label].push(n);
+    });
+    return groups;
   };
 
   if (!isOpen) return null;
+
+  const groupedNotifications = groupNotificationsByDate(filteredNotifications);
 
   return (
     <>
@@ -262,45 +278,50 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
           </div>
 
           <div className="notification-list">
-            {filteredNotifications.length === 0 ? (
+            {Object.keys(groupedNotifications).length === 0 ? (
               <div className="no-notifications">
                 <div className="no-notifications-icon">📭</div>
                 <p>No notifications to show</p>
               </div>
             ) : (
-              filteredNotifications.map(notification => (
-                <div
-                  key={notification.id}
-                  className={`notification-item ${!notification.read ? 'unread' : ''} priority-${notification.priority || 'medium'}`}
-                  onClick={() => markAsRead(notification.id)}
-                >
-                  <div className="notification-icon">
-                    {getNotificationIcon(notification.type)}
-                  </div>
-                  <div className="notification-content">
-                    <div className="notification-title">
-                      {notification.title}
-                      {notification.priority === 'high' && <span className="priority-tag">Urgent</span>}
-                    </div>
-                    <div className="notification-message">{notification.message}</div>
-                    
-                    {notification.actions && notification.actions.length > 0 && (
-                      <div className="notification-item-actions" onClick={e => e.stopPropagation()}>
-                        {notification.actions.map(action => (
-                          <button
-                            key={action}
-                            className={`action-button ${action.toLowerCase()}`}
-                            onClick={() => handleAction(notification.id, action, notification.data)}
-                          >
-                            {action}
-                          </button>
-                        ))}
+              Object.entries(groupedNotifications).map(([group, groupNotifications]) => (
+                <div key={group} className="notification-group">
+                  <div className="notification-group-label">{group}</div>
+                  {groupNotifications.map(notification => (
+                    <div
+                      key={notification.id}
+                      className={`notification-item ${!notification.read ? 'unread' : ''} priority-${notification.priority || 'medium'}`}
+                      onClick={() => markAsRead(notification.id)}
+                    >
+                      <div className="notification-icon">
+                        {getNotificationIcon(notification.type)}
                       </div>
-                    )}
-                    
-                    <div className="notification-time">{formatTime(notification.timestamp)}</div>
-                  </div>
-                  {!notification.read && <div className="unread-indicator"></div>}
+                      <div className="notification-content">
+                        <div className="notification-title">
+                          {notification.title}
+                          {notification.priority === 'high' && <span className="priority-tag">Urgent</span>}
+                        </div>
+                        <div className="notification-message">{notification.message}</div>
+                        
+                        {notification.actions && notification.actions.length > 0 && (
+                          <div className="notification-item-actions" onClick={e => e.stopPropagation()}>
+                            {notification.actions.map(action => (
+                              <button
+                                key={action}
+                                className={`action-button ${action.toLowerCase()}`}
+                                onClick={() => handleAction(notification.id, action, notification.data)}
+                              >
+                                {action}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                        
+                        <div className="notification-time">{formatTime(notification.timestamp)}</div>
+                      </div>
+                      {!notification.read && <div className="unread-indicator"></div>}
+                    </div>
+                  ))}
                 </div>
               ))
             )}
