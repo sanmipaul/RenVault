@@ -134,6 +134,9 @@ class SponsorshipService {
 
       logger.info(`Sponsorship tracked for ${operation}: ${txHash}`);
       
+      // Track analytics
+      this.logSponsorshipAnalytics(operation, txHash);
+      
       // In a real app, notify the backend
       await fetch(`${this.baseUrl}/track`, {
         method: 'POST',
@@ -149,6 +152,18 @@ class SponsorshipService {
     } catch (error) {
       logger.error('Error tracking sponsorship', error);
     }
+  }
+
+  private logSponsorshipAnalytics(operation: string, txHash: string) {
+    // In a real app, this would use a real analytics service
+    const event = {
+      category: 'Sponsorship',
+      action: 'Transaction Sponsored',
+      label: operation,
+      value: 1,
+      metadata: { txHash, userId: this.userId }
+    };
+    console.log('📊 Sponsorship Analytics:', event);
   }
 
   async getPaymasterData(txData: any): Promise<any> {
