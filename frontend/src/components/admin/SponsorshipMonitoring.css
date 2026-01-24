@@ -1,0 +1,70 @@
+.admin-monitoring-container {
+  padding: 24px;
+  background: #f7fafc;
+  border-radius: 12px;
+}
+
+.admin-monitoring-container h2 {
+  margin-bottom: 24px;
+  color: #2d3748;
+}
+
+.monitoring-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 24px;
+}
+
+.budget-card, .usage-table-card {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.budget-card h3, .usage-table-card h3 {
+  margin-top: 0;
+  margin-bottom: 16px;
+  font-size: 16px;
+  color: #4a5568;
+}
+
+.budget-progress {
+  height: 12px;
+  background: #edf2f7;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #4299e1;
+}
+
+.budget-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  color: #718096;
+}
+
+.usage-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.usage-table th {
+  text-align: left;
+  padding: 12px;
+  border-bottom: 2px solid #edf2f7;
+  color: #718096;
+  font-size: 13px;
+}
+
+.usage-table td {
+  padding: 12px;
+  border-bottom: 1px solid #edf2f7;
+  font-size: 14px;
+  color: #2d3748;
+}
