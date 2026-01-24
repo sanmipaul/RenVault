@@ -167,12 +167,26 @@ class SponsorshipService {
   }
 
   async getPaymasterData(txData: any): Promise<any> {
-    // This would typically interact with a paymaster service to get sponsorship signature
+    // Check eligibility again before requesting paymaster data
+    const eligible = await this.isEligible(txData.operation, txData.amount);
+    if (!eligible) {
+      throw new Error('Transaction not eligible for sponsorship or quota exceeded');
+    }
+
+    // In a real app, this would interact with a paymaster service
     return {
-      paymasterAddress: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM', // Example paymaster
-      signature: '0x...', // Mock signature
+      paymasterAddress: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM',
+      signature: '0x...',
       validUntil: Math.floor(Date.now() / 1000) + 3600
     };
+  }
+
+  handleSponsorshipError(error: any): string {
+    logger.warn('Sponsorship failed, falling back to user-paid gas', error);
+    if (error.message.includes('quota exceeded')) {
+      return 'Sponsorship quota exceeded. You will need to pay gas for this transaction.';
+    }
+    return 'Gas sponsorship is currently unavailable. Please ensure you have STX for gas fees.';
   }
 }
 
