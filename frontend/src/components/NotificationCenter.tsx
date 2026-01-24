@@ -5,11 +5,13 @@ import './NotificationCenter.css';
 
 interface Notification {
   id: string;
-  type: 'transaction' | 'security' | 'reward' | 'system';
+  type: 'transaction' | 'security' | 'reward' | 'system' | 'wallet_session' | 'wallet_request' | 'wallet_error';
   title: string;
   message: string;
   timestamp: Date;
   read: boolean;
+  priority?: 'low' | 'medium' | 'high';
+  actions?: string[];
   data?: any;
 }
 
@@ -26,16 +28,16 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
 }) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showPreferences, setShowPreferences] = useState(false);
-  const [filter, setFilter] = useState<'all' | 'unread' | 'transaction' | 'security' | 'reward'>('all');
+  const [filter, setFilter] = useState<'all' | 'unread' | 'transaction' | 'security' | 'reward' | 'wallet'>('all');
   const [searchTerm, setSearchTerm] = useState('');
 
-  const notificationService = new NotificationService(userId);
+  const notificationService = NotificationService.getInstance(userId);
 
   useEffect(() => {
     if (isOpen) {
       loadNotifications();
     }
-  }, [isOpen]);
+  }, [isOpen, userId]);
 
   const loadNotifications = () => {
     // Load notifications from localStorage (in a real app, this would come from an API)
@@ -47,40 +49,18 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
         timestamp: new Date(n.timestamp)
       })));
     } else {
-      // Add some sample notifications for demo
-      const sampleNotifications: Notification[] = [
-        {
-          id: '1',
-          type: 'transaction',
-          title: 'Deposit Confirmed',
-          message: 'Your deposit of 100 STX has been confirmed.',
-          timestamp: new Date(Date.now() - 1000 * 60 * 30), // 30 minutes ago
-          read: false,
-          data: { amount: 100, type: 'deposit' }
-        },
-        {
-          id: '2',
-          type: 'security',
-          title: 'Security Alert',
-          message: 'Failed login attempt detected from 192.168.1.1',
-          timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
-          read: false,
-          data: { alertType: 'failed_login', ipAddress: '192.168.1.1' }
-        },
-        {
-          id: '3',
-          type: 'reward',
-          title: 'Staking Reward',
-          message: 'You earned 5 STX in staking rewards!',
-          timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
-          read: true,
-          data: { amount: 5, type: 'staking' }
-        }
-      ];
-      setNotifications(sampleNotifications);
-      localStorage.setItem(`notifications_${userId}`, JSON.stringify(sampleNotifications));
+      // Sample notifications removed to focus on real events
+      setNotifications([]);
     }
   };
+
+  useEffect(() => {
+    // Subscribe to new notifications
+    const unsubscribe = notificationService.subscribe((notification) => {
+      setNotifications(prev => [notification, ...prev]);
+    });
+    return unsubscribe;
+  }, [notificationService]);
 
   const markAsRead = (id: string) => {
     setNotifications(prev =>
