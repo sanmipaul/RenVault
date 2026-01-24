@@ -1,0 +1,147 @@
+.custom-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.custom-modal-container {
+  background: white;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 800px;
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.custom-modal-main {
+  flex: 1;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+}
+
+.custom-modal-sidebar {
+  width: 300px;
+  background-color: #f8fafc;
+  padding: 32px;
+  border-left: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+
+.logo-section h2 {
+  margin: 0;
+  color: #1e293b;
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tagline {
+  color: #64748b;
+  margin-top: 4px;
+  font-size: 14px;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #94a3b8;
+}
+
+.network-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  background: #f1f5f9;
+  padding: 4px 12px;
+  border-radius: 12px;
+  color: #475569;
+}
+
+.status-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #10b981;
+}
+
+.feature-item {
+  display: flex;
+  gap: 12px;
+}
+
+.feature-icon {
+  font-size: 20px;
+}
+
+.feature-content h4 {
+  margin: 0;
+  font-size: 14px;
+  color: #1e293b;
+}
+
+.feature-content p {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+.security-badge {
+  background: white;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  text-align: center;
+}
+
+.security-badge span {
+  display: block;
+  font-size: 10px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.security-badge strong {
+  font-size: 14px;
+  color: #1e293b;
+}
+
+@media (max-width: 768px) {
+  .custom-modal-container {
+    flex-direction: column;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  
+  .custom-modal-sidebar {
+    width: 100%;
+    border-left: none;
+    border-top: 1px solid #e2e8f0;
+  }
+}

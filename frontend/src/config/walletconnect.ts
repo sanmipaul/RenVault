@@ -11,6 +11,8 @@ export const walletConnectConfig = {
       : [],
   },
   relayUrl: 'wss://relay.walletconnect.org',
+  termsConditionsUrl: 'https://renvault.app/terms',
+  privacyPolicyUrl: 'https://renvault.app/privacy',
   // AppKit specific configurations
   appKit: {
     themeMode: 'light',

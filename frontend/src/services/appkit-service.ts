@@ -67,6 +67,13 @@ export class AppKitService {
         projectId: walletConnectConfig.projectId,
         themeMode: walletConnectConfig.appKit.themeMode,
         themeVariables: walletConnectConfig.appKit.themeVariables,
+        termsConditionsUrl: walletConnectConfig.termsConditionsUrl,
+        privacyPolicyUrl: walletConnectConfig.privacyPolicyUrl,
+        featuredWalletIds: [
+          'hiro', // Placeholder/Common IDs, will verify
+          'leather',
+          'xverse'
+        ],
         features: {
           analytics: true,
           email: false,
