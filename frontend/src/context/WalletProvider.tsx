@@ -37,11 +37,20 @@ export const WalletProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
         // Subscribe to WalletKit events
         const unsubProposal = walletKitService.on('session_proposal', (proposal) => {
-          notificationService.notifySessionProposal(
-            proposal.params.proposer.metadata.name,
-            proposal.params.proposer.metadata,
-            proposal.id.toString()
-          );
+          const { name, url } = proposal.params.proposer.metadata;
+          
+          // Security check: Simple example of suspicious dApp detection
+          const isSuspicious = url.includes('suspicious') || url.includes('untrusted');
+          
+          if (isSuspicious) {
+            notificationService.notifySuspiciousSession(name, url);
+          } else {
+            notificationService.notifySessionProposal(
+              name,
+              proposal.params.proposer.metadata,
+              proposal.id.toString()
+            );
+          }
         });
 
         const unsubRequest = walletKitService.on('session_request', (request) => {
