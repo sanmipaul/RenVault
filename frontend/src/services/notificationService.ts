@@ -56,43 +56,55 @@ class NotificationService {
   }
 
   // WalletKit Notifications
-  notifySessionProposal(proposerName: string, metadata: any) {
+  notifySessionProposal(proposerName: string, metadata: any, id: string) {
     this.notify({
       type: 'wallet_session',
       title: 'New Connection Request',
       message: `${proposerName} wants to connect to your wallet`,
       priority: 'high',
       actions: ['Approve', 'Reject'],
-      data: { metadata }
+      data: { metadata, proposalId: id }
     });
   }
 
-  notifySessionRequest(method: string, data: any) {
+  notifySessionRequest(method: string, data: any, id: number, topic: string) {
     this.notify({
       type: 'wallet_request',
       title: 'Signature Request',
       message: `New request: ${method}`,
       priority: 'high',
       actions: ['Approve', 'Reject'],
-      data
+      data: { ...data, requestId: id, topic, method }
     });
   }
 
-  notifySessionDelete() {
+  notifySessionUpdate(topic: string, namespaces: any) {
+    this.notify({
+      type: 'wallet_session',
+      title: 'Session Updated',
+      message: 'Wallet session has been updated',
+      priority: 'low',
+      data: { topic, namespaces }
+    });
+  }
+
+  notifySessionDelete(topic: string) {
     this.notify({
       type: 'wallet_session',
       title: 'Session Ended',
       message: 'Wallet disconnected',
-      priority: 'medium'
+      priority: 'medium',
+      data: { topic }
     });
   }
 
-  notifySessionExpire() {
+  notifySessionExpire(topic: string) {
     this.notify({
       type: 'wallet_session',
       title: 'Session Expired',
       message: 'Please reconnect your wallet',
-      priority: 'medium'
+      priority: 'medium',
+      data: { topic }
     });
   }
 
