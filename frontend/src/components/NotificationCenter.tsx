@@ -253,6 +253,12 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
             >
               Rewards
             </button>
+            <button
+              className={filter === 'wallet' ? 'active' : ''}
+              onClick={() => setFilter('wallet')}
+            >
+              Wallet
+            </button>
           </div>
 
           <div className="notification-list">
@@ -265,15 +271,33 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
               filteredNotifications.map(notification => (
                 <div
                   key={notification.id}
-                  className={`notification-item ${!notification.read ? 'unread' : ''}`}
+                  className={`notification-item ${!notification.read ? 'unread' : ''} priority-${notification.priority || 'medium'}`}
                   onClick={() => markAsRead(notification.id)}
                 >
                   <div className="notification-icon">
                     {getNotificationIcon(notification.type)}
                   </div>
                   <div className="notification-content">
-                    <div className="notification-title">{notification.title}</div>
+                    <div className="notification-title">
+                      {notification.title}
+                      {notification.priority === 'high' && <span className="priority-tag">Urgent</span>}
+                    </div>
                     <div className="notification-message">{notification.message}</div>
+                    
+                    {notification.actions && notification.actions.length > 0 && (
+                      <div className="notification-item-actions" onClick={e => e.stopPropagation()}>
+                        {notification.actions.map(action => (
+                          <button
+                            key={action}
+                            className={`action-button ${action.toLowerCase()}`}
+                            onClick={() => handleAction(notification.id, action, notification.data)}
+                          >
+                            {action}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    
                     <div className="notification-time">{formatTime(notification.timestamp)}</div>
                   </div>
                   {!notification.read && <div className="unread-indicator"></div>}
