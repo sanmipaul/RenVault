@@ -2,11 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import { BalanceService, Balance } from '../services/balance/BalanceService';
 import { useWallet } from '../hooks/useWallet';
-import { usePermissions } from '../hooks/usePermissions';
-import { PermissionType } from '../services/permissions/PermissionService';
-import BuySTXButton from './BuySTXButton';
-import SwapWidget from './SwapWidget';
-import walletConnectConfig from '../config/walletconnect';
 
 interface BalanceDisplayProps {
   className?: string;
@@ -22,7 +17,6 @@ const BalanceDisplay: React.FC<BalanceDisplayProps> = ({
   refreshInterval = 30000
 }) => {
   const { isConnected, connectionState, currentProvider } = useWallet();
-  const { hasPermission, requestPermission } = usePermissions();
   const [balance, setBalance] = useState<Balance | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,12 +25,6 @@ const BalanceDisplay: React.FC<BalanceDisplayProps> = ({
 
   const fetchBalance = async (showLoading = true) => {
     if (!connectionState?.address || !currentProvider) return;
-
-    // Check permission before fetching balance
-    if (!hasPermission(PermissionType.BALANCE_READ)) {
-      setError('Balance access permission required. Please grant permission in wallet settings.');
-      return;
-    }
 
     if (showLoading) setLoading(true);
     setError(null);
@@ -118,16 +106,6 @@ const BalanceDisplay: React.FC<BalanceDisplayProps> = ({
           <div className="last-updated">
             Last updated: {balance.lastUpdated.toLocaleTimeString()}
           </div>
-        </div>
-      )}
-      {walletConnectConfig.appKit?.enabled && (
-        <div className="buy-stx">
-          <BuySTXButton />
-        </div>
-      )}
-      {walletConnectConfig.appKitSwap?.enabled && (
-        <div className="swap-widget-container">
-          <SwapWidget />
         </div>
       )}
       {showRefreshButton && (

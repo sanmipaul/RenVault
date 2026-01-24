@@ -13,8 +13,6 @@ export const walletConnectConfig = {
   relayUrl: 'wss://relay.walletconnect.org',
   // AppKit specific configurations
   appKit: {
-    enabled: environment.appKit?.enabled || false,
-    apiKey: environment.appKit?.apiKey || '',
     themeMode: 'light',
     themeVariables: {
       '--w3m-color-mix': '#4a80f5',

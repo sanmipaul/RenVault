@@ -6,13 +6,11 @@ import DisconnectModal from './components/DisconnectModal';
 import AddressDisplay from './components/AddressDisplay';
 import BalanceDisplay from './components/BalanceDisplay';
 import DepositForm from './components/DepositForm';
-import PermissionManager from './components/PermissionManager';
 import './App.css';
 
 const AppContent: React.FC = () => {
   const { isConnected, disconnect, connectionState, currentProvider } = useWallet();
   const [showDisconnectModal, setShowDisconnectModal] = useState(false);
-  const [showPermissionManager, setShowPermissionManager] = useState(false);
 
   const handleDisconnectClick = () => {
     setShowDisconnectModal(true);
@@ -40,7 +38,6 @@ const AppContent: React.FC = () => {
         {isConnected && (
           <div className="header-actions">
             <AddressDisplay address={connectionState?.address || ''} />
-            <button onClick={() => setShowPermissionManager(true)} className="permission-btn">🔐 Permissions</button>
             <button onClick={handleDisconnectClick} className="disconnect-btn">Disconnect</button>
           </div>
         )}
@@ -56,10 +53,6 @@ const AppContent: React.FC = () => {
         onCancel={handleDisconnectCancel}
         onLogout={handleLogout}
         providerName={currentProvider?.name || 'wallet'}
-      />
-      <PermissionManager
-        isOpen={showPermissionManager}
-        onClose={() => setShowPermissionManager(false)}
       />
     </div>
   );

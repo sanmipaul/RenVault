@@ -4,19 +4,17 @@
  */
 
 export interface AppKitConfig {
-  projectId?: string;
-  enabled?: boolean;
-  providerUrl?: string;
-  metadata?: {
-    name?: string;
-    description?: string;
-    url?: string;
-    icons?: string[];
+  projectId: string;
+  metadata: {
+    name: string;
+    description: string;
+    url: string;
+    icons: string[];
   };
-  themeMode?: 'light' | 'dark';
-  themeVariables?: {
-    '--w3m-color-mix'?: string;
-    '--w3m-color-mix-strength'?: number;
+  themeMode: 'light' | 'dark';
+  themeVariables: {
+    '--w3m-color-mix': string;
+    '--w3m-color-mix-strength': number;
   };
 }
 

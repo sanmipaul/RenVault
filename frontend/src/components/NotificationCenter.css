@@ -244,6 +244,69 @@
   color: #1a202c;
   font-size: 14px;
   margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.priority-tag {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #feb2b2;
+  color: #9b2c2c;
+  text-transform: uppercase;
+}
+
+.priority-high {
+  border-left: 4px solid #e53e3e;
+}
+
+.notification-group-label {
+  padding: 8px 20px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #718096;
+  background: var(--header-bg, #f8fafc);
+  border-bottom: 1px solid var(--border-color, #f1f5f9);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.notification-item-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  margin-bottom: 8px;
+}
+
+.action-button {
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: opacity 0.2s;
+}
+
+.action-button:hover {
+  opacity: 0.8;
+}
+
+.action-button.approve {
+  background: #48bb78;
+  color: white;
+}
+
+.action-button.reject, .action-button.block {
+  background: #e53e3e;
+  color: white;
+}
+
+.action-button.review {
+  background: #4299e1;
+  color: white;
 }
 
 .notification-message {

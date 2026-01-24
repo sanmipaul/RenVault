@@ -1,14 +1,11 @@
 const EmailService = require('./emailService');
 const PushNotificationService = require('./pushService');
-const BlockchainEventListener = require('./blockchainEventListener');
 
 class NotificationManager {
   constructor() {
     this.emailService = new EmailService();
     this.pushService = new PushNotificationService();
     this.userPreferences = new Map();
-    this.notificationHistory = new Map(); // Track notification history
-    this.blockchainListener = new BlockchainEventListener(this);
   }
 
   setUserPreferences(userId, preferences) {
@@ -16,7 +13,16 @@ class NotificationManager {
       email: preferences.email || null,
       emailEnabled: preferences.emailEnabled || false,
       pushEnabled: preferences.pushEnabled || false,
-      web3Enabled: preferences.web3Enabled || false, // New Web3 notifications
+      // Transaction notifications
+      depositNotifications: preferences.depositNotifications !== false,
+      withdrawalNotifications: preferences.withdrawalNotifications !== false,
+      stakingNotifications: preferences.stakingNotifications !== false,
+      rewardNotifications: preferences.rewardNotifications !== false,
+      // Security alerts
+      securityAlerts: preferences.securityAlerts !== false,
+      loginAlerts: preferences.loginAlerts !== false,
+      suspiciousActivityAlerts: preferences.suspiciousActivityAlerts !== false,
+      twoFactorAlerts: preferences.twoFactorAlerts !== false,
       ...preferences
     });
   }
@@ -84,126 +90,126 @@ class NotificationManager {
     await Promise.allSettled(promises);
   }
 
-  async notifyVaultCreated(userId, vaultId, vaultType) {
+  async notifyStakingReward(userId, amount, stakedAmount) {
     const prefs = this.userPreferences.get(userId);
-    if (!prefs) return;
+    if (!prefs || !prefs.stakingNotifications) return;
 
     const promises = [];
 
     if (prefs.emailEnabled && prefs.email) {
       promises.push(
-        this.emailService.sendVaultCreatedAlert(prefs.email, vaultId, vaultType)
+        this.emailService.sendStakingRewardAlert(prefs.email, amount, stakedAmount)
       );
     }
 
     if (prefs.pushEnabled) {
       promises.push(
-        this.pushService.sendVaultCreatedNotification(userId, vaultId, vaultType)
+        this.pushService.sendStakingRewardNotification(userId, amount)
       );
     }
 
     await Promise.allSettled(promises);
   }
 
-  async notifyRewardsDistributed(userId, vaultId, amount) {
+  async notifyLiquidityReward(userId, amount, poolName) {
     const prefs = this.userPreferences.get(userId);
-    if (!prefs) return;
+    if (!prefs || !prefs.rewardNotifications) return;
 
     const promises = [];
 
     if (prefs.emailEnabled && prefs.email) {
       promises.push(
-        this.emailService.sendRewardsDistributedAlert(prefs.email, vaultId, amount)
+        this.emailService.sendLiquidityRewardAlert(prefs.email, amount, poolName)
       );
     }
 
     if (prefs.pushEnabled) {
       promises.push(
-        this.pushService.sendRewardsNotification(userId, vaultId, amount)
+        this.pushService.sendLiquidityRewardNotification(userId, amount, poolName)
       );
     }
 
     await Promise.allSettled(promises);
   }
 
-  async notifyVaultMaturity(userId, vaultId, daysRemaining) {
+  async notifyFailedLogin(userId, ipAddress, userAgent) {
     const prefs = this.userPreferences.get(userId);
-    if (!prefs) return;
+    if (!prefs || !prefs.securityAlerts || !prefs.loginAlerts) return;
 
     const promises = [];
 
     if (prefs.emailEnabled && prefs.email) {
       promises.push(
-        this.emailService.sendVaultMaturityAlert(prefs.email, vaultId, daysRemaining)
+        this.emailService.sendFailedLoginAlert(prefs.email, ipAddress, userAgent)
       );
     }
 
     if (prefs.pushEnabled) {
       promises.push(
-        this.pushService.sendVaultMaturityNotification(userId, vaultId, daysRemaining)
+        this.pushService.sendFailedLoginNotification(userId, ipAddress)
       );
     }
 
     await Promise.allSettled(promises);
   }
 
-  async notifyLargeTransaction(userId, amount, type) {
+  async notifySuspiciousActivity(userId, activity, ipAddress) {
     const prefs = this.userPreferences.get(userId);
-    if (!prefs) return;
+    if (!prefs || !prefs.securityAlerts || !prefs.suspiciousActivityAlerts) return;
 
     const promises = [];
 
     if (prefs.emailEnabled && prefs.email) {
       promises.push(
-        this.emailService.sendLargeTransactionAlert(prefs.email, amount, type)
+        this.emailService.sendSuspiciousActivityAlert(prefs.email, activity, ipAddress)
       );
     }
 
     if (prefs.pushEnabled) {
       promises.push(
-        this.pushService.sendLargeTransactionNotification(userId, amount, type)
+        this.pushService.sendSuspiciousActivityNotification(userId, activity)
       );
     }
 
     await Promise.allSettled(promises);
   }
 
-  async notifyMultisigRequest(userId, requestId, action) {
+  async notifyTwoFactorEnabled(userId) {
     const prefs = this.userPreferences.get(userId);
-    if (!prefs) return;
+    if (!prefs || !prefs.securityAlerts || !prefs.twoFactorAlerts) return;
 
     const promises = [];
 
     if (prefs.emailEnabled && prefs.email) {
       promises.push(
-        this.emailService.sendMultisigAlert(prefs.email, requestId, action)
+        this.emailService.sendTwoFactorEnabledAlert(prefs.email)
       );
     }
 
     if (prefs.pushEnabled) {
       promises.push(
-        this.pushService.sendMultisigNotification(userId, requestId, action)
+        this.pushService.sendTwoFactorEnabledNotification(userId)
       );
     }
 
     await Promise.allSettled(promises);
   }
 
-  async notifySessionExpiration(userId, minutesRemaining) {
+  async notifyTwoFactorDisabled(userId) {
     const prefs = this.userPreferences.get(userId);
-    if (!prefs) return;
+    if (!prefs || !prefs.securityAlerts || !prefs.twoFactorAlerts) return;
 
     const promises = [];
 
     if (prefs.emailEnabled && prefs.email) {
       promises.push(
-        this.emailService.sendSessionExpirationAlert(prefs.email, minutesRemaining)
+        this.emailService.sendTwoFactorDisabledAlert(prefs.email)
       );
     }
 
     if (prefs.pushEnabled) {
       promises.push(
-        this.pushService.sendSessionExpirationNotification(userId, minutesRemaining)
+        this.pushService.sendTwoFactorDisabledNotification(userId)
       );
     }
 
@@ -223,46 +229,9 @@ class NotificationManager {
       totalUsers: this.userPreferences.size,
       pushSubscribers: this.pushService.getSubscriberCount(),
       emailUsers: Array.from(this.userPreferences.values())
-        .filter(p => p.emailEnabled).length,
-      blockchainListener: this.blockchainListener.getStats()
+        .filter(p => p.emailEnabled).length
     };
   }
-
-  async startBlockchainListener() {
-    await this.blockchainListener.startListening();
-  }
-
-  stopBlockchainListener() {
-    this.blockchainListener.stopListening();
-  }
-
-  // Methods for testing/simulating blockchain events
-  simulateVaultCreated(userId, vaultId, vaultType) {
-    this.blockchainListener.simulateVaultCreated(userId, vaultId, vaultType);
-  }
-
-  simulateDeposit(userId, vaultId, amount, balance) {
-    this.blockchainListener.simulateDeposit(userId, vaultId, amount, balance);
-  }
-
-  simulateWithdrawal(userId, vaultId, amount, balance) {
-    this.blockchainListener.simulateWithdrawal(userId, vaultId, amount, balance);
-  }
-
-  simulateRewardsDistributed(vaultId, recipients) {
-    this.blockchainListener.simulateRewardsDistributed(vaultId, recipients);
-  }
-
-  simulateVaultUpdated(vaultId, changes, userId) {
-    this.blockchainListener.simulateVaultUpdated(vaultId, changes, userId);
-  }
-
-  simulateLargeTransaction(userId, amount, type) {
-    this.blockchainListener.simulateLargeTransaction(userId, amount, type);
-  }
-
-  simulateMultisigRequest(userId, requestId, action) {
-    this.blockchainListener.simulateMultisigRequest(userId, requestId, action);
-  }
+}
 
 module.exports = NotificationManager;

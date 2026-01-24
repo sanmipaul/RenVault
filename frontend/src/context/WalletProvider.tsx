@@ -1,6 +1,8 @@
-import React, { createContext, useContext, ReactNode } from 'react';
+import React, { createContext, useContext, ReactNode, useEffect, useState } from 'react';
 import { useAppKitAccount } from '@reown/appkit/react';
 import { WalletProvider, WalletProviderType } from '../types/wallet';
+import { WalletKitService } from '../services/walletkit-service';
+import NotificationService from '../services/notificationService';
 
 interface WalletContextType {
   currentProvider: WalletProvider | null;
@@ -25,6 +27,76 @@ const WalletContext = createContext<WalletContextType | undefined>(undefined);
 
 export const WalletProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { address, isConnected, status } = useAppKitAccount();
+  const [userId] = useState('user-' + Math.random().toString(36).substring(7)); // In real app, get from auth
+
+  useEffect(() => {
+    const initWalletKit = async () => {
+      try {
+        const walletKitService = await WalletKitService.init();
+        const notificationService = NotificationService.getInstance(userId);
+
+        // Subscribe to WalletKit events
+        const unsubProposal = walletKitService.on('session_proposal', (proposal) => {
+          const { name, url } = proposal.params.proposer.metadata;
+          
+          // Security check: Simple example of suspicious dApp detection
+          const isSuspicious = url.includes('suspicious') || url.includes('untrusted');
+          
+          if (isSuspicious) {
+            notificationService.notifySuspiciousSession(name, url);
+          } else {
+            notificationService.notifySessionProposal(
+              name,
+              proposal.params.proposer.metadata,
+              proposal.id.toString()
+            );
+          }
+        });
+
+        const unsubRequest = walletKitService.on('session_request', (request) => {
+          notificationService.notifySessionRequest(
+            request.params.request.method,
+            request.params.request.params,
+            request.id,
+            request.topic
+          );
+        });
+
+        const unsubUpdate = walletKitService.on('session_update', (data) => {
+          notificationService.notifySessionUpdate(data.topic, data.params.namespaces);
+        });
+
+        const unsubDelete = walletKitService.on('session_delete', (data) => {
+          notificationService.notifySessionDelete(data.topic);
+        });
+
+        const unsubExpire = walletKitService.on('session_expire', (data) => {
+          notificationService.notifySessionExpire(data.topic);
+        });
+
+        const unsubRequestExpiration = walletKitService.on('session_request_expire', (data) => {
+          notificationService.notifySessionExpire(data.topic);
+        });
+
+        return () => {
+          unsubProposal();
+          unsubRequest();
+          unsubUpdate();
+          unsubDelete();
+          unsubExpire();
+          unsubRequestExpiration();
+        };
+      } catch (error) {
+        console.error('Failed to initialize WalletKit events:', error);
+        const notificationService = NotificationService.getInstance(userId);
+        notificationService.notifyConnectionError(error instanceof Error ? error.message : 'Unknown connection error');
+      }
+    };
+
+    if (isConnected) {
+      initWalletKit();
+    }
+  }, [isConnected, userId]);
 
   const setSelectedProvider = (type: WalletProviderType) => {
     // AppKit handles provider selection internally
