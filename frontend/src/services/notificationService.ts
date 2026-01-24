@@ -174,6 +174,36 @@ class NotificationService {
     });
   }
 
+  // Clear all notification history
+  clearHistory() {
+    localStorage.removeItem(`notifications_${this.userId}`);
+    this.listeners.forEach(l => {
+      // In a real app, we might want to notify about the clear event
+    });
+  }
+
+  // Mark all notifications of a certain type as read
+  markTypeAsRead(type: NotificationType) {
+    const saved = localStorage.getItem(`notifications_${this.userId}`);
+    if (saved) {
+      const notifications = JSON.parse(saved);
+      const updated = notifications.map((n: any) => 
+        n.type === type ? { ...n, read: true } : n
+      );
+      localStorage.setItem(`notifications_${this.userId}`, JSON.stringify(updated));
+    }
+  }
+
+  // Get unread count for a specific type
+  getUnreadCount(type?: NotificationType): number {
+    const saved = localStorage.getItem(`notifications_${this.userId}`);
+    if (!saved) return 0;
+    const notifications = JSON.parse(saved);
+    return notifications.filter((n: any) => 
+      !n.read && (!type || n.type === type)
+    ).length;
+  }
+
   // Subscribe to push notifications
   async subscribeToPushNotifications(): Promise<boolean> {
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
