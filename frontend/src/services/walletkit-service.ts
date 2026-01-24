@@ -182,6 +182,14 @@ export class WalletKitService {
     return WalletKitService.instance;
   }
 
+  public on<E extends WalletKitTypes.Event>(
+    event: E,
+    listener: (args: WalletKitTypes.EventArguments[E]) => void
+  ) {
+    this.walletKit.on(event, listener);
+    return () => this.walletKit.off(event, listener);
+  }
+
   async approveSession(
     proposal: WalletKitTypes.SessionProposal,
     supportedNamespaces: Record<string, any>,
