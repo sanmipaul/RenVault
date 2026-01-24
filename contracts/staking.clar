@@ -20,11 +20,11 @@
   (begin
     (asserts! (>= amount (var-get min-stake)) (err u404))
     (try! (stx-transfer? amount tx-sender (as-contract tx-sender)))
-    
     (let ((current-stake (default-to u0 (map-get? user-stakes tx-sender))))
       (map-set user-stakes tx-sender (+ current-stake amount))
       (map-set stake-timestamps tx-sender block-height)
       (var-set total-staked (+ (var-get total-staked) amount))
+      (print {event: "stake", user: tx-sender, amount: amount, new-stake: (+ current-stake amount)})
       (ok amount))))
 
 ;; Unstake STX
@@ -33,10 +33,10 @@
         (stake-time (default-to u0 (map-get? stake-timestamps tx-sender))))
     (asserts! (>= current-stake amount) err-insufficient-balance)
     (asserts! (>= (- block-height stake-time) (var-get lock-period)) (err u405))
-    
     (try! (as-contract (stx-transfer? amount tx-sender tx-sender)))
     (map-set user-stakes tx-sender (- current-stake amount))
     (var-set total-staked (- (var-get total-staked) amount))
+    (print {event: "unstake", user: tx-sender, amount: amount, new-stake: (- current-stake amount)})
     (ok amount)))
 
 ;; Calculate rewards
@@ -55,6 +55,7 @@
     (asserts! (> rewards-result u0) (err u407))
     (map-set user-rewards tx-sender (+ (default-to u0 (map-get? user-rewards tx-sender)) rewards-result))
     (map-set stake-timestamps tx-sender block-height)
+    (print {event: "claim-rewards", user: tx-sender, amount: rewards-result})
     (ok rewards-result)))
 
 ;; Set staking parameters

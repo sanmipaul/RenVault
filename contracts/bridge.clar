@@ -30,6 +30,7 @@
     (try! (stx-transfer? amount tx-sender (as-contract tx-sender)))
     (map-set bridge-transactions {tx-id: tx-id}
              {sender: tx-sender, amount: (- amount fee), target-chain: target-chain, status: "locked"})
+    (print {event: "lock-for-bridge", user: tx-sender, amount: amount, fee: fee, target-chain: target-chain, tx-id: tx-id})
     (ok (- amount fee))))
 
 ;; Release assets from bridge
@@ -40,6 +41,7 @@
     (try! (as-contract (stx-transfer? (get amount tx-data) tx-sender recipient)))
     (map-set bridge-transactions {tx-id: tx-id}
              (merge tx-data {status: "released"}))
+    (print {event: "release-from-bridge", tx-id: tx-id, recipient: recipient, amount: (get amount tx-data)})
     (ok (get amount tx-data))))
 
 ;; Emergency pause

@@ -20,6 +20,7 @@
   { user: principal, token-a: principal, token-b: principal }
   uint)
 
+
 (define-public (create-pool (token-a principal) (token-b principal) (amount-a uint) (amount-b uint))
   (let ((pool-key { token-a: token-a, token-b: token-b }))
     (asserts! (is-none (map-get? pools pool-key)) err-pool-not-found)
@@ -29,7 +30,9 @@
       total-supply: (* amount-a amount-b),
       fee-rate: u30
     })
+    (print {event: "create-pool", token-a: token-a, token-b: token-b, amount-a: amount-a, amount-b: amount-b, by: tx-sender})
     (ok true)))
+
 
 (define-public (add-liquidity (token-a principal) (token-b principal) (amount-a uint) (amount-b uint))
   (let ((pool-key { token-a: token-a, token-b: token-b })
@@ -37,6 +40,7 @@
     (map-set user-liquidity 
       { user: tx-sender, token-a: token-a, token-b: token-b }
       (+ (default-to u0 (map-get? user-liquidity { user: tx-sender, token-a: token-a, token-b: token-b })) amount-a))
+    (print {event: "add-liquidity", user: tx-sender, token-a: token-a, token-b: token-b, amount-a: amount-a, amount-b: amount-b})
     (ok true)))
 
 (define-read-only (get-pool (token-a principal) (token-b principal))
