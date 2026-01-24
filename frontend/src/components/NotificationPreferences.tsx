@@ -18,6 +18,7 @@ interface NotificationPreferences {
   // Sound settings
   soundEnabled: boolean;
   soundVolume: number;
+  vibrationEnabled: boolean;
 }
 
 interface NotificationPreferencesProps {
@@ -42,7 +43,8 @@ const NotificationPreferencesComponent: React.FC<NotificationPreferencesProps> =
     suspiciousActivityAlerts: true,
     twoFactorAlerts: true,
     soundEnabled: true,
-    soundVolume: 50
+    soundVolume: 50,
+    vibrationEnabled: true
   });
 
   const [loading, setLoading] = useState(false);
@@ -306,9 +308,9 @@ const NotificationPreferencesComponent: React.FC<NotificationPreferencesProps> =
             </button>
           </div>
 
-          {/* Sound Settings */}
+          {/* Sound & Vibration Settings */}
           <div className="preference-section">
-            <h3>🔊 Sound Settings</h3>
+            <h3>🔊 Sound & Vibration</h3>
             <div className="preference-item">
               <label>
                 <input
@@ -334,7 +336,18 @@ const NotificationPreferencesComponent: React.FC<NotificationPreferencesProps> =
                 </label>
               </div>
             )}
+            <div className="preference-item">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={preferences.vibrationEnabled}
+                  onChange={(e) => handlePreferenceChange('vibrationEnabled', e.target.checked)}
+                />
+                Enable vibration
+              </label>
+            </div>
           </div>
+        </div>
       </div>
     </div>
   );
