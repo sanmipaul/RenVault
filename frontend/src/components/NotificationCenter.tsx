@@ -101,6 +101,8 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
           return n.type === 'security';
         case 'reward':
           return n.type === 'reward';
+        case 'wallet':
+          return ['wallet_session', 'wallet_request', 'wallet_error'].includes(n.type);
         default:
           return true;
       }
@@ -123,6 +125,12 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
         return '🎁';
       case 'system':
         return 'ℹ️';
+      case 'wallet_session':
+        return '🔌';
+      case 'wallet_request':
+        return '✍️';
+      case 'wallet_error':
+        return '⚠️';
       default:
         return '🔔';
     }
