@@ -51,8 +51,37 @@ class NotificationService {
     notifications.unshift(fullNotification);
     localStorage.setItem(`notifications_${this.userId}`, JSON.stringify(notifications));
 
+    // Play sound and vibrate if enabled
+    this.playNotificationSound(fullNotification.priority);
+    this.vibrate(fullNotification.priority);
+
     // Notify listeners
     this.listeners.forEach(l => l(fullNotification));
+  }
+
+  private playNotificationSound(priority?: string) {
+    const prefs = this.getUserPreferences(this.userId);
+    if (prefs?.soundEnabled === false) return;
+
+    try {
+      const audio = new Audio(priority === 'high' ? '/sounds/alert.mp3' : '/sounds/notification.mp3');
+      audio.play().catch(e => console.warn('Audio play failed:', e));
+    } catch (error) {
+      console.warn('Failed to play notification sound:', error);
+    }
+  }
+
+  private vibrate(priority?: string) {
+    const prefs = this.getUserPreferences(this.userId);
+    if (prefs?.vibrationEnabled === false) return;
+
+    if ('vibrate' in navigator) {
+      if (priority === 'high') {
+        navigator.vibrate([200, 100, 200]);
+      } else {
+        navigator.vibrate(200);
+      }
+    }
   }
 
   // WalletKit Notifications
