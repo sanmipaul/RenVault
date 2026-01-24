@@ -146,6 +146,34 @@ class NotificationService {
     });
   }
 
+  notifySuspiciousSession(proposerName: string, url: string) {
+    this.notify({
+      type: 'security',
+      title: '⚠️ Suspicious Connection',
+      message: `Unknown dApp ${proposerName} (${url}) is attempting to connect.`,
+      priority: 'high',
+      actions: ['Block', 'Review']
+    });
+  }
+
+  notifyUnknownDApp(url: string) {
+    this.notify({
+      type: 'security',
+      title: 'Unknown dApp Connection',
+      message: `Connecting to untrusted source: ${url}`,
+      priority: 'medium'
+    });
+  }
+
+  notifyMultipleFailedAttempts() {
+    this.notify({
+      type: 'security',
+      title: 'Security Warning',
+      message: 'Multiple failed connection attempts detected.',
+      priority: 'high'
+    });
+  }
+
   // Subscribe to push notifications
   async subscribeToPushNotifications(): Promise<boolean> {
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
