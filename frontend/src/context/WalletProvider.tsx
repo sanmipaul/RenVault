@@ -3,6 +3,7 @@ import { useAppKitAccount } from '@reown/appkit/react';
 import { WalletProvider, WalletProviderType } from '../types/wallet';
 import { WalletKitService } from '../services/walletkit-service';
 import NotificationService from '../services/notificationService';
+import SponsorshipService, { SponsorshipQuota } from '../services/SponsorshipService';
 
 interface WalletContextType {
   currentProvider: WalletProvider | null;
@@ -21,6 +22,9 @@ interface WalletContextType {
   isRestoringSession: boolean;
   sessionError: string | null;
   clearStoredSession: () => void;
+  // Sponsorship properties
+  sponsorshipQuota: SponsorshipQuota | null;
+  isEligibleForSponsorship: (operation: string, value?: number) => Promise<boolean>;
 }
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
@@ -28,8 +32,21 @@ const WalletContext = createContext<WalletContextType | undefined>(undefined);
 export const WalletProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { address, isConnected, status } = useAppKitAccount();
   const [userId] = useState('user-' + Math.random().toString(36).substring(7)); // In real app, get from auth
+  const [sponsorshipQuota, setSponsorshipQuota] = useState<SponsorshipQuota | null>(null);
 
   useEffect(() => {
+    const sponsorshipService = SponsorshipService.getInstance();
+    sponsorshipService.setUserId(userId);
+    
+    if (isConnected) {
+      sponsorshipService.getQuota().then(setSponsorshipQuota);
+    }
+  }, [isConnected, userId]);
+
+  const isEligibleForSponsorship = async (operation: string, value?: number) => {
+    const sponsorshipService = SponsorshipService.getInstance();
+    return await sponsorshipService.isEligible(operation, value);
+  };
     const initWalletKit = async () => {
       try {
         const walletKitService = await WalletKitService.init();
@@ -141,6 +158,8 @@ export const WalletProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     isRestoringSession: false,
     sessionError: null,
     clearStoredSession,
+    sponsorshipQuota,
+    isEligibleForSponsorship,
   };
 
   return (
