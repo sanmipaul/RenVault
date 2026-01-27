@@ -1,6 +1,7 @@
 // components/TransactionSigner.tsx
 import React, { useState } from 'react';
 import { TransactionService, TransactionDetails, SignedTransaction } from '../services/transaction/TransactionService';
+import SponsoredBadge from './common/SponsoredBadge';
 import { WalletError } from '../utils/wallet-errors';
 import { getFriendlyErrorMessage } from '../utils/wallet-errors';
 import './TransactionSigner.css';
@@ -80,12 +81,17 @@ const TransactionSigner: React.FC<TransactionSignerProps> = ({
           <p className="amount">{formatAmount(details.amount || 0)} STX</p>
         </div>
 
-        {details.fee && (
-          <div className="detail-section">
-            <h4>Network Fee</h4>
-            <p className="fee">{formatFee(details.fee)} STX</p>
-          </div>
-        )}
+        <div className="detail-section">
+          <h4>Network Fee</h4>
+          {details.isSponsored ? (
+            <div className="sponsored-fee">
+              <p className="fee struck">{(details.fee || 1000) / 1000000} STX</p>
+              <SponsoredBadge />
+            </div>
+          ) : (
+            <p className="fee">{formatFee(details.fee || 0)} STX</p>
+          )}
+        </div>
 
         <div className="detail-section">
           <h4>Network</h4>

@@ -1,0 +1,72 @@
+.sponsorship-quota-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-top: 16px;
+}
+
+.quota-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.quota-header h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.quota-status {
+  font-size: 12px;
+  font-weight: 600;
+  color: #38b2ac;
+}
+
+.quota-status.low {
+  color: #e53e3e;
+}
+
+.quota-progress-bar {
+  height: 8px;
+  background: #edf2f7;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.quota-progress-fill {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.quota-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.quota-footer p {
+  margin: 0;
+  font-size: 11px;
+  color: #718096;
+}
+
+.learn-more-link {
+  background: none;
+  border: none;
+  color: #4299e1;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.learn-more-link:hover {
+  color: #2b6cb0;
+}

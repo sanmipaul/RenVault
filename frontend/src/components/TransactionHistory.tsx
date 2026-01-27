@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { TransactionHistoryService, TransactionHistoryItem } from '../services/transaction/TransactionHistoryService';
 import { useWallet } from '../hooks/useWallet';
+import SponsoredBadge from './common/SponsoredBadge';
 import './TransactionHistory.css';
 
 interface TransactionHistoryProps {
@@ -54,15 +55,19 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ address }) => {
     });
 
   const formatAmount = (amount?: number) => amount ? (amount / 1000000).toFixed(6) + ' STX' : 'N/A';
+  const formatDate = (timestamp: number) => {
+    return new Date(timestamp * 1000).toLocaleString();
+  };
   const exportToCSV = () => {
     const csvContent = [
-      ['Type', 'Amount', 'Status', 'Date', 'TxID'],
+      ['Type', 'Amount', 'Status', 'Date', 'TxID', 'Sponsored'],
       ...filteredAndSortedTransactions.map(tx => [
         tx.type,
         formatAmount(tx.amount),
         tx.status,
         formatDate(tx.timestamp),
         tx.txId,
+        tx.isSponsored ? 'Yes' : 'No',
       ]),
     ].map(row => row.join(',')).join('\n');
 
@@ -128,7 +133,12 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ address }) => {
         <tbody>
           {filteredAndSortedTransactions.map(tx => (
             <tr key={tx.txId}>
-              <td>{tx.type}</td>
+              <td>
+                <div className="type-cell">
+                  {tx.type}
+                  {tx.isSponsored && <SponsoredBadge />}
+                </div>
+              </td>
               <td>{formatAmount(tx.amount)}</td>
               <td>{tx.status}</td>
               <td>{formatDate(tx.timestamp)}</td>

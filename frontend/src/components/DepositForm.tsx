@@ -2,10 +2,12 @@
 import React, { useState } from 'react';
 import { TransactionService, TransactionDetails } from '../services/transaction/TransactionService';
 import { useWallet } from '../hooks/useWallet';
+import { useSponsorship } from '../hooks/useSponsorship';
 import { WalletError } from '../utils/wallet-errors';
 import { getFriendlyErrorMessage } from '../utils/wallet-errors';
 import TransactionSuccess from './TransactionSuccess';
 import TransactionSigner from './TransactionSigner';
+import SponsoredBadge from './common/SponsoredBadge';
 import './DepositForm.css';
 
 interface DepositFormProps {
@@ -18,9 +20,11 @@ const DepositForm: React.FC<DepositFormProps> = ({
   onDepositError
 }) => {
   const { isConnected, connectionState } = useWallet();
+  const { checkEligibility, getSponsorshipData, trackSuccess } = useSponsorship();
   const [amount, setAmount] = useState<string>('');
   const [isPreparing, setIsPreparing] = useState(false);
   const [transactionDetails, setTransactionDetails] = useState<TransactionDetails | null>(null);
+  const [isSponsored, setIsSponsored] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successTxId, setSuccessTxId] = useState<string | null>(null);
   const [successAmount, setSuccessAmount] = useState<number>(0);
@@ -49,8 +53,30 @@ const DepositForm: React.FC<DepositFormProps> = ({
     setError(null);
 
     try {
+      const numAmount = parseFloat(amount);
+      const eligible = await checkEligibility('deposit', numAmount * 1000000);
+      let sponsorshipData = null;
+
+      if (eligible) {
+        sponsorshipData = await getSponsorshipData({ 
+          operation: 'deposit', 
+          amount: numAmount * 1000000 
+        });
+      }
+
       const transactionService = TransactionService.getInstance();
-      const details = await transactionService.prepareDepositTransaction(parseFloat(amount));
+      const details = await transactionService.prepareDepositTransaction(
+        numAmount,
+        !!sponsorshipData
+      );
+
+      if (sponsorshipData) {
+        details.sponsorAddress = sponsorshipData.paymasterAddress;
+        setIsSponsored(true);
+      } else {
+        setIsSponsored(false);
+      }
+
       setTransactionDetails(details);
     } catch (err) {
       const walletError = err as WalletError;
@@ -65,6 +91,11 @@ const DepositForm: React.FC<DepositFormProps> = ({
     try {
       const transactionService = TransactionService.getInstance();
       const txId = await transactionService.broadcastTransaction(signedTx);
+
+      // Track sponsorship success if applicable
+      if (isSponsored) {
+        await trackSuccess(txId, 'deposit');
+      }
 
       // Extract amount from transaction details
       const depositedAmount = transactionDetails ? (transactionDetails.amount / 1000000) : 0;
@@ -155,6 +186,12 @@ const DepositForm: React.FC<DepositFormProps> = ({
         )}
 
         <div className="deposit-info">
+          {isSponsored && (
+            <div className="info-item sponsorship-info">
+              <span className="label">Gas Sponsorship:</span>
+              <span className="value"><SponsoredBadge /></span>
+            </div>
+          )}
           <div className="info-item">
             <span className="label">Fee:</span>
             <span className="value">1% (goes to protocol)</span>
