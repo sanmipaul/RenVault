@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAppKit, useAppKitAccount } from '@reown/appkit/react';
+import CustomWalletModal from './CustomWalletModal';
 import { WalletError, WalletErrorCode, getFriendlyErrorMessage } from '../utils/wallet-errors';
 import { logger } from '../utils/logger';
 
@@ -33,10 +34,11 @@ const WalletConnection: React.FC<WalletConnectionProps> = ({
 }) => {
   const { open } = useAppKit();
   const { address, isConnected, status } = useAppKitAccount();
+  const [isCustomModalOpen, setIsCustomModalOpen] = useState(false);
 
   const handleConnect = async () => {
     try {
-      open();
+      setIsCustomModalOpen(true);
     } catch (error) {
       const walletError = new WalletError(
         WalletErrorCode.UNKNOWN_ERROR,
@@ -108,6 +110,10 @@ const WalletConnection: React.FC<WalletConnectionProps> = ({
   return (
     <div style={{ ...styles.container, ...containerStyle }}>
       {renderButton()}
+      <CustomWalletModal 
+        isOpen={isCustomModalOpen} 
+        onClose={() => setIsCustomModalOpen(false)} 
+      />
     </div>
   );
 };
