@@ -6,6 +6,13 @@ const supportedAssets = {
     decimals: 6,
     type: 'native'
   },
+  sBTC: {
+    name: 'Stacks Bitcoin',
+    symbol: 'sBTC',
+    decimals: 8,
+    type: 'sip010',
+    contract: 'SP3K8BC0PPEVCV7NZ6QSRWPQ2JE9E5B6N3PA0KBR9.sbtc-token'
+  },
   USDA: {
     name: 'USDA Stablecoin',
     symbol: 'USDA',
@@ -19,6 +26,13 @@ const supportedAssets = {
     decimals: 8,
     type: 'sip010',
     contract: 'SP3K8BC0PPEVCV7NZ6QSRWPQ2JE9E5B6N3PA0KBR9.alex-token'
+  },
+  WELSH: {
+    name: 'Welshcorgicoin',
+    symbol: 'WELSH',
+    decimals: 6,
+    type: 'sip010',
+    contract: 'SP3NE50G7MKSREFCP4S265AD07V19999999999999.welshcorgicoin-token'
   }
 };
 
