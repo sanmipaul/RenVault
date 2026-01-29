@@ -53,6 +53,18 @@ class AssetRegistry {
     return symbol in this.assets;
   }
 
+  getContract(symbol) {
+    return this.assets[symbol]?.contract;
+  }
+
+  getType(symbol) {
+    return this.assets[symbol]?.type;
+  }
+
+  getDecimals(symbol) {
+    return this.assets[symbol]?.decimals || 6;
+  }
+
   addAsset(symbol, config) {
     this.assets[symbol] = config;
   }
