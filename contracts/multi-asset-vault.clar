@@ -1,5 +1,9 @@
 (use-trait sip010-trait .sip010-trait.sip010-trait)
 
+;; Contract version
+(define-constant contract-version "2.0.0")
+(define-constant contract-name "multi-asset-vault")
+
 (define-constant contract-owner tx-sender)
 (define-constant err-owner-only (err u100))
 (define-constant err-invalid-amount (err u101))
@@ -206,3 +210,13 @@
 
 (define-read-only (get-min-withdrawal-amount (asset principal))
   (default-to u0 (map-get? min-withdrawal-amounts asset)))
+
+;; Contract info
+(define-read-only (get-contract-version)
+  contract-version)
+
+(define-read-only (get-contract-name)
+  contract-name)
+
+(define-read-only (get-contract-owner)
+  contract-owner)
