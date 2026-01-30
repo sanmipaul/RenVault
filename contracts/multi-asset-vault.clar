@@ -1,3 +1,36 @@
+;; ============================================================================
+;; MULTI-ASSET VAULT CONTRACT
+;; ============================================================================
+;; A secure vault for storing STX and SIP010 tokens with the following features:
+;;
+;; FEATURES:
+;; - Deposit/withdraw STX and SIP010 tokens
+;; - 1% fee on deposits (configurable)
+;; - Emergency withdrawal functionality
+;; - Pause/unpause for emergency situations
+;; - Max deposit limits per user per asset
+;; - Minimum withdrawal amounts
+;; - Total deposits tracking (TVL)
+;; - Fee accumulation and owner withdrawal
+;;
+;; SECURITY:
+;; - Owner-only administrative functions
+;; - Proper principal capture before as-contract blocks
+;; - Balance checks before transfers
+;; - State updates before external calls (CEI pattern)
+;;
+;; ERROR CODES:
+;; u100 - err-owner-only: Only contract owner can call
+;; u101 - err-invalid-amount: Amount must be > 0
+;; u102 - err-insufficient-balance: Not enough balance
+;; u103 - err-asset-not-supported: Asset not in supported list
+;; u104 - err-transfer-failed: Transfer operation failed
+;; u105 - err-not-authorized: Caller not authorized
+;; u106 - err-contract-paused: Contract is paused
+;; u107 - err-exceeds-max-deposit: Exceeds max deposit limit
+;; u108 - err-below-min-withdrawal: Below minimum withdrawal
+;; ============================================================================
+
 (use-trait sip010-trait .sip010-trait.sip010-trait)
 
 ;; Contract version
