@@ -1,6 +1,7 @@
 // services/transaction/TransactionService.ts
 import { WalletManager } from '../wallet/WalletManager';
 import { WalletError, WalletErrorCode } from '../../utils/wallet-errors';
+import { generateSecureTransactionId } from '../../utils/crypto';
 import {
   makeContractCall,
   broadcastTransaction,
@@ -186,7 +187,8 @@ export class TransactionService {
   }
 
   private generateTxId(): string {
-    return '0x' + Math.random().toString(16).substr(2, 64);
+    // Use cryptographically secure random for transaction IDs
+    return generateSecureTransactionId();
   }
 
   validateTransactionDetails(details: TransactionDetails): boolean {

@@ -1,7 +1,8 @@
 // services/wallet/WalletManager.ts
 import { WalletProvider, WalletProviderType } from '../../types/wallet';
 import { WalletProviderLoader } from './WalletProviderLoader';
-import * as crypto from 'crypto';
+import { getRandomBytes } from '../../utils/crypto';
+import { encryptForStorage, decryptFromStorage } from '../../utils/encryption';
 
 export class WalletManager {
   private providers: Map<WalletProviderType, WalletProvider> = new Map();
@@ -145,27 +146,38 @@ export class WalletManager {
       throw new Error('Wallet not connected');
     }
 
-    // Generate a random mnemonic or use existing seed
+    if (!password || password.length < 8) {
+      throw new Error('Password must be at least 8 characters long');
+    }
+
+    // Generate a random mnemonic using secure random
     const mnemonic = this.generateMnemonic();
-    const encryptedMnemonic = this.encryptData(mnemonic, password);
+    // Encrypt mnemonic using AES-GCM
+    const encryptedMnemonic = await this.encryptData(mnemonic, password);
 
     const backupData = {
       address: this.connectionState.address,
       publicKey: this.connectionState.publicKey,
       encryptedMnemonic,
       createdAt: new Date().toISOString(),
-      version: '1.0'
+      version: '2.0' // Updated version for new encryption format
     };
 
-    // Store locally or send to backend
+    // Store locally (encrypted mnemonic is safe to store)
     localStorage.setItem('renvault-wallet-backup', JSON.stringify(backupData));
 
     return JSON.stringify(backupData);
   }
 
   async recoverFromBackup(backupData: string, password: string): Promise<void> {
+    if (!password) {
+      throw new Error('Password is required for recovery');
+    }
+
     const data = JSON.parse(backupData);
-    const mnemonic = this.decryptData(data.encryptedMnemonic, password);
+
+    // Decrypt mnemonic using AES-GCM
+    const mnemonic = await this.decryptData(data.encryptedMnemonic, password);
 
     // Restore wallet state
     this.connectionState = {
@@ -173,40 +185,42 @@ export class WalletManager {
       publicKey: data.publicKey
     };
 
-    // Store mnemonic securely
-    localStorage.setItem('renvault-recovered-mnemonic', mnemonic);
+    // Note: In production, the mnemonic should be used to derive keys
+    // and should never be stored in plain text
+    console.log('Wallet recovered successfully. Mnemonic available for key derivation.');
   }
 
   private generateMnemonic(): string {
-    // Simple mnemonic generation (in real app, use bip39)
-    const words = ['abandon', 'ability', 'able', 'about', 'above', 'absent', 'absorb', 'abstract', 'absurd', 'abuse'];
-    let mnemonic = '';
+    // BIP39-compatible word list subset for demo purposes
+    // In production, use the full BIP39 word list with proper entropy
+    const words = [
+      'abandon', 'ability', 'able', 'about', 'above', 'absent', 'absorb', 'abstract',
+      'absurd', 'abuse', 'access', 'accident', 'account', 'accuse', 'achieve', 'acid',
+      'acoustic', 'acquire', 'across', 'act', 'action', 'actor', 'actress', 'actual',
+      'adapt', 'add', 'addict', 'address', 'adjust', 'admit', 'adult', 'advance'
+    ];
+
+    // Use cryptographically secure random number generation
+    const randomBytes = getRandomBytes(12);
+    const mnemonicWords: string[] = [];
+
     for (let i = 0; i < 12; i++) {
-      mnemonic += words[Math.floor(Math.random() * words.length)] + ' ';
+      // Use secure random byte to select word index
+      const wordIndex = randomBytes[i] % words.length;
+      mnemonicWords.push(words[wordIndex]);
     }
-    return mnemonic.trim();
+
+    return mnemonicWords.join(' ');
   }
 
-  private encryptData(data: string, password: string): string {
-    const salt = crypto.randomBytes(16);
-    const key = crypto.pbkdf2Sync(password, salt, 100000, 32, 'sha256');
-    const iv = crypto.randomBytes(16);
-    const cipher = crypto.createCipher('aes-256-cbc', key);
-    let encrypted = cipher.update(data, 'utf8', 'hex');
-    encrypted += cipher.final('hex');
-    return salt.toString('hex') + ':' + iv.toString('hex') + ':' + encrypted;
+  private async encryptData(data: string, password: string): Promise<string> {
+    // Use AES-GCM encryption via Web Crypto API
+    return encryptForStorage(data, password);
   }
 
-  private decryptData(encryptedData: string, password: string): string {
-    const parts = encryptedData.split(':');
-    const salt = Buffer.from(parts[0], 'hex');
-    const iv = Buffer.from(parts[1], 'hex');
-    const encrypted = parts[2];
-    const key = crypto.pbkdf2Sync(password, salt, 100000, 32, 'sha256');
-    const decipher = crypto.createDecipher('aes-256-cbc', key);
-    let decrypted = decipher.update(encrypted, 'hex', 'utf8');
-    decrypted += decipher.final('utf8');
-    return decrypted;
+  private async decryptData(encryptedData: string, password: string): Promise<string> {
+    // Use AES-GCM decryption via Web Crypto API
+    return decryptFromStorage(encryptedData, password);
   }
 
   // Multi-Signature Methods

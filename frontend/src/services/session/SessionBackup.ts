@@ -1,6 +1,8 @@
 // services/session/SessionBackup.ts
 import { SessionMonitor } from './SessionMonitor';
 import { exportSessionData, ExportOptions } from '../utils/sessionExport';
+import { generateSecureBackupId } from '../../utils/crypto';
+import { encryptForStorage, decryptFromStorage, hashData } from '../../utils/encryption';
 
 export interface BackupOptions {
   includeEvents: boolean;
@@ -8,6 +10,7 @@ export interface BackupOptions {
   includeHealthReport: boolean;
   compress: boolean;
   encrypt: boolean;
+  encryptionPassword?: string;
   retentionDays: number;
 }
 
@@ -74,14 +77,17 @@ export class SessionBackup {
         data = await this.compressData(data);
       }
 
-      // Encrypt if requested
+      // Encrypt if requested (requires password)
       if (options.encrypt) {
-        data = this.encryptData(data);
+        if (!options.encryptionPassword) {
+          throw new Error('Encryption password is required when encrypt option is enabled');
+        }
+        data = await this.encryptData(data, options.encryptionPassword);
       }
 
       // Generate backup metadata
       const backupId = this.generateBackupId();
-      const checksum = this.generateChecksum(data);
+      const checksum = await this.generateChecksum(data);
 
       const metadata: BackupMetadata = {
         id: backupId,
@@ -123,8 +129,10 @@ export class SessionBackup {
 
   /**
    * Restore session data from backup
+   * @param backupId The backup ID to restore
+   * @param password Optional password for encrypted backups
    */
-  async restoreBackup(backupId: string): Promise<boolean> {
+  async restoreBackup(backupId: string, password?: string): Promise<boolean> {
     try {
       console.log(`Restoring backup: ${backupId}`);
 
@@ -135,15 +143,18 @@ export class SessionBackup {
 
       let data = backup.data;
 
-      // Verify checksum
-      const checksum = this.generateChecksum(data);
+      // Verify checksum using secure SHA-256 hash
+      const checksum = await this.generateChecksum(data);
       if (checksum !== backup.metadata.checksum) {
         throw new Error('Backup data integrity check failed');
       }
 
-      // Decrypt if encrypted
+      // Decrypt if encrypted (requires password)
       if (backup.metadata.options.encrypt) {
-        data = this.decryptData(data);
+        if (!password) {
+          throw new Error('Password is required to restore encrypted backup');
+        }
+        data = await this.decryptData(data, password);
       }
 
       // Decompress if compressed
@@ -295,17 +306,11 @@ export class SessionBackup {
   }
 
   private generateBackupId(): string {
-    return 'backup_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    return generateSecureBackupId();
   }
 
-  private generateChecksum(data: string): string {
-    let hash = 0;
-    for (let i = 0; i < data.length; i++) {
-      const char = data.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash;
-    }
-    return hash.toString(36);
+  private async generateChecksum(data: string): Promise<string> {
+    return hashData(data);
   }
 
   private async compressData(data: string): Promise<string> {
@@ -319,13 +324,13 @@ export class SessionBackup {
     return atob(data);
   }
 
-  private encryptData(data: string): string {
-    // Simple encryption - in production, use proper encryption
-    return btoa(data.split('').reverse().join(''));
+  private async encryptData(data: string, password: string): Promise<string> {
+    // Use AES-GCM encryption with PBKDF2 key derivation
+    return encryptForStorage(data, password);
   }
 
-  private decryptData(data: string): string {
-    // Simple decryption
-    return atob(data).split('').reverse().join('');
+  private async decryptData(data: string, password: string): Promise<string> {
+    // Use AES-GCM decryption with PBKDF2 key derivation
+    return decryptFromStorage(data, password);
   }
 }
