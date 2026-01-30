@@ -126,6 +126,27 @@
     (print {event: "fee-withdrawal", asset: asset, amount: amount, recipient: contract-owner})
     (ok amount)))
 
+;; Emergency withdraw all STX balance for a user
+(define-public (emergency-withdraw-stx)
+  (let ((sender tx-sender)
+        (balance (get-asset-balance tx-sender 'STX)))
+    (asserts! (> balance u0) err-insufficient-balance)
+    (map-set asset-balances {user: sender, asset: 'STX} u0)
+    (try! (as-contract (stx-transfer? balance tx-sender sender)))
+    (print {event: "emergency-withdrawal", user: sender, asset: 'STX, amount: balance})
+    (ok balance)))
+
+;; Emergency withdraw all token balance for a user
+(define-public (emergency-withdraw-sip010 (token <sip010-trait>))
+  (let ((sender tx-sender)
+        (asset (contract-of token))
+        (balance (get-asset-balance tx-sender asset)))
+    (asserts! (> balance u0) err-insufficient-balance)
+    (map-set asset-balances {user: sender, asset: asset} u0)
+    (try! (as-contract (contract-call? token transfer balance tx-sender sender none)))
+    (print {event: "emergency-withdrawal", user: sender, asset: asset, amount: balance})
+    (ok balance)))
+
 (define-read-only (get-asset-balance (user principal) (asset principal))
   (default-to u0 (map-get? asset-balances {user: user, asset: asset})))
 
