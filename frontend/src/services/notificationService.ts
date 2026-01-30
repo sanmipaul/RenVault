@@ -1,18 +1,14 @@
 import { generateSecureId } from '../utils/crypto';
+import {
+  Notification,
+  NotificationType,
+  NotificationPriority,
+  NotificationPreferences,
+  WalletSessionMetadata
+} from '../types/notification';
 
-type NotificationType = 'transaction' | 'security' | 'reward' | 'system' | 'wallet_session' | 'wallet_request' | 'wallet_error';
-
-export interface Notification {
-  id: string;
-  type: NotificationType;
-  title: string;
-  message: string;
-  timestamp: Date;
-  read: boolean;
-  priority?: 'low' | 'medium' | 'high';
-  actions?: string[];
-  data?: any;
-}
+// Re-export types for convenience
+export type { Notification, NotificationType, NotificationPriority, NotificationPreferences };
 
 class NotificationService {
   private static instance: NotificationService;
@@ -89,7 +85,7 @@ class NotificationService {
   }
 
   // WalletKit Notifications
-  notifySessionProposal(proposerName: string, metadata: any, id: string) {
+  notifySessionProposal(proposerName: string, metadata: WalletSessionMetadata, id: string): void {
     this.notify({
       type: 'wallet_session',
       title: 'New Connection Request',
@@ -100,18 +96,18 @@ class NotificationService {
     });
   }
 
-  notifySessionRequest(method: string, data: any, id: number, topic: string) {
+  notifySessionRequest(method: string, requestData: Record<string, unknown>, id: number, topic: string): void {
     this.notify({
       type: 'wallet_request',
       title: 'Signature Request',
       message: `New request: ${method}`,
       priority: 'high',
       actions: ['Approve', 'Reject'],
-      data: { ...data, requestId: id, topic, method }
+      data: { ...requestData, requestId: id, topic, method }
     });
   }
 
-  notifySessionUpdate(topic: string, namespaces: any) {
+  notifySessionUpdate(topic: string, namespaces: Record<string, unknown>): void {
     this.notify({
       type: 'wallet_session',
       title: 'Session Updated',
@@ -187,11 +183,11 @@ class NotificationService {
   }
 
   // Mark all notifications of a certain type as read
-  markTypeAsRead(type: NotificationType) {
+  markTypeAsRead(type: NotificationType): void {
     const saved = localStorage.getItem(`notifications_${this.userId}`);
     if (saved) {
-      const notifications = JSON.parse(saved);
-      const updated = notifications.map((n: any) => 
+      const notifications: Notification[] = JSON.parse(saved);
+      const updated = notifications.map((n: Notification) =>
         n.type === type ? { ...n, read: true } : n
       );
       localStorage.setItem(`notifications_${this.userId}`, JSON.stringify(updated));
@@ -202,8 +198,8 @@ class NotificationService {
   getUnreadCount(type?: NotificationType): number {
     const saved = localStorage.getItem(`notifications_${this.userId}`);
     if (!saved) return 0;
-    const notifications = JSON.parse(saved);
-    return notifications.filter((n: any) => 
+    const notifications: Notification[] = JSON.parse(saved);
+    return notifications.filter((n: Notification) =>
       !n.read && (!type || n.type === type)
     ).length;
   }
@@ -270,7 +266,7 @@ class NotificationService {
   }
 
   // Update notification preferences
-  async updatePreferences(preferences: any): Promise<boolean> {
+  async updatePreferences(preferences: Partial<NotificationPreferences>): Promise<boolean> {
     try {
       const response = await fetch(`${this.baseUrl}/preferences`, {
         method: 'POST',
@@ -329,7 +325,7 @@ class NotificationService {
     await this.sendTestNotification('test-2fa-disabled', { userId: this.userId });
   }
 
-  private async sendTestNotification(endpoint: string, data: any): Promise<void> {
+  private async sendTestNotification(endpoint: string, data: Record<string, unknown>): Promise<void> {
     try {
       const response = await fetch(`${this.baseUrl}/${endpoint}`, {
         method: 'POST',
@@ -350,13 +346,13 @@ class NotificationService {
   }
 
   // Get user preferences from localStorage
-  getUserPreferences(userId: string): any {
+  getUserPreferences(userId: string): NotificationPreferences | null {
     const saved = localStorage.getItem(`notificationPrefs_${userId}`);
-    return saved ? JSON.parse(saved) : null;
+    return saved ? JSON.parse(saved) as NotificationPreferences : null;
   }
 
   // Save user preferences to localStorage
-  saveUserPreferences(userId: string, preferences: any): void {
+  saveUserPreferences(userId: string, preferences: NotificationPreferences): void {
     localStorage.setItem(`notificationPrefs_${userId}`, JSON.stringify(preferences));
   }
 
