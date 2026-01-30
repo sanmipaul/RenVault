@@ -4,6 +4,14 @@
  */
 
 import { getRandomBytes, bytesToHex, hexToBytes, stringToBytes, bytesToString } from './crypto';
+import {
+  validatePassword,
+  validateEncryptionInput,
+  validateEncryptedData,
+  validateEncryptionVersion,
+  requireWebCrypto
+} from './cryptoValidation';
+import { CryptoError, CryptoErrorCode } from '../types/crypto';
 
 // Constants for encryption
 const ALGORITHM = 'AES-GCM';
@@ -60,34 +68,46 @@ async function deriveKey(password: string, salt: Uint8Array): Promise<CryptoKey>
  * @param data Data to encrypt (string)
  * @param password Password for key derivation
  * @returns Encrypted data object
+ * @throws CryptoError if validation fails or encryption fails
  */
 export async function encryptWithPassword(data: string, password: string): Promise<EncryptedData> {
-  if (!data || !password) {
-    throw new Error('Data and password are required for encryption');
+  // Validate inputs
+  requireWebCrypto();
+  validateEncryptionInput(data);
+  validatePassword(password);
+
+  try {
+    const salt = getRandomBytes(SALT_LENGTH);
+    const iv = getRandomBytes(IV_LENGTH);
+    const key = await deriveKey(password, salt);
+
+    const plaintext = stringToBytes(data);
+
+    const ciphertext = await crypto.subtle.encrypt(
+      {
+        name: ALGORITHM,
+        iv
+      },
+      key,
+      plaintext
+    );
+
+    return {
+      ciphertext: bytesToHex(new Uint8Array(ciphertext)),
+      iv: bytesToHex(iv),
+      salt: bytesToHex(salt),
+      tag: '', // AES-GCM includes the tag in the ciphertext
+      version: 1
+    };
+  } catch (error) {
+    if (error instanceof CryptoError) {
+      throw error;
+    }
+    throw new CryptoError(
+      CryptoErrorCode.ENCRYPTION_FAILED,
+      `Encryption failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
   }
-
-  const salt = getRandomBytes(SALT_LENGTH);
-  const iv = getRandomBytes(IV_LENGTH);
-  const key = await deriveKey(password, salt);
-
-  const plaintext = stringToBytes(data);
-
-  const ciphertext = await crypto.subtle.encrypt(
-    {
-      name: ALGORITHM,
-      iv
-    },
-    key,
-    plaintext
-  );
-
-  return {
-    ciphertext: bytesToHex(new Uint8Array(ciphertext)),
-    iv: bytesToHex(iv),
-    salt: bytesToHex(salt),
-    tag: '', // AES-GCM includes the tag in the ciphertext
-    version: 1
-  };
 }
 
 /**
@@ -95,18 +115,21 @@ export async function encryptWithPassword(data: string, password: string): Promi
  * @param encryptedData Encrypted data object
  * @param password Password for key derivation
  * @returns Decrypted data string
+ * @throws CryptoError if validation fails or decryption fails
  */
 export async function decryptWithPassword(encryptedData: EncryptedData, password: string): Promise<string> {
-  if (!encryptedData || !password) {
-    throw new Error('Encrypted data and password are required for decryption');
-  }
-
-  const salt = hexToBytes(encryptedData.salt);
-  const iv = hexToBytes(encryptedData.iv);
-  const ciphertext = hexToBytes(encryptedData.ciphertext);
-  const key = await deriveKey(password, salt);
+  // Validate inputs
+  requireWebCrypto();
+  validateEncryptedData(encryptedData);
+  validatePassword(password);
+  validateEncryptionVersion(encryptedData.version);
 
   try {
+    const salt = hexToBytes(encryptedData.salt);
+    const iv = hexToBytes(encryptedData.iv);
+    const ciphertext = hexToBytes(encryptedData.ciphertext);
+    const key = await deriveKey(password, salt);
+
     const decrypted = await crypto.subtle.decrypt(
       {
         name: ALGORITHM,
@@ -118,7 +141,13 @@ export async function decryptWithPassword(encryptedData: EncryptedData, password
 
     return bytesToString(new Uint8Array(decrypted));
   } catch (error) {
-    throw new Error('Decryption failed: Invalid password or corrupted data');
+    if (error instanceof CryptoError) {
+      throw error;
+    }
+    throw new CryptoError(
+      CryptoErrorCode.DECRYPTION_FAILED,
+      'Decryption failed: Invalid password or corrupted data'
+    );
   }
 }
 
