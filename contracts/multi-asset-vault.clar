@@ -69,6 +69,17 @@
     (print {event: "withdrawal", user: sender, asset: asset, amount: amount})
     (ok true)))
 
+;; Owner function to withdraw accumulated STX fees
+(define-public (owner-withdraw-stx-fees (amount uint))
+  (let ((available-fees (get-asset-fees 'STX)))
+    (asserts! (is-eq tx-sender contract-owner) err-owner-only)
+    (asserts! (> amount u0) err-invalid-amount)
+    (asserts! (>= available-fees amount) err-insufficient-balance)
+    (map-set asset-fees 'STX (- available-fees amount))
+    (try! (as-contract (stx-transfer? amount tx-sender contract-owner)))
+    (print {event: "fee-withdrawal", asset: 'STX, amount: amount, recipient: contract-owner})
+    (ok amount)))
+
 (define-read-only (get-asset-balance (user principal) (asset principal))
   (default-to u0 (map-get? asset-balances {user: user, asset: asset})))
 
