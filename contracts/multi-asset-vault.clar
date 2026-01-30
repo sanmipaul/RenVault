@@ -47,12 +47,14 @@
     (ok user-amount)))
 
 (define-public (withdraw-stx (amount uint))
-  (let ((balance (get-asset-balance tx-sender 'STX)))
+  (let ((sender tx-sender)
+        (balance (get-asset-balance tx-sender 'STX)))
     (asserts! (> amount u0) err-invalid-amount)
     (asserts! (>= balance amount) err-insufficient-balance)
-    (map-set asset-balances {user: tx-sender, asset: 'STX} (- balance amount))
-    (try! (as-contract (stx-transfer? amount tx-sender tx-sender)))
-    (print {event: "withdrawal", user: tx-sender, asset: 'STX, amount: amount})
+    (map-set asset-balances {user: sender, asset: 'STX} (- balance amount))
+    ;; Transfer from contract to the user (sender captured before as-contract)
+    (try! (as-contract (stx-transfer? amount tx-sender sender)))
+    (print {event: "withdrawal", user: sender, asset: 'STX, amount: amount})
     (ok true)))
 
 (define-public (withdraw-sip010 (token <sip010-trait>) (amount uint))
