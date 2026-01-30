@@ -9,27 +9,43 @@ class VaultManager {
   }
 
   async depositAsset(asset, amount, senderKey) {
+    console.log(`Initiating deposit for ${amount} ${asset}...`);
     const assetInfo = this.registry.getAsset(asset);
-    if (!assetInfo) throw new Error('Asset not supported');
+    if (!assetInfo) throw new Error(`Asset ${asset} not supported by registry`);
 
-    const functionName = assetInfo.type === 'native' ? 'deposit-stx' : 'deposit-sip010';
-    const functionArgs = assetInfo.type === 'native' 
-      ? [amount]
-      : [assetInfo.contract, amount];
+    try {
+      const functionName = assetInfo.type === 'native' ? 'deposit-stx' : 'deposit-sip010';
+      const functionArgs = assetInfo.type === 'native' 
+        ? [amount]
+        : [assetInfo.contract, amount];
 
-    return await this.callContract(functionName, functionArgs, senderKey);
+      const result = await this.callContract(functionName, functionArgs, senderKey);
+      console.log(`Deposit successful for ${asset}: ${result.txId}`);
+      return result;
+    } catch (error) {
+      console.error(`Deposit failed for ${asset}:`, error.message);
+      throw error;
+    }
   }
 
   async withdrawAsset(asset, amount, senderKey) {
+    console.log(`Initiating withdrawal for ${amount} ${asset}...`);
     const assetInfo = this.registry.getAsset(asset);
-    if (!assetInfo) throw new Error('Asset not supported');
+    if (!assetInfo) throw new Error(`Asset ${asset} not supported by registry`);
 
-    const functionName = assetInfo.type === 'native' ? 'withdraw-stx' : 'withdraw-sip010';
-    const functionArgs = assetInfo.type === 'native'
-      ? [amount]
-      : [assetInfo.contract, amount];
+    try {
+      const functionName = assetInfo.type === 'native' ? 'withdraw-stx' : 'withdraw-sip010';
+      const functionArgs = assetInfo.type === 'native'
+        ? [amount]
+        : [assetInfo.contract, amount];
 
-    return await this.callContract(functionName, functionArgs, senderKey);
+      const result = await this.callContract(functionName, functionArgs, senderKey);
+      console.log(`Withdrawal successful for ${asset}: ${result.txId}`);
+      return result;
+    } catch (error) {
+      console.error(`Withdrawal failed for ${asset}:`, error.message);
+      throw error;
+    }
   }
 
   async getBalance(user, asset) {
