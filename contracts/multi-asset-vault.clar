@@ -7,6 +7,10 @@
 (define-constant err-asset-not-supported (err u103))
 (define-constant err-transfer-failed (err u104))
 (define-constant err-not-authorized (err u105))
+(define-constant err-contract-paused (err u106))
+
+;; Contract state
+(define-data-var contract-paused bool false)
 
 ;; Asset registry
 (define-map supported-assets principal bool)
@@ -29,10 +33,31 @@
     (print {event: "asset-removed", asset: asset})
     (ok (map-set supported-assets asset false))))
 
+;; Pause contract (emergency stop)
+(define-public (pause-contract)
+  (begin
+    (asserts! (is-eq tx-sender contract-owner) err-owner-only)
+    (var-set contract-paused true)
+    (print {event: "contract-paused", by: tx-sender})
+    (ok true)))
+
+;; Unpause contract
+(define-public (unpause-contract)
+  (begin
+    (asserts! (is-eq tx-sender contract-owner) err-owner-only)
+    (var-set contract-paused false)
+    (print {event: "contract-unpaused", by: tx-sender})
+    (ok true)))
+
+;; Check if contract is paused
+(define-read-only (is-paused)
+  (var-get contract-paused))
+
 (define-public (deposit-stx (amount uint))
   (let ((fee (/ amount u100))
         (user-amount (- amount fee))
         (current-balance (get-asset-balance tx-sender 'STX)))
+    (asserts! (not (var-get contract-paused)) err-contract-paused)
     (asserts! (> amount u0) err-invalid-amount)
     (try! (stx-transfer? amount tx-sender (as-contract tx-sender)))
     (map-set asset-balances {user: tx-sender, asset: 'STX} (+ current-balance user-amount))
@@ -46,6 +71,7 @@
         (fee (/ amount u100))
         (user-amount (- amount fee))
         (current-balance (get-asset-balance tx-sender asset)))
+    (asserts! (not (var-get contract-paused)) err-contract-paused)
     (asserts! is-supported err-asset-not-supported)
     (asserts! (> amount u0) err-invalid-amount)
     (try! (contract-call? token transfer amount tx-sender (as-contract tx-sender) none))
