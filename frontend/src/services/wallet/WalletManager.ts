@@ -1,7 +1,8 @@
 // services/wallet/WalletManager.ts
 import { WalletProvider, WalletProviderType } from '../../types/wallet';
 import { WalletProviderLoader } from './WalletProviderLoader';
-import * as crypto from 'crypto';
+import { getRandomBytes } from '../../utils/crypto';
+import { encryptForStorage, decryptFromStorage } from '../../utils/encryption';
 
 export class WalletManager {
   private providers: Map<WalletProviderType, WalletProvider> = new Map();
@@ -178,13 +179,26 @@ export class WalletManager {
   }
 
   private generateMnemonic(): string {
-    // Simple mnemonic generation (in real app, use bip39)
-    const words = ['abandon', 'ability', 'able', 'about', 'above', 'absent', 'absorb', 'abstract', 'absurd', 'abuse'];
-    let mnemonic = '';
+    // BIP39-compatible word list subset for demo purposes
+    // In production, use the full BIP39 word list with proper entropy
+    const words = [
+      'abandon', 'ability', 'able', 'about', 'above', 'absent', 'absorb', 'abstract',
+      'absurd', 'abuse', 'access', 'accident', 'account', 'accuse', 'achieve', 'acid',
+      'acoustic', 'acquire', 'across', 'act', 'action', 'actor', 'actress', 'actual',
+      'adapt', 'add', 'addict', 'address', 'adjust', 'admit', 'adult', 'advance'
+    ];
+
+    // Use cryptographically secure random number generation
+    const randomBytes = getRandomBytes(12);
+    const mnemonicWords: string[] = [];
+
     for (let i = 0; i < 12; i++) {
-      mnemonic += words[Math.floor(Math.random() * words.length)] + ' ';
+      // Use secure random byte to select word index
+      const wordIndex = randomBytes[i] % words.length;
+      mnemonicWords.push(words[wordIndex]);
     }
-    return mnemonic.trim();
+
+    return mnemonicWords.join(' ');
   }
 
   private encryptData(data: string, password: string): string {
