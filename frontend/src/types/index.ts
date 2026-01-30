@@ -333,3 +333,73 @@ export type {
   HashVerificationResult,
   SecureRandomOptions
 } from './crypto';
+
+// ============================================================================
+// Service Types
+// ============================================================================
+export type {
+  // Wallet Service
+  IWalletService,
+  WalletConnectionInfo,
+  UnsignedTransaction,
+  SignedTransaction,
+  // Transaction Service
+  ITransactionService,
+  TransactionSubmitResult,
+  TransactionHistoryOptions,
+  TransactionHistoryResult,
+  FeeEstimate,
+  // Storage Service
+  IStorageService,
+  StorageSetOptions,
+  EncryptedStorageItem,
+  // Session Service
+  ISessionService,
+  SessionCreateOptions,
+  Session,
+  DeviceInfo,
+  // Notification Service
+  INotificationService,
+  NotificationCreateOptions,
+  NotificationActionConfig,
+  NotificationItem,
+  NotificationCallback,
+  UnsubscribeFn,
+  // API Service
+  IApiService,
+  ApiRequestOptions,
+  ApiInterceptor,
+  ApiRequestConfig,
+  ApiServiceError,
+  // WebSocket Service
+  IWebSocketService,
+  WebSocketOutgoingMessage,
+  WebSocketIncomingMessage,
+  WebSocketMessageCallback,
+  ConnectionChangeCallback,
+  // Analytics Service
+  IAnalyticsService,
+  AnalyticsEvent,
+  UserTraits,
+  PageProperties,
+  // Logger Service
+  ILoggerService,
+  LogLevelType,
+  LogContext,
+  LogTransport,
+  // Backup Service
+  IBackupService,
+  BackupCreateOptions,
+  BackupResult,
+  RestoreResult,
+  BackupVerifyResult,
+  BackupInfo,
+  // Contract Service
+  IContractService,
+  ContractCallOptions,
+  ContractReadOptions,
+  ContractDeployOptions,
+  ContractDeployResult,
+  ContractArg,
+  ContractArgType
+} from './services';
