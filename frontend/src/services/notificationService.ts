@@ -1,3 +1,5 @@
+import { generateSecureId } from '../utils/crypto';
+
 type NotificationType = 'transaction' | 'security' | 'reward' | 'system' | 'wallet_session' | 'wallet_request' | 'wallet_error';
 
 export interface Notification {
@@ -40,7 +42,7 @@ class NotificationService {
   private notify(notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) {
     const fullNotification: Notification = {
       ...notification,
-      id: Math.random().toString(36).substring(7),
+      id: generateSecureId('notif', 8),
       timestamp: new Date(),
       read: false
     };
