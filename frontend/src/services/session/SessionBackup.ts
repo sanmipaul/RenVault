@@ -1,6 +1,8 @@
 // services/session/SessionBackup.ts
 import { SessionMonitor } from './SessionMonitor';
 import { exportSessionData, ExportOptions } from '../utils/sessionExport';
+import { generateSecureBackupId } from '../../utils/crypto';
+import { encryptForStorage, decryptFromStorage, hashData } from '../../utils/encryption';
 
 export interface BackupOptions {
   includeEvents: boolean;
@@ -81,7 +83,7 @@ export class SessionBackup {
 
       // Generate backup metadata
       const backupId = this.generateBackupId();
-      const checksum = this.generateChecksum(data);
+      const checksum = await this.generateChecksum(data);
 
       const metadata: BackupMetadata = {
         id: backupId,
@@ -135,8 +137,8 @@ export class SessionBackup {
 
       let data = backup.data;
 
-      // Verify checksum
-      const checksum = this.generateChecksum(data);
+      // Verify checksum using secure SHA-256 hash
+      const checksum = await this.generateChecksum(data);
       if (checksum !== backup.metadata.checksum) {
         throw new Error('Backup data integrity check failed');
       }
@@ -295,17 +297,11 @@ export class SessionBackup {
   }
 
   private generateBackupId(): string {
-    return 'backup_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    return generateSecureBackupId();
   }
 
-  private generateChecksum(data: string): string {
-    let hash = 0;
-    for (let i = 0; i < data.length; i++) {
-      const char = data.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash;
-    }
-    return hash.toString(36);
+  private async generateChecksum(data: string): Promise<string> {
+    return hashData(data);
   }
 
   private async compressData(data: string): Promise<string> {
