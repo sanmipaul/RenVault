@@ -10,6 +10,7 @@ export interface BackupOptions {
   includeHealthReport: boolean;
   compress: boolean;
   encrypt: boolean;
+  encryptionPassword?: string;
   retentionDays: number;
 }
 
@@ -76,9 +77,12 @@ export class SessionBackup {
         data = await this.compressData(data);
       }
 
-      // Encrypt if requested
+      // Encrypt if requested (requires password)
       if (options.encrypt) {
-        data = this.encryptData(data);
+        if (!options.encryptionPassword) {
+          throw new Error('Encryption password is required when encrypt option is enabled');
+        }
+        data = await this.encryptData(data, options.encryptionPassword);
       }
 
       // Generate backup metadata
@@ -125,8 +129,10 @@ export class SessionBackup {
 
   /**
    * Restore session data from backup
+   * @param backupId The backup ID to restore
+   * @param password Optional password for encrypted backups
    */
-  async restoreBackup(backupId: string): Promise<boolean> {
+  async restoreBackup(backupId: string, password?: string): Promise<boolean> {
     try {
       console.log(`Restoring backup: ${backupId}`);
 
@@ -143,9 +149,12 @@ export class SessionBackup {
         throw new Error('Backup data integrity check failed');
       }
 
-      // Decrypt if encrypted
+      // Decrypt if encrypted (requires password)
       if (backup.metadata.options.encrypt) {
-        data = this.decryptData(data);
+        if (!password) {
+          throw new Error('Password is required to restore encrypted backup');
+        }
+        data = await this.decryptData(data, password);
       }
 
       // Decompress if compressed
@@ -315,13 +324,13 @@ export class SessionBackup {
     return atob(data);
   }
 
-  private encryptData(data: string): string {
-    // Simple encryption - in production, use proper encryption
-    return btoa(data.split('').reverse().join(''));
+  private async encryptData(data: string, password: string): Promise<string> {
+    // Use AES-GCM encryption with PBKDF2 key derivation
+    return encryptForStorage(data, password);
   }
 
-  private decryptData(data: string): string {
-    // Simple decryption
-    return atob(data).split('').reverse().join('');
+  private async decryptData(data: string, password: string): Promise<string> {
+    // Use AES-GCM decryption with PBKDF2 key derivation
+    return decryptFromStorage(data, password);
   }
 }
