@@ -220,3 +220,34 @@
 
 (define-read-only (get-contract-owner)
   contract-owner)
+
+;; Helper function to get user's STX balance
+(define-read-only (get-stx-balance (user principal))
+  (get-asset-balance user 'STX))
+
+;; Helper function to get total STX in vault
+(define-read-only (get-total-stx-deposits)
+  (get-total-deposits 'STX))
+
+;; Helper function to get accumulated STX fees
+(define-read-only (get-stx-fees)
+  (get-asset-fees 'STX))
+
+;; Get contract summary for an asset
+(define-read-only (get-asset-summary (asset principal))
+  {
+    supported: (is-asset-supported asset),
+    total-deposits: (get-total-deposits asset),
+    total-fees: (get-asset-fees asset),
+    max-deposit-limit: (get-max-deposit-limit asset),
+    min-withdrawal: (get-min-withdrawal-amount asset)
+  })
+
+;; Get user summary for an asset
+(define-read-only (get-user-asset-summary (user principal) (asset principal))
+  {
+    balance: (get-asset-balance user asset),
+    max-deposit-limit: (get-max-deposit-limit asset),
+    min-withdrawal: (get-min-withdrawal-amount asset),
+    contract-paused: (is-paused)
+  })
