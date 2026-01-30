@@ -371,7 +371,7 @@ class NotificationService {
     const outputArray = new Uint8Array(rawData.length);
 
     for (let i = 0; i < rawData.length; ++i) {
-      outputArray[i] = rawData.charCode(i);
+      outputArray[i] = rawData.charCodeAt(i);
     }
     return outputArray;
   }
