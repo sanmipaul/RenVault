@@ -8,9 +8,13 @@
 (define-constant err-transfer-failed (err u104))
 (define-constant err-not-authorized (err u105))
 (define-constant err-contract-paused (err u106))
+(define-constant err-exceeds-max-deposit (err u107))
 
 ;; Contract state
 (define-data-var contract-paused bool false)
+
+;; Deposit limits per asset (0 means no limit)
+(define-map max-deposit-limits principal uint)
 
 ;; Asset registry
 (define-map supported-assets principal bool)
@@ -33,6 +37,14 @@
     ;; Note: Does not affect existing balances, just prevents new deposits
     (print {event: "asset-removed", asset: asset})
     (ok (map-set supported-assets asset false))))
+
+;; Set max deposit limit for an asset (0 = no limit)
+(define-public (set-max-deposit-limit (asset principal) (limit uint))
+  (begin
+    (asserts! (is-eq tx-sender contract-owner) err-owner-only)
+    (map-set max-deposit-limits asset limit)
+    (print {event: "max-deposit-limit-set", asset: asset, limit: limit})
+    (ok limit)))
 
 ;; Pause contract (emergency stop)
 (define-public (pause-contract)
@@ -57,9 +69,12 @@
 (define-public (deposit-stx (amount uint))
   (let ((fee (/ amount u100))
         (user-amount (- amount fee))
-        (current-balance (get-asset-balance tx-sender 'STX)))
+        (current-balance (get-asset-balance tx-sender 'STX))
+        (max-limit (get-max-deposit-limit 'STX)))
     (asserts! (not (var-get contract-paused)) err-contract-paused)
     (asserts! (> amount u0) err-invalid-amount)
+    ;; Check max deposit limit (0 means no limit)
+    (asserts! (or (is-eq max-limit u0) (<= (+ current-balance user-amount) max-limit)) err-exceeds-max-deposit)
     (try! (stx-transfer? amount tx-sender (as-contract tx-sender)))
     (map-set asset-balances {user: tx-sender, asset: 'STX} (+ current-balance user-amount))
     (map-set asset-fees 'STX (+ (get-asset-fees 'STX) fee))
@@ -72,10 +87,13 @@
         (is-supported (default-to false (map-get? supported-assets asset)))
         (fee (/ amount u100))
         (user-amount (- amount fee))
-        (current-balance (get-asset-balance tx-sender asset)))
+        (current-balance (get-asset-balance tx-sender asset))
+        (max-limit (get-max-deposit-limit asset)))
     (asserts! (not (var-get contract-paused)) err-contract-paused)
     (asserts! is-supported err-asset-not-supported)
     (asserts! (> amount u0) err-invalid-amount)
+    ;; Check max deposit limit (0 means no limit)
+    (asserts! (or (is-eq max-limit u0) (<= (+ current-balance user-amount) max-limit)) err-exceeds-max-deposit)
     (try! (contract-call? token transfer amount tx-sender (as-contract tx-sender) none))
     (map-set asset-balances {user: tx-sender, asset: asset} (+ current-balance user-amount))
     (map-set asset-fees asset (+ (get-asset-fees asset) fee))
@@ -165,3 +183,6 @@
 
 (define-read-only (get-total-deposits (asset principal))
   (default-to u0 (map-get? total-deposits asset)))
+
+(define-read-only (get-max-deposit-limit (asset principal))
+  (default-to u0 (map-get? max-deposit-limits asset)))
