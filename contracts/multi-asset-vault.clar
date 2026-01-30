@@ -16,6 +16,7 @@
 (define-map supported-assets principal bool)
 (define-map asset-balances {user: principal, asset: principal} uint)
 (define-map asset-fees principal uint)
+(define-map total-deposits principal uint)
 
 ;; Initialize STX as supported asset
 (map-set supported-assets 'STX true)
@@ -62,6 +63,7 @@
     (try! (stx-transfer? amount tx-sender (as-contract tx-sender)))
     (map-set asset-balances {user: tx-sender, asset: 'STX} (+ current-balance user-amount))
     (map-set asset-fees 'STX (+ (get-asset-fees 'STX) fee))
+    (map-set total-deposits 'STX (+ (get-total-deposits 'STX) user-amount))
     (print {event: "deposit", user: tx-sender, asset: 'STX, amount: user-amount, fee: fee})
     (ok user-amount)))
 
@@ -77,6 +79,7 @@
     (try! (contract-call? token transfer amount tx-sender (as-contract tx-sender) none))
     (map-set asset-balances {user: tx-sender, asset: asset} (+ current-balance user-amount))
     (map-set asset-fees asset (+ (get-asset-fees asset) fee))
+    (map-set total-deposits asset (+ (get-total-deposits asset) user-amount))
     (print {event: "deposit", user: tx-sender, asset: asset, amount: user-amount, fee: fee})
     (ok user-amount)))
 
@@ -86,6 +89,7 @@
     (asserts! (> amount u0) err-invalid-amount)
     (asserts! (>= balance amount) err-insufficient-balance)
     (map-set asset-balances {user: sender, asset: 'STX} (- balance amount))
+    (map-set total-deposits 'STX (- (get-total-deposits 'STX) amount))
     ;; Transfer from contract to the user (sender captured before as-contract)
     (try! (as-contract (stx-transfer? amount tx-sender sender)))
     (print {event: "withdrawal", user: sender, asset: 'STX, amount: amount})
@@ -98,6 +102,7 @@
     (asserts! (> amount u0) err-invalid-amount)
     (asserts! (>= balance amount) err-insufficient-balance)
     (map-set asset-balances {user: sender, asset: asset} (- balance amount))
+    (map-set total-deposits asset (- (get-total-deposits asset) amount))
     ;; Transfer from contract to the user (sender captured before as-contract)
     (try! (as-contract (contract-call? token transfer amount tx-sender sender none)))
     (print {event: "withdrawal", user: sender, asset: asset, amount: amount})
@@ -132,6 +137,7 @@
         (balance (get-asset-balance tx-sender 'STX)))
     (asserts! (> balance u0) err-insufficient-balance)
     (map-set asset-balances {user: sender, asset: 'STX} u0)
+    (map-set total-deposits 'STX (- (get-total-deposits 'STX) balance))
     (try! (as-contract (stx-transfer? balance tx-sender sender)))
     (print {event: "emergency-withdrawal", user: sender, asset: 'STX, amount: balance})
     (ok balance)))
@@ -143,6 +149,7 @@
         (balance (get-asset-balance tx-sender asset)))
     (asserts! (> balance u0) err-insufficient-balance)
     (map-set asset-balances {user: sender, asset: asset} u0)
+    (map-set total-deposits asset (- (get-total-deposits asset) balance))
     (try! (as-contract (contract-call? token transfer balance tx-sender sender none)))
     (print {event: "emergency-withdrawal", user: sender, asset: asset, amount: balance})
     (ok balance)))
@@ -155,3 +162,6 @@
 
 (define-read-only (is-asset-supported (asset principal))
   (default-to false (map-get? supported-assets asset)))
+
+(define-read-only (get-total-deposits (asset principal))
+  (default-to u0 (map-get? total-deposits asset)))
