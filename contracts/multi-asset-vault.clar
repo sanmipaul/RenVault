@@ -9,12 +9,15 @@
 (define-constant err-not-authorized (err u105))
 (define-constant err-contract-paused (err u106))
 (define-constant err-exceeds-max-deposit (err u107))
+(define-constant err-below-min-withdrawal (err u108))
 
 ;; Contract state
 (define-data-var contract-paused bool false)
 
 ;; Deposit limits per asset (0 means no limit)
 (define-map max-deposit-limits principal uint)
+;; Minimum withdrawal amounts per asset (0 means no minimum)
+(define-map min-withdrawal-amounts principal uint)
 
 ;; Asset registry
 (define-map supported-assets principal bool)
@@ -45,6 +48,14 @@
     (map-set max-deposit-limits asset limit)
     (print {event: "max-deposit-limit-set", asset: asset, limit: limit})
     (ok limit)))
+
+;; Set minimum withdrawal amount for an asset (0 = no minimum)
+(define-public (set-min-withdrawal-amount (asset principal) (min-amount uint))
+  (begin
+    (asserts! (is-eq tx-sender contract-owner) err-owner-only)
+    (map-set min-withdrawal-amounts asset min-amount)
+    (print {event: "min-withdrawal-amount-set", asset: asset, amount: min-amount})
+    (ok min-amount)))
 
 ;; Pause contract (emergency stop)
 (define-public (pause-contract)
@@ -103,8 +114,11 @@
 
 (define-public (withdraw-stx (amount uint))
   (let ((sender tx-sender)
-        (balance (get-asset-balance tx-sender 'STX)))
+        (balance (get-asset-balance tx-sender 'STX))
+        (min-withdrawal (get-min-withdrawal-amount 'STX)))
     (asserts! (> amount u0) err-invalid-amount)
+    ;; Check minimum withdrawal (0 means no minimum, or allow full balance withdrawal)
+    (asserts! (or (is-eq min-withdrawal u0) (>= amount min-withdrawal) (is-eq amount balance)) err-below-min-withdrawal)
     (asserts! (>= balance amount) err-insufficient-balance)
     (map-set asset-balances {user: sender, asset: 'STX} (- balance amount))
     (map-set total-deposits 'STX (- (get-total-deposits 'STX) amount))
@@ -116,8 +130,11 @@
 (define-public (withdraw-sip010 (token <sip010-trait>) (amount uint))
   (let ((sender tx-sender)
         (asset (contract-of token))
-        (balance (get-asset-balance tx-sender asset)))
+        (balance (get-asset-balance tx-sender asset))
+        (min-withdrawal (get-min-withdrawal-amount asset)))
     (asserts! (> amount u0) err-invalid-amount)
+    ;; Check minimum withdrawal (0 means no minimum, or allow full balance withdrawal)
+    (asserts! (or (is-eq min-withdrawal u0) (>= amount min-withdrawal) (is-eq amount balance)) err-below-min-withdrawal)
     (asserts! (>= balance amount) err-insufficient-balance)
     (map-set asset-balances {user: sender, asset: asset} (- balance amount))
     (map-set total-deposits asset (- (get-total-deposits asset) amount))
@@ -186,3 +203,6 @@
 
 (define-read-only (get-max-deposit-limit (asset principal))
   (default-to u0 (map-get? max-deposit-limits asset)))
+
+(define-read-only (get-min-withdrawal-amount (asset principal))
+  (default-to u0 (map-get? min-withdrawal-amounts asset)))
