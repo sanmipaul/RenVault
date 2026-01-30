@@ -19,7 +19,15 @@
 (define-public (add-supported-asset (asset principal))
   (begin
     (asserts! (is-eq tx-sender contract-owner) err-owner-only)
+    (print {event: "asset-added", asset: asset})
     (ok (map-set supported-assets asset true))))
+
+(define-public (remove-supported-asset (asset principal))
+  (begin
+    (asserts! (is-eq tx-sender contract-owner) err-owner-only)
+    ;; Note: Does not affect existing balances, just prevents new deposits
+    (print {event: "asset-removed", asset: asset})
+    (ok (map-set supported-assets asset false))))
 
 (define-public (deposit-stx (amount uint))
   (let ((fee (/ amount u100))
