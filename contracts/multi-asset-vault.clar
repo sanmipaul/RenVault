@@ -80,6 +80,18 @@
     (print {event: "fee-withdrawal", asset: 'STX, amount: amount, recipient: contract-owner})
     (ok amount)))
 
+;; Owner function to withdraw accumulated SIP010 token fees
+(define-public (owner-withdraw-sip010-fees (token <sip010-trait>) (amount uint))
+  (let ((asset (contract-of token))
+        (available-fees (get-asset-fees asset)))
+    (asserts! (is-eq tx-sender contract-owner) err-owner-only)
+    (asserts! (> amount u0) err-invalid-amount)
+    (asserts! (>= available-fees amount) err-insufficient-balance)
+    (map-set asset-fees asset (- available-fees amount))
+    (try! (as-contract (contract-call? token transfer amount tx-sender contract-owner none)))
+    (print {event: "fee-withdrawal", asset: asset, amount: amount, recipient: contract-owner})
+    (ok amount)))
+
 (define-read-only (get-asset-balance (user principal) (asset principal))
   (default-to u0 (map-get? asset-balances {user: user, asset: asset})))
 
