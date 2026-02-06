@@ -16,7 +16,7 @@ Showcasing advanced Clarity 4 features and generating real on-chain activity.
 ### Smart Contract
 ```bash
 # Clone and setup
-git clone https://github.com/sanmipaul/RenVault
+git clone https://github.com/AdekunleBamz/RenVault.git
 cd RenVault
 npm install -g @hirosystems/clarinet
 clarinet test
