@@ -1,0 +1,17 @@
+{
+  "name": "renvault-liquidity",
+  "version": "1.0.0",
+  "description": "Liquidity pool management with AMM functionality",
+  "main": "liquidityAPI.js",
+  "scripts": {
+    "start": "node liquidityAPI.js",
+    "test": "jest"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5"
+  },
+  "keywords": ["liquidity", "amm", "defi"],
+  "author": "RenVault Team",
+  "license": "MIT"
+}
