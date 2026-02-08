@@ -1,0 +1,35 @@
+class PriceOracle {
+  constructor() {
+    this.prices = new Map();
+    this.updateInterval = 60000; // 1 minute
+  }
+
+  setPrice(token, price) {
+    this.prices.set(token, {
+      price,
+      timestamp: Date.now()
+    });
+  }
+
+  getPrice(token) {
+    const data = this.prices.get(token);
+    if (!data) return null;
+    
+    const age = Date.now() - data.timestamp;
+    if (age > this.updateInterval * 5) return null; // Stale price
+    
+    return data.price;
+  }
+
+  calculatePoolPrice(poolId, reserveA, reserveB) {
+    return reserveB / reserveA;
+  }
+
+  isPriceStale(token) {
+    const data = this.prices.get(token);
+    if (!data) return true;
+    return Date.now() - data.timestamp > this.updateInterval * 5;
+  }
+}
+
+module.exports = PriceOracle;
