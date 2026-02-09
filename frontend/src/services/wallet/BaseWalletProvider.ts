@@ -5,6 +5,7 @@ import { ConnectionHealthMonitor } from './ConnectionHealthMonitor';
 import { ReconnectionStrategy } from './ReconnectionStrategy';
 import { ConnectionEventEmitter } from './ConnectionEventEmitter';
 import { ConnectionMetricsCollector } from './ConnectionMetricsCollector';
+import { ConnectionCircuitBreaker } from './ConnectionCircuitBreaker';
 import { ConnectionState } from '../../types/connectionState';
 import { retryConnection } from '../../utils/connectionRetry';
 
@@ -18,6 +19,7 @@ export abstract class BaseWalletProvider implements WalletProvider {
   protected reconnectionStrategy = new ReconnectionStrategy();
   protected eventEmitter = new ConnectionEventEmitter();
   protected metricsCollector = new ConnectionMetricsCollector();
+  protected circuitBreaker = new ConnectionCircuitBreaker();
 
   abstract connect(): Promise<WalletConnection>;
   abstract disconnect(): Promise<void>;
