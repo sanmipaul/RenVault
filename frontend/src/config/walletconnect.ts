@@ -1,5 +1,6 @@
 import { environment } from './environment';
 import { stacksWallets, getFeaturedWalletIds } from './customWallets';
+import { validateWalletConfig } from '../utils/walletConfigValidator';
 
 /**
  * RenVault Branding Configuration
@@ -149,14 +150,20 @@ export const supportedChains = {
  */
 export const customWalletsConfig = {
   // List of custom wallet configurations
-  wallets: stacksWallets.map((wallet) => ({
-    id: wallet.id,
-    name: wallet.name,
-    imageUrl: wallet.imageUrl,
-    mobile: wallet.mobile,
-    desktop: wallet.desktop,
-    homepage: wallet.homepage,
-  })),
+  wallets: stacksWallets.map((wallet) => {
+    const validation = validateWalletConfig(wallet);
+    if (!validation.valid) {
+      console.error(`Wallet ${wallet.id} validation failed:`, validation.errors);
+    }
+    return {
+      id: wallet.id,
+      name: wallet.name,
+      imageUrl: wallet.imageUrl,
+      mobile: wallet.mobile,
+      desktop: wallet.desktop,
+      homepage: wallet.homepage,
+    };
+  }),
 
   // Featured wallet IDs to show prominently
   featuredWalletIds: getFeaturedWalletIds(),
