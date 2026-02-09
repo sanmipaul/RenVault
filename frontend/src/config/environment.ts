@@ -11,8 +11,18 @@ export const environment = {
 };
 
 export const validateEnvironment = () => {
+  const errors: string[] = [];
+
   if (!environment.walletConnect.projectId) {
-    throw new Error('REACT_APP_WALLETCONNECT_PROJECT_ID environment variable is not set');
+    errors.push('REACT_APP_WALLETCONNECT_PROJECT_ID is required');
+  }
+
+  if (!environment.walletConnect.appUrl) {
+    errors.push('REACT_APP_URL is required');
+  }
+
+  if (errors.length > 0) {
+    throw new Error(`Environment validation failed: ${errors.join(', ')}`);
   }
 };
 
