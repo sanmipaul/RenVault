@@ -2,6 +2,16 @@
 import { WalletManager } from '../wallet/WalletManager';
 import { WalletError, WalletErrorCode } from '../../utils/wallet-errors';
 import { generateSecureTransactionId } from '../../utils/crypto';
+import { TransactionStateManager } from './TransactionStateManager';
+import { TransactionQueue } from './TransactionQueue';
+import { TransactionCache } from './TransactionCache';
+import { TransactionMonitor } from './TransactionMonitor';
+import { TransactionRecovery } from '../../utils/transactionRecovery';
+import { TransactionTimeout } from '../../utils/transactionTimeout';
+import { TransactionErrorHandler } from '../../utils/transactionErrorHandler';
+import { retryWithBackoff } from '../../utils/retry';
+import { validateTransactionDetails } from '../../utils/transactionValidator';
+import { TransactionStatus } from '../../types/transactionState';
 import {
   makeContractCall,
   broadcastTransaction,
@@ -36,6 +46,11 @@ export class TransactionService {
   private static instance: TransactionService;
   private walletManager: WalletManager;
   private network = new StacksMainnet();
+  private stateManager = new TransactionStateManager();
+  private queue = new TransactionQueue();
+  private cache = new TransactionCache();
+  private monitor = new TransactionMonitor();
+  private timeout = new TransactionTimeout();
 
   private constructor() {
     this.walletManager = WalletManager.getInstance();
@@ -54,52 +69,35 @@ export class TransactionService {
     contractAddress: string = 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ren-vault'
   ): Promise<TransactionDetails> {
     try {
-      // Validate amount
       if (amount <= 0) {
-        throw new WalletError(
-          WalletErrorCode.INVALID_TRANSACTION,
-          'Deposit amount must be greater than 0'
-        );
+        throw new WalletError(WalletErrorCode.INVALID_TRANSACTION, 'Deposit amount must be greater than 0');
       }
-
-      // Validate amount is not too large (prevent overflow)
-      if (amount > 1000000) { // 1M STX limit
-        throw new WalletError(
-          WalletErrorCode.INVALID_TRANSACTION,
-          'Deposit amount cannot exceed 1,000,000 STX'
-        );
+      if (amount > 1000000) {
+        throw new WalletError(WalletErrorCode.INVALID_TRANSACTION, 'Deposit amount cannot exceed 1,000,000 STX');
       }
-
-      // Validate contract address format
       if (!this.isValidStacksAddress(contractAddress)) {
-        throw new WalletError(
-          WalletErrorCode.INVALID_TRANSACTION,
-          'Invalid contract address format'
-        );
+        throw new WalletError(WalletErrorCode.INVALID_TRANSACTION, 'Invalid contract address format');
       }
-
-      // Convert amount to microSTX (Stacks uses microSTX)
       const microAmount = Math.floor(amount * 1000000);
-
       const details: TransactionDetails = {
         contractAddress,
         contractName: 'ren-vault',
         functionName: 'deposit',
         functionArgs: [uintCV(microAmount)],
         amount: microAmount,
-        fee: isSponsored ? 0 : 1000, // Zero fee if sponsored
+        fee: isSponsored ? 0 : 1000,
         network: 'mainnet',
         isSponsored,
         anchorMode: AnchorMode.Any,
         postConditionMode: PostConditionMode.Allow
       };
-
+      const errors = validateTransactionDetails(details);
+      if (errors.length > 0) {
+        throw new WalletError(WalletErrorCode.INVALID_TRANSACTION, `Validation failed: ${errors.join(', ')}`);
+      }
       return details;
     } catch (error) {
-      throw new WalletError(
-        WalletErrorCode.TRANSACTION_PREPARATION_FAILED,
-        `Failed to prepare deposit transaction: ${error.message}`
-      );
+      throw TransactionErrorHandler.handleError(error, 'Transaction preparation');
     }
   }
 
@@ -160,29 +158,23 @@ export class TransactionService {
   }
 
   async broadcastTransaction(signedTx: SignedTransaction): Promise<string> {
+    const txId = signedTx.txId;
     try {
-      console.log('Broadcasting transaction to Stacks network:', signedTx);
-
-      // Broadcast the transaction using Stacks.js
-      const broadcastResponse = await broadcastTransaction({
-        transaction: signedTx.signedTx,
-        network: this.network
+      this.stateManager.setState(txId, TransactionStatus.BROADCASTING);
+      this.monitor.recordTransaction();
+      const result = await retryWithBackoff(async () => {
+        const response = await broadcastTransaction({ transaction: signedTx.signedTx, network: this.network });
+        if (response.error) throw new Error(response.error);
+        return response.txid || txId;
       });
-
-      if (broadcastResponse.error) {
-        throw new Error(broadcastResponse.error);
-      }
-
-      const txId = broadcastResponse.txid || signedTx.txId;
-      console.log('Transaction broadcast successful, txId:', txId);
-
-      return txId;
+      this.stateManager.setState(txId, TransactionStatus.CONFIRMED);
+      this.monitor.recordSuccess(Date.now());
+      TransactionRecovery.removePendingTransaction(txId);
+      return result;
     } catch (error) {
-      console.error('Transaction broadcast failed:', error);
-      throw new WalletError(
-        WalletErrorCode.TRANSACTION_BROADCAST_FAILED,
-        `Failed to broadcast transaction: ${error.message}`
-      );
+      this.stateManager.setState(txId, TransactionStatus.FAILED, TransactionErrorHandler.getErrorMessage(error));
+      this.monitor.recordFailure();
+      throw TransactionErrorHandler.handleError(error, 'Transaction broadcast');
     }
   }
 
@@ -211,5 +203,21 @@ export class TransactionService {
     // Stacks addresses start with SP, SM, or ST and are 28-30 characters long
     const stacksAddressRegex = /^(SP|SM|ST)[0-9A-Z]{26,28}$/;
     return stacksAddressRegex.test(address);
+  }
+
+  getTransactionState(txId: string) {
+    return this.stateManager.getState(txId);
+  }
+
+  getMetrics() {
+    return this.monitor.getMetrics();
+  }
+
+  recoverPendingTransactions() {
+    return TransactionRecovery.getPendingTransactions();
+  }
+
+  clearCache() {
+    this.cache.clear();
   }
 }
