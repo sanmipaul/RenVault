@@ -1,18 +1,50 @@
 const EmailService = require('./emailService');
 const PushNotificationService = require('./pushService');
+const Logger = require('./logger');
 
 class NotificationManager {
+  static PRIORITIES = {
+    LOW: 0,
+    MEDIUM: 1,
+    HIGH: 2,
+    URGENT: 3
+  };
+
   constructor() {
+    this.logger = new Logger('NotificationManager');
     this.emailService = new EmailService();
     this.pushService = new PushNotificationService();
     this.userPreferences = new Map();
+    this.lastNotificationTime = new Map(); // userId -> timestamp
+    this.RATE_LIMIT_MS = 1000 * 60; // 1 minute default
   }
 
   setUserPreferences(userId, preferences) {
+    if (!userId) {
+      this.logger.error('Cannot set preferences: userId is missing');
+      throw new Error('userId is required');
+    }
+    if (!preferences || typeof preferences !== 'object') {
+      this.logger.error('Cannot set preferences: preferences must be an object', { userId });
+      throw new Error('preferences object is required');
+    }
+
+    if (preferences.emailEnabled && preferences.email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(preferences.email)) {
+        this.logger.warn('Invalid email format provided', { userId, email: preferences.email });
+        // We might not want to throw here to allow other prefs to be set, 
+        // but let's be strict for this implementation
+        throw new Error('Invalid email format');
+      }
+    }
+
+    this.logger.info('Updating user preferences', { userId });
     this.userPreferences.set(userId, {
       email: preferences.email || null,
       emailEnabled: preferences.emailEnabled || false,
       pushEnabled: preferences.pushEnabled || false,
+      minPriority: preferences.minPriority !== undefined ? preferences.minPriority : NotificationManager.PRIORITIES.LOW,
       // Transaction notifications
       depositNotifications: preferences.depositNotifications !== false,
       withdrawalNotifications: preferences.withdrawalNotifications !== false,
@@ -27,193 +59,124 @@ class NotificationManager {
     });
   }
 
-  async notifyDeposit(userId, amount, balance) {
+  async _sendNotification(userId, emailMethod, emailArgs, pushMethod, pushArgs, priority, prefKey = null) {
     const prefs = this.userPreferences.get(userId);
-    if (!prefs) return;
+    if (!prefs || (prefKey && !prefs[prefKey]) || priority < prefs.minPriority) {
+      return;
+    }
+
+    // Rate limiting (except for URGENT)
+    if (priority < NotificationManager.PRIORITIES.URGENT) {
+      const lastTime = this.lastNotificationTime.get(userId);
+      if (lastTime && (Date.now() - lastTime < this.RATE_LIMIT_MS)) {
+        this.logger.warn('Notification rate limited', { userId, priority });
+        return;
+      }
+    }
 
     const promises = [];
 
-    if (prefs.emailEnabled && prefs.email) {
+    if (prefs.emailEnabled && prefs.email && emailMethod) {
       promises.push(
-        this.emailService.sendDepositAlert(prefs.email, amount, balance)
+        this.emailService[emailMethod](prefs.email, ...emailArgs)
       );
     }
 
-    if (prefs.pushEnabled) {
+    if (prefs.pushEnabled && pushMethod) {
       promises.push(
-        this.pushService.sendDepositNotification(userId, amount)
+        this.pushService[pushMethod](userId, ...pushArgs)
       );
     }
 
     await Promise.allSettled(promises);
+    this.lastNotificationTime.set(userId, Date.now());
   }
 
-  async notifyWithdrawal(userId, amount, balance) {
-    const prefs = this.userPreferences.get(userId);
-    if (!prefs) return;
-
-    const promises = [];
-
-    if (prefs.emailEnabled && prefs.email) {
-      promises.push(
-        this.emailService.sendWithdrawAlert(prefs.email, amount, balance)
-      );
-    }
-
-    if (prefs.pushEnabled) {
-      promises.push(
-        this.pushService.sendWithdrawNotification(userId, amount)
-      );
-    }
-
-    await Promise.allSettled(promises);
+  async notifyDeposit(userId, amount, balance, priority = NotificationManager.PRIORITIES.MEDIUM) {
+    await this._sendNotification(
+      userId,
+      'sendDepositAlert', [amount, balance],
+      'sendDepositNotification', [amount],
+      priority
+    );
   }
 
-  async notifyRankingChange(userId, rank, score) {
-    const prefs = this.userPreferences.get(userId);
-    if (!prefs) return;
-
-    const promises = [];
-
-    if (prefs.emailEnabled && prefs.email) {
-      promises.push(
-        this.emailService.sendLeaderboardUpdate(prefs.email, rank, score)
-      );
-    }
-
-    if (prefs.pushEnabled) {
-      promises.push(
-        this.pushService.sendRankingNotification(userId, rank)
-      );
-    }
-
-    await Promise.allSettled(promises);
+  async notifyWithdrawal(userId, amount, balance, priority = NotificationManager.PRIORITIES.MEDIUM) {
+    await this._sendNotification(
+      userId,
+      'sendWithdrawAlert', [amount, balance],
+      'sendWithdrawNotification', [amount],
+      priority
+    );
   }
 
-  async notifyStakingReward(userId, amount, stakedAmount) {
-    const prefs = this.userPreferences.get(userId);
-    if (!prefs || !prefs.stakingNotifications) return;
-
-    const promises = [];
-
-    if (prefs.emailEnabled && prefs.email) {
-      promises.push(
-        this.emailService.sendStakingRewardAlert(prefs.email, amount, stakedAmount)
-      );
-    }
-
-    if (prefs.pushEnabled) {
-      promises.push(
-        this.pushService.sendStakingRewardNotification(userId, amount)
-      );
-    }
-
-    await Promise.allSettled(promises);
+  async notifyRankingChange(userId, rank, score, priority = NotificationManager.PRIORITIES.LOW) {
+    await this._sendNotification(
+      userId,
+      'sendLeaderboardUpdate', [rank, score],
+      'sendRankingNotification', [rank],
+      priority
+    );
   }
 
-  async notifyLiquidityReward(userId, amount, poolName) {
-    const prefs = this.userPreferences.get(userId);
-    if (!prefs || !prefs.rewardNotifications) return;
-
-    const promises = [];
-
-    if (prefs.emailEnabled && prefs.email) {
-      promises.push(
-        this.emailService.sendLiquidityRewardAlert(prefs.email, amount, poolName)
-      );
-    }
-
-    if (prefs.pushEnabled) {
-      promises.push(
-        this.pushService.sendLiquidityRewardNotification(userId, amount, poolName)
-      );
-    }
-
-    await Promise.allSettled(promises);
+  async notifyStakingReward(userId, amount, stakedAmount, priority = NotificationManager.PRIORITIES.MEDIUM) {
+    await this._sendNotification(
+      userId,
+      'sendStakingRewardAlert', [amount, stakedAmount],
+      'sendStakingRewardNotification', [amount],
+      priority,
+      'stakingNotifications'
+    );
   }
 
-  async notifyFailedLogin(userId, ipAddress, userAgent) {
-    const prefs = this.userPreferences.get(userId);
-    if (!prefs || !prefs.securityAlerts || !prefs.loginAlerts) return;
-
-    const promises = [];
-
-    if (prefs.emailEnabled && prefs.email) {
-      promises.push(
-        this.emailService.sendFailedLoginAlert(prefs.email, ipAddress, userAgent)
-      );
-    }
-
-    if (prefs.pushEnabled) {
-      promises.push(
-        this.pushService.sendFailedLoginNotification(userId, ipAddress)
-      );
-    }
-
-    await Promise.allSettled(promises);
+  async notifyLiquidityReward(userId, amount, poolName, priority = NotificationManager.PRIORITIES.MEDIUM) {
+    await this._sendNotification(
+      userId,
+      'sendLiquidityRewardAlert', [amount, poolName],
+      'sendLiquidityRewardNotification', [amount, poolName],
+      priority,
+      'rewardNotifications'
+    );
   }
 
-  async notifySuspiciousActivity(userId, activity, ipAddress) {
-    const prefs = this.userPreferences.get(userId);
-    if (!prefs || !prefs.securityAlerts || !prefs.suspiciousActivityAlerts) return;
-
-    const promises = [];
-
-    if (prefs.emailEnabled && prefs.email) {
-      promises.push(
-        this.emailService.sendSuspiciousActivityAlert(prefs.email, activity, ipAddress)
-      );
-    }
-
-    if (prefs.pushEnabled) {
-      promises.push(
-        this.pushService.sendSuspiciousActivityNotification(userId, activity)
-      );
-    }
-
-    await Promise.allSettled(promises);
+  async notifyFailedLogin(userId, ipAddress, userAgent, priority = NotificationManager.PRIORITIES.HIGH) {
+    await this._sendNotification(
+      userId,
+      'sendFailedLoginAlert', [ipAddress, userAgent],
+      'sendFailedLoginNotification', [ipAddress],
+      priority,
+      'loginAlerts'
+    );
   }
 
-  async notifyTwoFactorEnabled(userId) {
-    const prefs = this.userPreferences.get(userId);
-    if (!prefs || !prefs.securityAlerts || !prefs.twoFactorAlerts) return;
-
-    const promises = [];
-
-    if (prefs.emailEnabled && prefs.email) {
-      promises.push(
-        this.emailService.sendTwoFactorEnabledAlert(prefs.email)
-      );
-    }
-
-    if (prefs.pushEnabled) {
-      promises.push(
-        this.pushService.sendTwoFactorEnabledNotification(userId)
-      );
-    }
-
-    await Promise.allSettled(promises);
+  async notifySuspiciousActivity(userId, activity, ipAddress, priority = NotificationManager.PRIORITIES.URGENT) {
+    await this._sendNotification(
+      userId,
+      'sendSuspiciousActivityAlert', [activity, ipAddress],
+      'sendSuspiciousActivityNotification', [userId, activity],
+      priority,
+      'suspiciousActivityAlerts'
+    );
   }
 
-  async notifyTwoFactorDisabled(userId) {
-    const prefs = this.userPreferences.get(userId);
-    if (!prefs || !prefs.securityAlerts || !prefs.twoFactorAlerts) return;
+  async notifyTwoFactorEnabled(userId, priority = NotificationManager.PRIORITIES.MEDIUM) {
+    await this._sendNotification(
+      userId,
+      'sendTwoFactorEnabledAlert', [],
+      'sendTwoFactorEnabledNotification', [],
+      priority,
+      'twoFactorAlerts'
+    );
+  }
 
-    const promises = [];
-
-    if (prefs.emailEnabled && prefs.email) {
-      promises.push(
-        this.emailService.sendTwoFactorDisabledAlert(prefs.email)
-      );
-    }
-
-    if (prefs.pushEnabled) {
-      promises.push(
-        this.pushService.sendTwoFactorDisabledNotification(userId)
-      );
-    }
-
-    await Promise.allSettled(promises);
+  async notifyTwoFactorDisabled(userId, priority = NotificationManager.PRIORITIES.HIGH) {
+    await this._sendNotification(
+      userId,
+      'sendTwoFactorDisabledAlert', [],
+      'sendTwoFactorDisabledNotification', [],
+      priority,
+      'twoFactorAlerts'
+    );
   }
 
   subscribeToPush(userId, endpoint, keys) {
