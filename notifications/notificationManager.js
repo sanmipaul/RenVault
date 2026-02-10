@@ -3,6 +3,13 @@ const PushNotificationService = require('./pushService');
 const Logger = require('./logger');
 
 class NotificationManager {
+  static PRIORITIES = {
+    LOW: 0,
+    MEDIUM: 1,
+    HIGH: 2,
+    URGENT: 3
+  };
+
   constructor() {
     this.logger = new Logger('NotificationManager');
     this.emailService = new EmailService();
@@ -35,6 +42,7 @@ class NotificationManager {
       email: preferences.email || null,
       emailEnabled: preferences.emailEnabled || false,
       pushEnabled: preferences.pushEnabled || false,
+      minPriority: preferences.minPriority !== undefined ? preferences.minPriority : NotificationManager.PRIORITIES.LOW,
       // Transaction notifications
       depositNotifications: preferences.depositNotifications !== false,
       withdrawalNotifications: preferences.withdrawalNotifications !== false,
