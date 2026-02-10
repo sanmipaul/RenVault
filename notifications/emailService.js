@@ -17,6 +17,20 @@ class EmailService {
     });
   }
 
+  async sendWithRetry(mailOptions, retries = 3, delay = 1000) {
+    for (let i = 0; i < retries; i++) {
+      try {
+        await this.transporter.sendMail(mailOptions);
+        return true;
+      } catch (error) {
+        if (i === retries - 1) throw error;
+        this.logger.warn(`Email retry ${i + 1}/${retries} after error: ${error.message}`);
+        await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, i)));
+      }
+    }
+    return false;
+  }
+
   async sendDepositAlert(userEmail, amount, balance) {
     const template = this.loadTemplate('deposit.html');
     const html = this.renderTemplate(template, { amount, balance });
@@ -29,10 +43,10 @@ class EmailService {
     };
 
     try {
-      await this.transporter.sendMail(mailOptions);
+      await this.sendWithRetry(mailOptions);
       this.logger.info(`Deposit alert sent to ${userEmail}`);
     } catch (error) {
-      this.logger.error('Email send failed', { error: error.message, userEmail });
+      this.logger.error('Email send failed after retries', { error: error.message, userEmail });
     }
   }
 
@@ -53,10 +67,10 @@ class EmailService {
     };
 
     try {
-      await this.transporter.sendMail(mailOptions);
+      await this.sendWithRetry(mailOptions);
       this.logger.info(`Withdrawal alert sent to ${userEmail}`);
     } catch (error) {
-      this.logger.error('Email send failed', { error: error.message, userEmail });
+      this.logger.error('Email send failed after retries', { error: error.message, userEmail });
     }
   }
 
@@ -74,10 +88,10 @@ class EmailService {
     };
 
     try {
-      await this.transporter.sendMail(mailOptions);
+      await this.sendWithRetry(mailOptions);
       this.logger.info(`Leaderboard update sent to ${userEmail}`);
     } catch (error) {
-      this.logger.error('Email send failed', { error: error.message, userEmail });
+      this.logger.error('Email send failed after retries', { error: error.message, userEmail });
     }
   }
 
@@ -97,10 +111,10 @@ class EmailService {
     };
 
     try {
-      await this.transporter.sendMail(mailOptions);
+      await this.sendWithRetry(mailOptions);
       this.logger.info(`Staking reward alert sent to ${userEmail}`);
     } catch (error) {
-      this.logger.error('Email send failed', { error: error.message, userEmail });
+      this.logger.error('Email send failed after retries', { error: error.message, userEmail });
     }
   }
 
@@ -118,10 +132,10 @@ class EmailService {
     };
 
     try {
-      await this.transporter.sendMail(mailOptions);
+      await this.sendWithRetry(mailOptions);
       this.logger.info(`Liquidity reward alert sent to ${userEmail}`);
     } catch (error) {
-      this.logger.error('Email send failed', { error: error.message, userEmail });
+      this.logger.error('Email send failed after retries', { error: error.message, userEmail });
     }
   }
 
@@ -141,10 +155,10 @@ class EmailService {
     };
 
     try {
-      await this.transporter.sendMail(mailOptions);
+      await this.sendWithRetry(mailOptions);
       this.logger.info(`Failed login alert sent to ${userEmail}`);
     } catch (error) {
-      this.logger.error('Email send failed', { error: error.message, userEmail });
+      this.logger.error('Email send failed after retries', { error: error.message, userEmail });
     }
   }
 
@@ -164,10 +178,10 @@ class EmailService {
     };
 
     try {
-      await this.transporter.sendMail(mailOptions);
+      await this.sendWithRetry(mailOptions);
       this.logger.info(`Suspicious activity alert sent to ${userEmail}`);
     } catch (error) {
-      this.logger.error('Email send failed', { error: error.message, userEmail });
+      this.logger.error('Email send failed after retries', { error: error.message, userEmail });
     }
   }
 
@@ -189,10 +203,10 @@ class EmailService {
     };
 
     try {
-      await this.transporter.sendMail(mailOptions);
+      await this.sendWithRetry(mailOptions);
       this.logger.info(`2FA enabled alert sent to ${userEmail}`);
     } catch (error) {
-      this.logger.error('Email send failed', { error: error.message, userEmail });
+      this.logger.error('Email send failed after retries', { error: error.message, userEmail });
     }
   }
 
@@ -213,10 +227,10 @@ class EmailService {
     };
 
     try {
-      await this.transporter.sendMail(mailOptions);
+      await this.sendWithRetry(mailOptions);
       this.logger.info(`2FA disabled alert sent to ${userEmail}`);
     } catch (error) {
-      this.logger.error('Email send failed', { error: error.message, userEmail });
+      this.logger.error('Email send failed after retries', { error: error.message, userEmail });
     }
   }
 
