@@ -1,14 +1,17 @@
 const EmailService = require('./emailService');
 const PushNotificationService = require('./pushService');
+const Logger = require('./logger');
 
 class NotificationManager {
   constructor() {
+    this.logger = new Logger('NotificationManager');
     this.emailService = new EmailService();
     this.pushService = new PushNotificationService();
     this.userPreferences = new Map();
   }
 
   setUserPreferences(userId, preferences) {
+    this.logger.info('Updating user preferences', { userId });
     this.userPreferences.set(userId, {
       email: preferences.email || null,
       emailEnabled: preferences.emailEnabled || false,

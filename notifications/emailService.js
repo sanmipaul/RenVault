@@ -1,9 +1,11 @@
 const nodemailer = require('nodemailer');
 const fs = require('fs');
 const path = require('path');
+const Logger = require('./logger');
 
 class EmailService {
   constructor() {
+    this.logger = new Logger('EmailService');
     this.transporter = nodemailer.createTransporter({
       host: process.env.SMTP_HOST || 'smtp.gmail.com',
       port: 587,
@@ -28,9 +30,9 @@ class EmailService {
 
     try {
       await this.transporter.sendMail(mailOptions);
-      console.log(`✅ Deposit alert sent to ${userEmail}`);
+      this.logger.info(`Deposit alert sent to ${userEmail}`);
     } catch (error) {
-      console.error('❌ Email send failed:', error.message);
+      this.logger.error('Email send failed', { error: error.message, userEmail });
     }
   }
 
@@ -52,9 +54,9 @@ class EmailService {
 
     try {
       await this.transporter.sendMail(mailOptions);
-      console.log(`✅ Withdrawal alert sent to ${userEmail}`);
+      this.logger.info(`Withdrawal alert sent to ${userEmail}`);
     } catch (error) {
-      console.error('❌ Email send failed:', error.message);
+      this.logger.error('Email send failed', { error: error.message, userEmail });
     }
   }
 
@@ -73,9 +75,9 @@ class EmailService {
 
     try {
       await this.transporter.sendMail(mailOptions);
-      console.log(`✅ Leaderboard update sent to ${userEmail}`);
+      this.logger.info(`Leaderboard update sent to ${userEmail}`);
     } catch (error) {
-      console.error('❌ Email send failed:', error.message);
+      this.logger.error('Email send failed', { error: error.message, userEmail });
     }
   }
 
@@ -96,9 +98,9 @@ class EmailService {
 
     try {
       await this.transporter.sendMail(mailOptions);
-      console.log(`✅ Staking reward alert sent to ${userEmail}`);
+      this.logger.info(`Staking reward alert sent to ${userEmail}`);
     } catch (error) {
-      console.error('❌ Email send failed:', error.message);
+      this.logger.error('Email send failed', { error: error.message, userEmail });
     }
   }
 
@@ -117,9 +119,9 @@ class EmailService {
 
     try {
       await this.transporter.sendMail(mailOptions);
-      console.log(`✅ Liquidity reward alert sent to ${userEmail}`);
+      this.logger.info(`Liquidity reward alert sent to ${userEmail}`);
     } catch (error) {
-      console.error('❌ Email send failed:', error.message);
+      this.logger.error('Email send failed', { error: error.message, userEmail });
     }
   }
 
@@ -140,9 +142,9 @@ class EmailService {
 
     try {
       await this.transporter.sendMail(mailOptions);
-      console.log(`✅ Failed login alert sent to ${userEmail}`);
+      this.logger.info(`Failed login alert sent to ${userEmail}`);
     } catch (error) {
-      console.error('❌ Email send failed:', error.message);
+      this.logger.error('Email send failed', { error: error.message, userEmail });
     }
   }
 
@@ -163,9 +165,9 @@ class EmailService {
 
     try {
       await this.transporter.sendMail(mailOptions);
-      console.log(`✅ Suspicious activity alert sent to ${userEmail}`);
+      this.logger.info(`Suspicious activity alert sent to ${userEmail}`);
     } catch (error) {
-      console.error('❌ Email send failed:', error.message);
+      this.logger.error('Email send failed', { error: error.message, userEmail });
     }
   }
 
@@ -188,9 +190,9 @@ class EmailService {
 
     try {
       await this.transporter.sendMail(mailOptions);
-      console.log(`✅ 2FA enabled alert sent to ${userEmail}`);
+      this.logger.info(`2FA enabled alert sent to ${userEmail}`);
     } catch (error) {
-      console.error('❌ Email send failed:', error.message);
+      this.logger.error('Email send failed', { error: error.message, userEmail });
     }
   }
 
@@ -212,9 +214,9 @@ class EmailService {
 
     try {
       await this.transporter.sendMail(mailOptions);
-      console.log(`✅ 2FA disabled alert sent to ${userEmail}`);
+      this.logger.info(`2FA disabled alert sent to ${userEmail}`);
     } catch (error) {
-      console.error('❌ Email send failed:', error.message);
+      this.logger.error('Email send failed', { error: error.message, userEmail });
     }
   }
 
