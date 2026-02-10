@@ -11,6 +11,15 @@ class NotificationManager {
   }
 
   setUserPreferences(userId, preferences) {
+    if (!userId) {
+      this.logger.error('Cannot set preferences: userId is missing');
+      throw new Error('userId is required');
+    }
+    if (!preferences || typeof preferences !== 'object') {
+      this.logger.error('Cannot set preferences: preferences must be an object', { userId });
+      throw new Error('preferences object is required');
+    }
+
     this.logger.info('Updating user preferences', { userId });
     this.userPreferences.set(userId, {
       email: preferences.email || null,
