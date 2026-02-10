@@ -20,6 +20,16 @@ class NotificationManager {
       throw new Error('preferences object is required');
     }
 
+    if (preferences.emailEnabled && preferences.email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(preferences.email)) {
+        this.logger.warn('Invalid email format provided', { userId, email: preferences.email });
+        // We might not want to throw here to allow other prefs to be set, 
+        // but let's be strict for this implementation
+        throw new Error('Invalid email format');
+      }
+    }
+
     this.logger.info('Updating user preferences', { userId });
     this.userPreferences.set(userId, {
       email: preferences.email || null,
