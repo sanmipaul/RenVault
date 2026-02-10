@@ -15,6 +15,8 @@ class NotificationManager {
     this.emailService = new EmailService();
     this.pushService = new PushNotificationService();
     this.userPreferences = new Map();
+    this.lastNotificationTime = new Map(); // userId -> timestamp
+    this.RATE_LIMIT_MS = 1000 * 60; // 1 minute default
   }
 
   setUserPreferences(userId, preferences) {
@@ -63,6 +65,15 @@ class NotificationManager {
       return;
     }
 
+    // Rate limiting (except for URGENT)
+    if (priority < NotificationManager.PRIORITIES.URGENT) {
+      const lastTime = this.lastNotificationTime.get(userId);
+      if (lastTime && (Date.now() - lastTime < this.RATE_LIMIT_MS)) {
+        this.logger.warn('Notification rate limited', { userId, priority });
+        return;
+      }
+    }
+
     const promises = [];
 
     if (prefs.emailEnabled && prefs.email && emailMethod) {
@@ -78,6 +89,7 @@ class NotificationManager {
     }
 
     await Promise.allSettled(promises);
+    this.lastNotificationTime.set(userId, Date.now());
   }
 
   async notifyDeposit(userId, amount, balance, priority = NotificationManager.PRIORITIES.MEDIUM) {
