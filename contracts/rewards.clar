@@ -24,6 +24,15 @@
     
     (map-set claimed-rewards tx-sender true)
     (map-set user-rewards tx-sender reward-amount)
+       (print {
+        event: "reward-claimed",
+        user: tx-sender,
+        points: points,
+        reward-amount: reward-amount,
+        timestamp: block-height,
+        milestone: points,
+        pool-balance: (var-get reward-pool)
+    })
     (ok reward-amount)
   )
 )
