@@ -535,30 +535,6 @@ function AppContent() {
     }
   };
 
-  const disconnectWallet = () => {
-    if (connectionMethod === 'stacks') {
-      // Disconnect Stacks wallet
-      userSession.signUserOut();
-      setUserData(null);
-      setConnectionMethod(null);
-      setWalletConnectSession(null);
-      setStatus('✅ Disconnected from Stacks wallet');
-    } else if (connectionMethod === 'walletconnect') {
-      // Disconnect WalletConnect
-      setWalletConnectSession(null);
-      setUserData(null);
-      setConnectionMethod(null);
-      setStatus('✅ Disconnected from WalletConnect');
-    }
-    // Clear all connection-related state
-    setBalance('0');
-    setPoints('0');
-    setDepositAmount('');
-    setWithdrawAmount('');
-    setDetectedNetwork(null);
-    setNetworkMismatch(false);
-  };
-
   const handleWithdraw = async () => {
     if (!withdrawAmount || !userData) return;
     if (!validateNetwork()) return;
