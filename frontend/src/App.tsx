@@ -28,6 +28,7 @@ import { CoSignerManagement } from './components/CoSignerManagement';
 import { MultiSigTransactionSigner } from './components/MultiSigTransactionSigner';
 import { WalletProviderLoader } from './services/wallet/WalletProviderLoader';
 import { PerformanceMonitor } from './components/PerformanceMonitor';
+import { getAnalyticsUrl } from './config/api';
 
 const appConfig = new AppConfig(['store_write', 'publish_data']);
 const userSession = new UserSession({ appConfig });
@@ -61,7 +62,7 @@ const trackAnalytics = async (event: string, data: any) => {
   if (optOut) return;
   
   try {
-    await fetch('http://localhost:3001/api/' + event, {
+    await fetch(getAnalyticsUrl(event), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
