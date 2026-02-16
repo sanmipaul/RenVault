@@ -13,6 +13,17 @@ const ilCalculator = new ImpermanentLossCalculator();
 app.post('/pools/:id/swap', (req, res) => {
   try {
     const { tokenIn, amountIn, minAmountOut } = req.body;
+
+    if (!tokenIn || typeof tokenIn !== 'string') {
+      return res.status(400).json({ error: 'tokenIn is required and must be a string' });
+    }
+    if (amountIn === undefined || typeof amountIn !== 'number' || amountIn <= 0) {
+      return res.status(400).json({ error: 'amountIn must be a positive number' });
+    }
+    if (minAmountOut === undefined || typeof minAmountOut !== 'number' || minAmountOut < 0) {
+      return res.status(400).json({ error: 'minAmountOut must be a non-negative number' });
+    }
+
     const result = swapEngine.executeSwap(req.params.id, tokenIn, amountIn, minAmountOut);
     res.json({ success: true, ...result });
   } catch (error) {
