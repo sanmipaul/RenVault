@@ -80,9 +80,27 @@ app.get('/pools/:id/stats', (req, res) => {
 });
 
 app.post('/pools/:id/position', (req, res) => {
-  const { user, tokenA, tokenB, amountA, amountB, priceA, priceB } = req.body;
-  ilCalculator.recordPosition(user, req.params.id, tokenA, tokenB, amountA, amountB, priceA, priceB);
-  res.json({ success: true });
+  try {
+    const { user, tokenA, tokenB, amountA, amountB, priceA, priceB } = req.body;
+
+    if (!user || typeof user !== 'string') {
+      return res.status(400).json({ error: 'user is required and must be a string' });
+    }
+    if (!tokenA || !tokenB) {
+      return res.status(400).json({ error: 'tokenA and tokenB are required' });
+    }
+    if (typeof amountA !== 'number' || typeof amountB !== 'number' || amountA <= 0 || amountB <= 0) {
+      return res.status(400).json({ error: 'amountA and amountB must be positive numbers' });
+    }
+    if (typeof priceA !== 'number' || typeof priceB !== 'number' || priceA <= 0 || priceB <= 0) {
+      return res.status(400).json({ error: 'priceA and priceB must be positive numbers' });
+    }
+
+    ilCalculator.recordPosition(user, req.params.id, tokenA, tokenB, amountA, amountB, priceA, priceB);
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 app.get('/pools/:id/impermanent-loss/:user', (req, res) => {
