@@ -104,9 +104,23 @@ app.post('/pools/:id/position', (req, res) => {
 });
 
 app.get('/pools/:id/impermanent-loss/:user', (req, res) => {
-  const { priceA, priceB } = req.query;
-  const loss = ilCalculator.calculateImpermanentLoss(req.params.user, req.params.id, parseFloat(priceA), parseFloat(priceB));
-  res.json(loss);
+  try {
+    const { priceA, priceB } = req.query;
+    const parsedPriceA = parseFloat(priceA);
+    const parsedPriceB = parseFloat(priceB);
+
+    if (isNaN(parsedPriceA) || isNaN(parsedPriceB) || parsedPriceA <= 0 || parsedPriceB <= 0) {
+      return res.status(400).json({ error: 'priceA and priceB query params must be positive numbers' });
+    }
+
+    const loss = ilCalculator.calculateImpermanentLoss(req.params.user, req.params.id, parsedPriceA, parsedPriceB);
+    if (!loss) {
+      return res.status(404).json({ error: 'No position found for this user and pool' });
+    }
+    res.json(loss);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 app.listen(3011, () => console.log('Liquidity API running on port 3011'));
