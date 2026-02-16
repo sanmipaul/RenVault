@@ -71,8 +71,12 @@ app.post('/pools/:id/rewards/:user/claim', (req, res) => {
 });
 
 app.get('/pools/:id/stats', (req, res) => {
-  const stats = rewards.getPoolStats(req.params.id);
-  res.json(stats);
+  try {
+    const stats = rewards.getPoolStats(req.params.id);
+    res.json(stats);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 app.post('/pools/:id/position', (req, res) => {
