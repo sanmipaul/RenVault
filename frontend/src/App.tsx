@@ -286,6 +286,10 @@ function AppContent() {
     }
   }, [showWithdrawDetails, loading]);
 
+  const promptNetworkSwitch = () => {
+    setStatus('To switch networks: Open your Stacks wallet extension and select "Mainnet" from the network dropdown, then refresh this page.');
+  };
+
   const validateNetwork = (): boolean => {
     if (networkMismatch) {
       setStatus('Please switch to mainnet to perform this action');
