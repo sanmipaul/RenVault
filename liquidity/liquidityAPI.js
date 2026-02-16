@@ -50,13 +50,24 @@ app.post('/pools/:id/liquidity', (req, res) => {
 });
 
 app.get('/pools/:id/rewards/:user', (req, res) => {
-  const rewardAmount = rewards.calculateRewards(req.params.id, req.params.user);
-  res.json({ rewards: rewardAmount });
+  try {
+    const rewardAmount = rewards.calculateRewards(req.params.id, req.params.user);
+    res.json({ rewards: rewardAmount });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 app.post('/pools/:id/rewards/:user/claim', (req, res) => {
-  const claimed = rewards.claimRewards(req.params.id, req.params.user);
-  res.json({ claimed });
+  try {
+    const claimed = rewards.claimRewards(req.params.id, req.params.user);
+    if (claimed === 0) {
+      return res.status(404).json({ error: 'No rewards available to claim' });
+    }
+    res.json({ claimed });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 app.get('/pools/:id/stats', (req, res) => {
