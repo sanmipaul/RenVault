@@ -23,7 +23,7 @@ class NotificationService {
   }
 
   static getInstance(userId: string): NotificationService {
-    if (!NotificationService.instance) {
+    if (!NotificationService.instance || NotificationService.instance.userId !== userId) {
       NotificationService.instance = new NotificationService(userId);
     }
     return NotificationService.instance;
