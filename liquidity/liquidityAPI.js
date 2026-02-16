@@ -32,9 +32,21 @@ app.post('/pools/:id/swap', (req, res) => {
 });
 
 app.post('/pools/:id/liquidity', (req, res) => {
-  const { user, amount } = req.body;
-  rewards.addLiquidityProvider(req.params.id, user, amount);
-  res.json({ success: true });
+  try {
+    const { user, amount } = req.body;
+
+    if (!user || typeof user !== 'string') {
+      return res.status(400).json({ error: 'user is required and must be a string' });
+    }
+    if (amount === undefined || typeof amount !== 'number' || amount <= 0) {
+      return res.status(400).json({ error: 'amount must be a positive number' });
+    }
+
+    rewards.addLiquidityProvider(req.params.id, user, amount);
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 app.get('/pools/:id/rewards/:user', (req, res) => {
