@@ -1,4 +1,5 @@
 import { logger } from '../utils/logger';
+import { API_CONFIG } from '../config/api';
 
 export interface SponsorshipQuota {
   total: number;
@@ -23,7 +24,7 @@ class SponsorshipService {
   private baseUrl: string;
 
   private constructor() {
-    this.baseUrl = 'http://localhost:3003/api/sponsorship';
+    this.baseUrl = `${API_CONFIG.sponsorship.baseUrl}/api/sponsorship`;
   }
 
   static getInstance(): SponsorshipService {

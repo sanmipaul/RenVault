@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getNotificationsUrl } from '../config/api';
 import './NotificationPreferences.css';
 
 interface NotificationPreferences {
@@ -76,7 +77,7 @@ const NotificationPreferencesComponent: React.FC<NotificationPreferencesProps> =
       localStorage.setItem(`notificationPrefs_${userId}`, JSON.stringify(preferences));
 
       // Send to API
-      const response = await fetch('http://localhost:3003/api/notifications/preferences', {
+      const response = await fetch(getNotificationsUrl('preferences'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -110,7 +111,7 @@ const NotificationPreferencesComponent: React.FC<NotificationPreferencesProps> =
           applicationServerKey: urlBase64ToUint8Array(process.env.REACT_APP_VAPID_PUBLIC_KEY || '')
         });
 
-        const response = await fetch('http://localhost:3003/api/notifications/subscribe-push', {
+        const response = await fetch(getNotificationsUrl('subscribe-push'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -382,7 +383,7 @@ function urlBase64ToUint8Array(base64String: string) {
   const outputArray = new Uint8Array(rawData.length);
 
   for (let i = 0; i < rawData.length; ++i) {
-    outputArray[i] = rawData.charCode(i);
+    outputArray[i] = rawData.charCodeAt(i);
   }
   return outputArray;
 }

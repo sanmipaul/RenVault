@@ -1,5 +1,6 @@
 // Privacy-Respecting Analytics Component
 import React, { useState, useEffect } from 'react';
+import { getAnalyticsUrl } from '../config/api';
 import './Analytics.css';
 
 interface AnalyticsProps {
@@ -20,8 +21,8 @@ export const Analytics: React.FC<AnalyticsProps> = ({ userId }) => {
   const fetchStats = async () => {
     try {
       const [statsRes, walletRes] = await Promise.all([
-        fetch('http://localhost:3001/api/stats'),
-        fetch('http://localhost:3001/api/wallet-stats')
+        fetch(getAnalyticsUrl('stats')),
+        fetch(getAnalyticsUrl('wallet-stats'))
       ]);
       const statsData = await statsRes.json();
       const walletData = await walletRes.json();

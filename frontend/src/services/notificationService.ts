@@ -6,6 +6,7 @@ import {
   NotificationPreferences,
   WalletSessionMetadata
 } from '../types/notification';
+import { API_CONFIG } from '../config/api';
 
 // Re-export types for convenience
 export type { Notification, NotificationType, NotificationPriority, NotificationPreferences };
@@ -18,11 +19,11 @@ class NotificationService {
 
   constructor(userId: string) {
     this.userId = userId;
-    this.baseUrl = 'http://localhost:3003/api/notifications';
+    this.baseUrl = `${API_CONFIG.notifications.baseUrl}/api/notifications`;
   }
 
   static getInstance(userId: string): NotificationService {
-    if (!NotificationService.instance) {
+    if (!NotificationService.instance || NotificationService.instance.userId !== userId) {
       NotificationService.instance = new NotificationService(userId);
     }
     return NotificationService.instance;

@@ -18,8 +18,6 @@ import { SessionStatus } from './components/SessionStatus';
 import { AutoReconnect } from './components/AutoReconnect';
 import NotificationService from './services/notificationService';
 import TransactionHistory from './components/TransactionHistory';
-import { SessionStatus } from './components/SessionStatus';
-import { AutoReconnect } from './components/AutoReconnect';
 import { WalletBackup } from './components/WalletBackup';
 import { WalletRecovery } from './components/WalletRecovery';
 import { WalletManager } from './services/wallet/WalletManager';
@@ -28,6 +26,7 @@ import { CoSignerManagement } from './components/CoSignerManagement';
 import { MultiSigTransactionSigner } from './components/MultiSigTransactionSigner';
 import { WalletProviderLoader } from './services/wallet/WalletProviderLoader';
 import { PerformanceMonitor } from './components/PerformanceMonitor';
+import { getAnalyticsUrl } from './config/api';
 
 const appConfig = new AppConfig(['store_write', 'publish_data']);
 const userSession = new UserSession({ appConfig });
@@ -61,7 +60,7 @@ const trackAnalytics = async (event: string, data: any) => {
   if (optOut) return;
   
   try {
-    await fetch('http://localhost:3001/api/' + event, {
+    await fetch(getAnalyticsUrl(event), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
@@ -99,6 +98,10 @@ function AppContent() {
   const [showMultiSigSigner, setShowMultiSigSigner] = useState<boolean>(false);
   const [currentTransaction, setCurrentTransaction] = useState<any>(null);
   const [showPerformanceMonitor, setShowPerformanceMonitor] = useState<boolean>(false);
+  const [tfaSecret, setTfaSecret] = useState<string>('');
+  const [connectionError, setConnectionError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState<number>(0);
+  const [showHelp, setShowHelp] = useState<boolean>(false);
 
   // Cleanup effect for component unmount
   useEffect(() => {
@@ -282,6 +285,18 @@ function AppContent() {
       return () => document.removeEventListener('keydown', handleKeyPress);
     }
   }, [showWithdrawDetails, loading]);
+
+  const promptNetworkSwitch = () => {
+    setStatus('To switch networks: Open your Stacks wallet extension and select "Mainnet" from the network dropdown, then refresh this page.');
+  };
+
+  const validateNetwork = (): boolean => {
+    if (networkMismatch) {
+      setStatus('Please switch to mainnet to perform this action');
+      return false;
+    }
+    return true;
+  };
 
   const connectWallet = () => {
     setShowConnectionOptions(true);
@@ -534,30 +549,6 @@ function AppContent() {
     } else {
       trackAnalytics('wallet-connect', { user: 'anonymous', method: 'walletconnect', success: false });
     }
-  };
-
-  const disconnectWallet = () => {
-    if (connectionMethod === 'stacks') {
-      // Disconnect Stacks wallet
-      userSession.signUserOut();
-      setUserData(null);
-      setConnectionMethod(null);
-      setWalletConnectSession(null);
-      setStatus('✅ Disconnected from Stacks wallet');
-    } else if (connectionMethod === 'walletconnect') {
-      // Disconnect WalletConnect
-      setWalletConnectSession(null);
-      setUserData(null);
-      setConnectionMethod(null);
-      setStatus('✅ Disconnected from WalletConnect');
-    }
-    // Clear all connection-related state
-    setBalance('0');
-    setPoints('0');
-    setDepositAmount('');
-    setWithdrawAmount('');
-    setDetectedNetwork(null);
-    setNetworkMismatch(false);
   };
 
   const handleWithdraw = async () => {
