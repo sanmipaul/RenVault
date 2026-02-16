@@ -53,7 +53,10 @@ app.post('/pools', (req, res) => {
 
 app.get('/pools/:id', (req, res) => {
   const pool = poolManager.getPool(req.params.id);
-  res.json(pool || { error: 'Pool not found' });
+  if (!pool) {
+    return res.status(404).json({ error: 'Pool not found' });
+  }
+  res.json(pool);
 });
 
 app.listen(3011, () => console.log('Pool Manager running on port 3011'));
