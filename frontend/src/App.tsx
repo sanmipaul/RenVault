@@ -286,6 +286,14 @@ function AppContent() {
     }
   }, [showWithdrawDetails, loading]);
 
+  const validateNetwork = (): boolean => {
+    if (networkMismatch) {
+      setStatus('Please switch to mainnet to perform this action');
+      return false;
+    }
+    return true;
+  };
+
   const connectWallet = () => {
     setShowConnectionOptions(true);
   };
