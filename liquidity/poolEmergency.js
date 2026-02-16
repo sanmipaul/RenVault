@@ -5,6 +5,9 @@ class PoolEmergency {
   }
 
   addAdmin(address) {
+    if (!address || typeof address !== 'string') {
+      throw new Error('valid admin address is required');
+    }
     this.admins.add(address);
   }
 
@@ -13,6 +16,9 @@ class PoolEmergency {
   }
 
   pausePool(poolId, admin) {
+    if (!poolId || typeof poolId !== 'string') {
+      throw new Error('poolId is required');
+    }
     if (!this.isAdmin(admin)) {
       throw new Error('Unauthorized');
     }
@@ -24,8 +30,14 @@ class PoolEmergency {
   }
 
   unpausePool(poolId, admin) {
+    if (!poolId || typeof poolId !== 'string') {
+      throw new Error('poolId is required');
+    }
     if (!this.isAdmin(admin)) {
       throw new Error('Unauthorized');
+    }
+    if (!this.isPaused(poolId)) {
+      throw new Error('Pool is not paused');
     }
     this.paused.delete(poolId);
   }

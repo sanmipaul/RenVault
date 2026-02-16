@@ -17,6 +17,10 @@ class SwapEngine {
     const pool = this.pools.get(poolId);
     if (!pool) throw new Error('Pool not found');
 
+    if (!tokenIn) throw new Error('tokenIn is required');
+    if (typeof amountIn !== 'number' || amountIn <= 0) throw new Error('amountIn must be a positive number');
+    if (tokenIn !== pool.tokenA && tokenIn !== pool.tokenB) throw new Error('tokenIn does not match pool tokens');
+
     const isTokenA = tokenIn === pool.tokenA;
     const reserveIn = isTokenA ? pool.reserveA : pool.reserveB;
     const reserveOut = isTokenA ? pool.reserveB : pool.reserveA;

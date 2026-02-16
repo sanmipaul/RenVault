@@ -5,6 +5,15 @@ class FeeCollector {
   }
 
   collectFee(poolId, amount, token) {
+    if (!poolId || typeof poolId !== 'string') {
+      throw new Error('poolId is required');
+    }
+    if (typeof amount !== 'number' || amount < 0) {
+      throw new Error('fee amount must be a non-negative number');
+    }
+    if (!token || typeof token !== 'string') {
+      throw new Error('token identifier is required');
+    }
     const key = `${poolId}-${token}`;
     const current = this.fees.get(key) || 0;
     this.fees.set(key, current + amount);
@@ -21,6 +30,9 @@ class FeeCollector {
   }
 
   withdrawFees(poolId, token, recipient) {
+    if (!recipient || typeof recipient !== 'string') {
+      throw new Error('recipient address is required');
+    }
     const key = `${poolId}-${token}`;
     const amount = this.fees.get(key) || 0;
     if (amount > 0) {

@@ -31,15 +31,17 @@ class LiquidityRewards {
 
   claimRewards(poolId, user) {
     const key = `${poolId}-${user}`;
+    const position = this.userRewards.get(key);
+    if (!position) return 0;
+
     const rewards = this.calculateRewards(poolId, user);
-    
+
     if (rewards > 0) {
-      const position = this.userRewards.get(key);
       position.pendingRewards = 0;
       position.lastUpdate = Date.now();
       this.userRewards.set(key, position);
     }
-    
+
     return rewards;
   }
 

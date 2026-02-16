@@ -5,6 +5,12 @@ class PriceOracle {
   }
 
   setPrice(token, price) {
+    if (!token || typeof token !== 'string') {
+      throw new Error('token identifier is required');
+    }
+    if (typeof price !== 'number' || price <= 0) {
+      throw new Error('price must be a positive number');
+    }
     this.prices.set(token, {
       price,
       timestamp: Date.now()
@@ -22,6 +28,9 @@ class PriceOracle {
   }
 
   calculatePoolPrice(poolId, reserveA, reserveB) {
+    if (!reserveA || reserveA <= 0) {
+      throw new Error('reserveA must be a positive number to calculate pool price');
+    }
     return reserveB / reserveA;
   }
 
