@@ -98,6 +98,10 @@ function AppContent() {
   const [showMultiSigSigner, setShowMultiSigSigner] = useState<boolean>(false);
   const [currentTransaction, setCurrentTransaction] = useState<any>(null);
   const [showPerformanceMonitor, setShowPerformanceMonitor] = useState<boolean>(false);
+  const [tfaSecret, setTfaSecret] = useState<string>('');
+  const [connectionError, setConnectionError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState<number>(0);
+  const [showHelp, setShowHelp] = useState<boolean>(false);
 
   // Cleanup effect for component unmount
   useEffect(() => {
