@@ -5,6 +5,11 @@ class PoolAnalytics {
   }
 
   recordSwap(poolId, tokenIn, tokenOut, amountIn, amountOut, fee) {
+    if (!poolId) throw new Error('poolId is required');
+    if (typeof amountIn !== 'number' || amountIn <= 0) throw new Error('amountIn must be a positive number');
+    if (typeof amountOut !== 'number' || amountOut < 0) throw new Error('amountOut must be a non-negative number');
+    if (typeof fee !== 'number' || fee < 0) throw new Error('fee must be a non-negative number');
+
     const key = poolId;
     const current = this.metrics.get(key) || {
       totalVolume: 0,
@@ -54,8 +59,8 @@ class PoolAnalytics {
     return {
       ...metrics,
       dailyVolume,
-      avgSwapSize: metrics.totalVolume / metrics.swapCount || 0,
-      feeRate: (metrics.totalFees / metrics.totalVolume) * 100 || 0
+      avgSwapSize: metrics.swapCount > 0 ? metrics.totalVolume / metrics.swapCount : 0,
+      feeRate: metrics.totalVolume > 0 ? (metrics.totalFees / metrics.totalVolume) * 100 : 0
     };
   }
 
@@ -70,6 +75,9 @@ class PoolAnalytics {
   }
 
   getVolumeHistory(poolId, hours = 24) {
+    if (typeof hours !== 'number' || hours <= 0 || hours > 8760) {
+      hours = 24;
+    }
     const history = this.history.get(poolId) || [];
     const cutoff = Date.now() - (hours * 60 * 60 * 1000);
     
