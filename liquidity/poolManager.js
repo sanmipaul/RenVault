@@ -31,9 +31,24 @@ class PoolManager {
 const poolManager = new PoolManager();
 
 app.post('/pools', (req, res) => {
-  const { tokenA, tokenB, reserveA, reserveB } = req.body;
-  const poolId = poolManager.addPool(tokenA, tokenB, reserveA, reserveB);
-  res.json({ poolId, success: true });
+  try {
+    const { tokenA, tokenB, reserveA, reserveB } = req.body;
+
+    if (!tokenA || !tokenB || typeof tokenA !== 'string' || typeof tokenB !== 'string') {
+      return res.status(400).json({ error: 'tokenA and tokenB are required strings' });
+    }
+    if (tokenA === tokenB) {
+      return res.status(400).json({ error: 'tokenA and tokenB must be different' });
+    }
+    if (typeof reserveA !== 'number' || typeof reserveB !== 'number' || reserveA <= 0 || reserveB <= 0) {
+      return res.status(400).json({ error: 'reserveA and reserveB must be positive numbers' });
+    }
+
+    const poolId = poolManager.addPool(tokenA, tokenB, reserveA, reserveB);
+    res.json({ poolId, success: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 app.get('/pools/:id', (req, res) => {
