@@ -47,7 +47,11 @@
         function connect() {
             if (ws) return;
             
-            ws = new WebSocket('ws://localhost:3007');
+            // Build WebSocket URL dynamically so we don't hardcode localhost
+            const host = (window.__REALTIME_HOST__ || window.__REALTIME_HOSTNAME__ || window.location.hostname);
+            const port = (window.__REALTIME_PORT__ || 3007);
+            const scheme = window.location.protocol === 'https:' ? 'wss' : 'ws';
+            ws = new WebSocket(`${scheme}://${host}:${port}`);
             
             ws.onopen = function() {
                 updateStatus('Connected to RenVault real-time events', true);

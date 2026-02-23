@@ -10,7 +10,9 @@ const getApiBaseUrl = (service: string, defaultPort: string): string => {
     return process.env.REACT_APP_API_BASE_URL || '';
   }
 
-  return `http://localhost:${defaultPort}`;
+  // Use host from env or fallback to current location
+  const apiHost = process.env.REACT_APP_API_HOST || 'localhost';
+  return `http://${apiHost}:${defaultPort}`;
 };
 
 export const API_CONFIG = {

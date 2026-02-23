@@ -7,7 +7,8 @@
     "test:coverage": "clarinet test --coverage",
     "test:watch": "clarinet test --watch",
     "test:runner": "node scripts/test-runner.js",
-    "check": "clarinet check"
+    "check": "clarinet check",
+    "lint:no-localhost": "node scripts/check-no-localhost.js"
   },
   "dependencies": {
     "@stacks/transactions": "^6.5.4",

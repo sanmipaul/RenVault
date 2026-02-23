@@ -5,8 +5,10 @@ function setupGateway() {
   
   try {
     execSync('npm install', { cwd: 'gateway', stdio: 'inherit' });
+    const host = process.env.GATEWAY_HOST || 'localhost';
+    const port = process.env.GATEWAY_PORT || 8080;
     console.log('✅ Setup complete!');
-    console.log('Gateway: http://localhost:8080');
+    console.log(`Gateway: http://${host}:${port}`);
   } catch (error) {
     console.error('❌ Setup failed:', error.message);
   }
