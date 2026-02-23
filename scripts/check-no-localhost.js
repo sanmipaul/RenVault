@@ -20,7 +20,7 @@ const files = walk(ROOT).filter(f => f.endsWith('.js') || f.endsWith('.html') ||
 let found = [];
 files.forEach(f => {
   const content = fs.readFileSync(f, 'utf8');
-  if (/http:\\/\\/localhost|ws:\\/\\/localhost/.test(content)) {
+  if (/http:\/\/localhost|ws:\/\/localhost/.test(content)) {
     found.push(f);
   }
 });
