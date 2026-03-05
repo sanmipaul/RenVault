@@ -34,7 +34,7 @@ export class ConnectionCircuitBreaker {
 
   private onFailure(): void {
     this.failures++;
-    if (this.failures >= this.threshold) {
+    if (this.state === 'half-open' || this.failures >= this.threshold) {
       this.state = 'open';
       this.scheduleReset();
     }
