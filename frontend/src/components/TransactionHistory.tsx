@@ -122,6 +122,13 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ address }) => {
           <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
         </label>
       </div>
+      {filteredAndSortedTransactions.length === 0 && (
+        <div className="no-transactions">
+          {transactions.length === 0
+            ? 'No transactions found for this address.'
+            : 'No transactions match the current filters.'}
+        </div>
+      )}
       <table>
         <thead>
           <tr>
