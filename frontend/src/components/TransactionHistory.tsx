@@ -22,10 +22,6 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ address }) => {
   const [dateTo, setDateTo] = useState('');
   const pageSize = 20;
 
-  useEffect(() => {
-    fetchTransactions();
-  }, [fetchTransactions]);
-
   const fetchTransactions = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -40,6 +36,10 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ address }) => {
       setLoading(false);
     }
   }, [address, page]);
+
+  useEffect(() => {
+    fetchTransactions();
+  }, [fetchTransactions]);
 
   const filteredAndSortedTransactions = transactions
     .filter(tx => {
