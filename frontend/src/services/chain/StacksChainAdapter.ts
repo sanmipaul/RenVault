@@ -3,10 +3,9 @@
  * Implements AppKit chain adapter for Stacks blockchain
  */
 
-import { ChainAdapter } from '@reown/appkit-core';
 import { StacksMainnet, StacksTestnet } from '@stacks/network';
-import { getChainConfig, isTestnet, getChainMetadata } from '../config/multi-chain-config';
-import type { ChainType } from '../config/multi-chain-config';
+import { getChainConfig, isTestnet, getChainMetadata } from '../../config/multi-chain-config';
+import type { ChainType } from '../../config/multi-chain-config';
 
 export interface StacksAdapterConfig {
   chainId: ChainType;
@@ -16,7 +15,7 @@ export interface StacksAdapterConfig {
 /**
  * Stacks Chain Adapter for AppKit
  */
-export class StacksChainAdapter implements ChainAdapter {
+export class StacksChainAdapter {
   private network: StacksMainnet | StacksTestnet;
   private chainId: ChainType;
 

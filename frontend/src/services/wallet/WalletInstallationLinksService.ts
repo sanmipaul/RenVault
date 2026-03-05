@@ -3,7 +3,7 @@
  * Provides "Get Wallet" links and installation information for uninstalled wallets
  */
 
-import { CustomWalletConfig, stacksWallets, getWalletConfig } from '../config/customWallets';
+import { CustomWalletConfig, stacksWallets, getWalletConfig } from '../../config/customWallets';
 import { WalletInstallationDetector } from './WalletInstallationDetector';
 import { WalletDeepLinkManager } from './WalletDeepLinkManager';
 

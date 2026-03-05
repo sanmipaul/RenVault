@@ -1,9 +1,9 @@
 // WalletProviderLoader.ts - Performance optimized provider loading with AppKit integration
-import { WalletProvider, WalletProviderType } from '../types/wallet';
+import { WalletProvider, WalletProviderType } from '../../types/wallet';
 import { StacksConnectorAdapter } from './StacksConnectorAdapter';
 import { WalletInstallationDetector } from './WalletInstallationDetector';
 import { WalletFallbackManager } from './WalletFallbackManager';
-import { CustomWalletConfig } from '../config/customWallets';
+import { CustomWalletConfig } from '../../config/customWallets';
 
 export interface AppKitWalletConfig {
   id: string;
@@ -160,7 +160,7 @@ export class WalletProviderLoader {
     }
   }
 
-  static preloadCriticalProviders(): Promise<void[]> {
+  static preloadCriticalProviders(): Promise<(WalletProvider | undefined)[]> {
     // Preload only the most commonly used providers
     const criticalProviders: WalletProviderType[] = ['leather', 'xverse', 'walletconnect'];
     return Promise.all(

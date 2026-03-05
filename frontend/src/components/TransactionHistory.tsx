@@ -24,7 +24,7 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ address }) => {
 
   useEffect(() => {
     fetchTransactions();
-  }, [address]);
+  }, [address, page]);
 
   const fetchTransactions = async () => {
     setLoading(true);
@@ -35,7 +35,7 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ address }) => {
       setTransactions(result.transactions);
       setTotal(result.total);
     } catch (err) {
-      setError(err.message);
+      setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setLoading(false);
     }

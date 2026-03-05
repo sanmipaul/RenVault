@@ -1,7 +1,7 @@
 // services/wallet/LeatherWalletProvider.ts
 import { BaseWalletProvider } from './BaseWalletProvider';
 import { WalletConnection } from '../../types/wallet';
-import { connect as stacksConnect, disconnect as stacksDisconnect } from '@stacks/connect';
+import { showConnect as stacksConnect, disconnect as stacksDisconnect } from '@stacks/connect';
 
 export class LeatherWalletProvider extends BaseWalletProvider {
   id = 'leather';
@@ -15,10 +15,10 @@ export class LeatherWalletProvider extends BaseWalletProvider {
           name: 'RenVault',
           icon: window.location.origin + '/favicon.ico',
         },
-        onFinish: (payload) => {
+        onFinish: (payload: any) => {
           resolve({
-            address: payload.addresses.mainnet,
-            publicKey: payload.publicKey,
+            address: payload.addresses?.mainnet ?? payload.profile?.stxAddress?.mainnet ?? '',
+            publicKey: payload.publicKey ?? '',
           });
         },
         onCancel: () => reject(new Error('User cancelled connection')),

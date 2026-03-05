@@ -15,14 +15,14 @@ class Logger {
     return `[${timestamp}] [${level}] ${message}`;
   }
 
-  error(message: string, error?: Error) {
+  error(message: string, error?: unknown) {
     const msg = this.formatMessage(LOG_LEVELS.ERROR, message);
     console.error(msg, error);
   }
 
-  warn(message: string) {
+  warn(message: string, extra?: unknown) {
     const msg = this.formatMessage(LOG_LEVELS.WARN, message);
-    console.warn(msg);
+    console.warn(msg, extra);
   }
 
   info(message: string) {

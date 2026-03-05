@@ -218,7 +218,7 @@ class NotificationService {
 
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: this.urlBase64ToUint8Array(process.env.REACT_APP_VAPID_PUBLIC_KEY || '')
+        applicationServerKey: this.urlBase64ToUint8Array(process.env.REACT_APP_VAPID_PUBLIC_KEY || '') as unknown as BufferSource
       });
 
       const response = await fetch(`${this.baseUrl}/subscribe-push`, {

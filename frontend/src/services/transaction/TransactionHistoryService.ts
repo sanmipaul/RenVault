@@ -42,12 +42,12 @@ export class TransactionHistoryService {
         offset,
       });
 
-      const transactions = response.results.map(tx => ({
+      const transactions = response.results.map((tx: any) => ({
         txId: tx.tx_id,
         type: this.getTransactionType(tx),
         amount: tx.tx_type === 'token_transfer' ? parseInt(tx.token_transfer.amount) : undefined,
         timestamp: tx.burn_block_time,
-        status: tx.tx_status === 'success' ? 'success' : tx.tx_status === 'pending' ? 'pending' : 'failed',
+        status: (tx.tx_status === 'success' ? 'success' : tx.tx_status === 'pending' ? 'pending' : 'failed') as 'pending' | 'success' | 'failed',
         to: tx.tx_type === 'token_transfer' ? tx.token_transfer.recipient_address : undefined,
         from: tx.sender_address,
         fee: parseInt(tx.fee_rate),
@@ -60,7 +60,7 @@ export class TransactionHistoryService {
         total: response.total || response.results.length, // Assuming API provides total
       };
     } catch (error) {
-      throw new Error('Failed to fetch transaction history: ' + error.message);
+      throw new Error('Failed to fetch transaction history: ' + (error as Error).message);
     }
   }
 
@@ -81,7 +81,7 @@ export class TransactionHistoryService {
       });
       return response;
     } catch (error) {
-      throw new Error('Failed to fetch transaction details: ' + error.message);
+      throw new Error('Failed to fetch transaction details: ' + (error as Error).message);
     }
   }
 }

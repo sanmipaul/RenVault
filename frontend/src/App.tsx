@@ -12,8 +12,8 @@ import {
 import { WalletConnect } from './components/WalletConnect';
 import { AppKit } from '@reown/appkit/react';
 import ConnectionStatus from './components/ConnectionStatus';
-import TwoFactorAuthSetup from './components/TwoFactorAuthSetup';
-import TwoFactorAuthVerify from './components/TwoFactorAuthVerify';
+import { TwoFactorAuthSetup } from './components/TwoFactorAuthSetup';
+import { TwoFactorAuthVerify } from './components/TwoFactorAuthVerify';
 import { SessionStatus } from './components/SessionStatus';
 import { AutoReconnect } from './components/AutoReconnect';
 import NotificationService from './services/notificationService';
@@ -27,6 +27,9 @@ import { MultiSigTransactionSigner } from './components/MultiSigTransactionSigne
 import { WalletProviderLoader } from './services/wallet/WalletProviderLoader';
 import { PerformanceMonitor } from './components/PerformanceMonitor';
 import { getAnalyticsUrl } from './config/api';
+import { BackupCodes } from './components/BackupCodes';
+import { Analytics } from './components/Analytics';
+import NotificationCenter from './components/NotificationCenter';
 
 const appConfig = new AppConfig(['store_write', 'publish_data']);
 const userSession = new UserSession({ appConfig });
@@ -144,6 +147,21 @@ function AppContent() {
     }
   };
 
+  const handleBackupCodeVerify = async (code: string): Promise<boolean> => {
+    try {
+      const storedCodes: string[] = JSON.parse(localStorage.getItem(APP_CONFIG.tfaBackupCodesKey) || '[]');
+      if (storedCodes.includes(code)) {
+        const remaining = storedCodes.filter(c => c !== code);
+        localStorage.setItem(APP_CONFIG.tfaBackupCodesKey, JSON.stringify(remaining));
+        setShowBackupCodes(false);
+        return true;
+      }
+      return false;
+    } catch {
+      return false;
+    }
+  };
+
   const handleDisable2FA = () => {
     localStorage.removeItem(APP_CONFIG.tfaEnabledKey);
     localStorage.removeItem(APP_CONFIG.tfaSecretKey);
@@ -234,6 +252,9 @@ function AppContent() {
       setShow2FAVerify(true);
     }
   }, []);
+
+  useEffect(() => {
+    if (userSession.isSignInPending()) {
       userSession.handlePendingSignIn().then((userData) => {
         setUserData(userData);
       });
@@ -241,16 +262,6 @@ function AppContent() {
       setUserData(userSession.loadUserData());
     }
   }, []);
-
-  // Memoize network detection to avoid unnecessary recalculations
-  const detectedNetwork = useMemo(() => {
-    if (!userData?.profile?.stxAddress?.mainnet) return null;
-    return detectNetworkFromAddress(userData.profile.stxAddress.mainnet);
-  }, [userData?.profile?.stxAddress?.mainnet]);
-
-  const networkMismatch = useMemo(() => {
-    return detectedNetwork !== 'mainnet';
-  }, [detectedNetwork]);
 
   useEffect(() => {
     if (userData && detectedNetwork) {
@@ -607,6 +618,7 @@ function AppContent() {
 
   if (!userData) {
     return (
+      <>
       <div className="container">
         <div className="header">
           <h1>RenVault 🏦</h1>
@@ -706,7 +718,7 @@ function AppContent() {
 
         {connectionMethod === 'walletconnect' && (
           <div className="card">
-            <WalletConnect onSessionEstablished={handleWalletConnectSession} />
+            <WalletConnect />
           </div>
         )}
       </div>
@@ -716,6 +728,7 @@ function AppContent() {
           {toastMessage}
         </div>
       )}
+      </>
     );
   }
 
@@ -1125,6 +1138,7 @@ function App() {
   return (
     <>
       <AppContent />
+      {/* @ts-ignore */}
       <AppKit />
     </>
   );

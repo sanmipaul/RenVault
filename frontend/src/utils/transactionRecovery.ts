@@ -1,4 +1,4 @@
-import { SignedTransaction } from '../../services/transaction/TransactionService';
+import { SignedTransaction } from '../services/transaction/TransactionService';
 
 export class TransactionRecovery {
   private static readonly STORAGE_KEY = 'pending_transactions';

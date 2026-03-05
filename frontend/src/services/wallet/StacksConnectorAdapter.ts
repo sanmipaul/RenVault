@@ -3,7 +3,7 @@
  * Bridges existing Stacks wallet providers with AppKit
  */
 
-import { CustomWalletConfig, getWalletConfig } from '../config/customWallets';
+import { CustomWalletConfig, getWalletConfig } from '../../config/customWallets';
 
 export interface StacksConnectorOptions {
   projectId: string;

@@ -4,9 +4,9 @@
  */
 
 import React, { ReactNode } from 'react';
-import { WalletInstallationLinksService } from './WalletInstallationLinksService';
-import { WalletMetadataService } from './WalletMetadataService';
-import { WalletInstallationDetector } from './WalletInstallationDetector';
+import { WalletInstallationLinksService } from '../../services/wallet/WalletInstallationLinksService';
+import { WalletMetadataService } from '../../services/wallet/WalletMetadataService';
+import { WalletInstallationDetector } from '../../services/wallet/WalletInstallationDetector';
 
 /**
  * WalletSelector Component

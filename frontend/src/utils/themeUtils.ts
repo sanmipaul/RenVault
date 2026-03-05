@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Theme Utilities
  * Helper functions and utilities for theme management

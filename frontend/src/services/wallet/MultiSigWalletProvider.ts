@@ -1,5 +1,5 @@
 // MultiSigWalletProvider.ts
-import { WalletProvider, WalletProviderType } from '../types/wallet';
+import { WalletProvider, WalletProviderType } from '../../types/wallet';
 
 export interface CoSigner {
   address: string;
@@ -15,6 +15,8 @@ export interface MultiSigConfig {
 }
 
 export class MultiSigWalletProvider implements WalletProvider {
+  id: WalletProviderType = 'multisig';
+  name = 'Multi-Sig Wallet';
   private config: MultiSigConfig | null = null;
   private pendingSignatures: Map<string, { signatures: string[], required: number }> = new Map();
 

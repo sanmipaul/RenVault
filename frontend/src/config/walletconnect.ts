@@ -98,7 +98,7 @@ export const walletConnectConfig = {
       '--w3m-overlay': 'rgba(0, 0, 0, 0.7)',
 
       // Z-index
-      '--w3m-z-index': '1000',
+      '--w3m-z-index': 1000,
     },
 
     // Dark theme overrides

@@ -135,7 +135,7 @@ export class WalletConnectionStateManager {
       address,
       publicKey,
       chainId,
-      timestamp: this.state.connectedAt,
+      timestamp: this.state.connectedAt ?? Date.now(),
       expiresAt: Date.now() + this.SESSION_EXPIRY_MS,
       metadata,
     });

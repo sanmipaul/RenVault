@@ -4,8 +4,8 @@
  */
 
 import { ChainSwitchService } from './ChainSwitchService';
-import { getChainConfig, isStacksChain, isEvmChain } from '../config/multi-chain-config';
-import type { ChainType } from '../config/multi-chain-config';
+import { getChainConfig, isStacksChain, isEvmChain } from '../../config/multi-chain-config';
+import type { ChainType } from '../../config/multi-chain-config';
 
 export interface Transaction {
   id: string;

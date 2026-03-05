@@ -3,7 +3,7 @@
  * Handles localStorage and theme preferences persistence
  */
 
-import { ThemeMode } from '../config/appkit-theme';
+import { ThemeMode } from '../../config/appkit-theme';
 
 export interface ThemePreference {
   mode: ThemeMode;

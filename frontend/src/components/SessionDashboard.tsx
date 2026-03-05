@@ -200,7 +200,7 @@ export const SessionDashboard: React.FC<SessionDashboardProps> = ({
         <h3>Security Recommendations</h3>
         <div className="recommendations-list">
           {getSessionSecurityRecommendations({
-            providerType: 'unknown',
+            providerType: 'leather',
             address: 'unknown',
             publicKey: 'unknown',
             connectedAt: Date.now(),

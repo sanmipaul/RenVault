@@ -91,12 +91,12 @@ export function updateAllThemeStyles(mode: 'light' | 'dark') {
  */
 function applyCSSVariablesToRoot(mode: 'light' | 'dark') {
   const root = document.documentElement;
-  const config = ThemeSwitchService.getAppKitConfig();
+  const config = ThemeSwitchService.getAppKitConfig() as any;
 
   if (config.colors) {
     Object.entries(config.colors).forEach(([key, value]) => {
       const cssVarName = `--color-${key.replace(/([A-Z])/g, '-$1').toLowerCase()}`;
-      root.style.setProperty(cssVarName, value);
+      root.style.setProperty(cssVarName, value as string);
     });
   }
 }
@@ -144,9 +144,7 @@ export function useThemeToggle() {
  * Hook for theme customization
  */
 export function useThemeCustomization() {
-  const { settings } = ThemePersistenceService.loadPreference() || {
-    settings: ThemePersistenceService.getSettings(),
-  };
+  const settings = ThemePersistenceService.getSettings();
 
   return {
     fontFamily: settings?.fontFamily,
@@ -183,7 +181,7 @@ export function injectThemeStyles() {
   }
 
   const mode = ThemeSwitchService.getCurrentMode();
-  const config = ThemeSwitchService.getAppKitConfig();
+  const config = ThemeSwitchService.getAppKitConfig() as any;
 
   let css = `:root[data-theme="${mode}"] {\n`;
 
