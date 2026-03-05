@@ -15,7 +15,17 @@ export class WalletManager {
   private readonly CACHE_TTL = 5 * 60 * 1000; // 5 minutes
   private readonly CONNECTION_TIMEOUT = 10000; // 10 seconds
 
+  private static readonly ALL_PROVIDER_TYPES: WalletProviderType[] = [
+    'leather', 'xverse', 'hiro', 'walletconnect', 'ledger', 'trezor', 'multisig'
+  ];
+
   constructor() {
+    // Mark all non-critical providers for lazy loading
+    WalletManager.ALL_PROVIDER_TYPES.forEach(type => {
+      if (type !== 'leather') {
+        this.lazyLoadedProviders.add(type);
+      }
+    });
     // Initialize critical providers immediately
     this.initializeCriticalProviders();
   }
@@ -78,6 +88,7 @@ export class WalletManager {
     // Set connection timeout
     const timeoutPromise = new Promise((_, reject) => {
       const timeout = setTimeout(() => {
+        this.connectionTimeouts.delete(cacheKey);
         reject(new Error('Connection timeout'));
       }, this.CONNECTION_TIMEOUT);
       this.connectionTimeouts.set(cacheKey, timeout);
@@ -175,20 +186,25 @@ export class WalletManager {
       throw new Error('Password is required for recovery');
     }
 
-    const data = JSON.parse(backupData);
+    let data: any;
+    try {
+      data = JSON.parse(backupData);
+    } catch {
+      throw new Error('Invalid backup data: not valid JSON');
+    }
+
+    if (!data.encryptedMnemonic || !data.address || !data.publicKey) {
+      throw new Error('Invalid backup data: missing required fields');
+    }
 
     // Decrypt mnemonic using AES-GCM
-    const mnemonic = await this.decryptData(data.encryptedMnemonic, password);
+    await this.decryptData(data.encryptedMnemonic, password);
 
     // Restore wallet state
     this.connectionState = {
       address: data.address,
       publicKey: data.publicKey
     };
-
-    // Note: In production, the mnemonic should be used to derive keys
-    // and should never be stored in plain text
-    console.log('Wallet recovered successfully. Mnemonic available for key derivation.');
   }
 
   private generateMnemonic(): string {
