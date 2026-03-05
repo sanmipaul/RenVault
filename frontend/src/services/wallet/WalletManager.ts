@@ -184,20 +184,25 @@ export class WalletManager {
       throw new Error('Password is required for recovery');
     }
 
-    const data = JSON.parse(backupData);
+    let data: any;
+    try {
+      data = JSON.parse(backupData);
+    } catch {
+      throw new Error('Invalid backup data: not valid JSON');
+    }
+
+    if (!data.encryptedMnemonic || !data.address || !data.publicKey) {
+      throw new Error('Invalid backup data: missing required fields');
+    }
 
     // Decrypt mnemonic using AES-GCM
-    const mnemonic = await this.decryptData(data.encryptedMnemonic, password);
+    await this.decryptData(data.encryptedMnemonic, password);
 
     // Restore wallet state
     this.connectionState = {
       address: data.address,
       publicKey: data.publicKey
     };
-
-    // Note: In production, the mnemonic should be used to derive keys
-    // and should never be stored in plain text
-    console.log('Wallet recovered successfully. Mnemonic available for key derivation.');
   }
 
   private generateMnemonic(): string {
