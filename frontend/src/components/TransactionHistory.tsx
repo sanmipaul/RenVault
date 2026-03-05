@@ -38,6 +38,10 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ address }) => {
   }, [address, page]);
 
   useEffect(() => {
+    setPage(0);
+  }, [address]);
+
+  useEffect(() => {
     fetchTransactions();
   }, [fetchTransactions]);
 
