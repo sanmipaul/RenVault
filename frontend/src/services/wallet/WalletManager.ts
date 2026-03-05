@@ -87,6 +87,7 @@ export class WalletManager {
     // Set connection timeout
     const timeoutPromise = new Promise((_, reject) => {
       const timeout = setTimeout(() => {
+        this.connectionTimeouts.delete(cacheKey);
         reject(new Error('Connection timeout'));
       }, this.CONNECTION_TIMEOUT);
       this.connectionTimeouts.set(cacheKey, timeout);
