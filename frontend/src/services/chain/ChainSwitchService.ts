@@ -11,8 +11,8 @@ import {
   createArbitrumAdapter,
   createSepoliaAdapter,
 } from './EvmChainAdapter';
-import { getChainConfig, getAllStacksChains, getAllEvmChains } from '../config/multi-chain-config';
-import type { ChainType } from '../config/multi-chain-config';
+import { getChainConfig, getAllStacksChains, getAllEvmChains } from '../../config/multi-chain-config';
+import type { ChainType } from '../../config/multi-chain-config';
 
 export type ChainAdapter = StacksChainAdapter | EvmChainAdapter;
 

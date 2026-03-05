@@ -30,7 +30,7 @@ export class LogoService {
     if (darkModeUrl) {
       this.darkModeLogoUrl = darkModeUrl;
     }
-    this.updateLogoConfig();
+    this.setLogoConfig({ url: url });
   }
 
   /**

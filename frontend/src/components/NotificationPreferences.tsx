@@ -61,7 +61,7 @@ const NotificationPreferencesComponent: React.FC<NotificationPreferencesProps> =
     }
   }, [userId]);
 
-  const handlePreferenceChange = (key: keyof NotificationPreferences, value: boolean | string) => {
+  const handlePreferenceChange = (key: keyof NotificationPreferences, value: boolean | string | number) => {
     setPreferences(prev => ({
       ...prev,
       [key]: value

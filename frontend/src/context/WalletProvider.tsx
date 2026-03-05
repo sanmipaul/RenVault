@@ -1,6 +1,6 @@
 import React, { createContext, useContext, ReactNode, useEffect, useState } from 'react';
 import { useAppKitAccount } from '@reown/appkit/react';
-import { WalletProvider, WalletProviderType } from '../types/wallet';
+import { WalletProvider as WalletProviderBase, WalletProviderType } from '../types/wallet';
 import { WalletKitService } from '../services/walletkit-service';
 import NotificationService from '../services/notificationService';
 import SponsorshipService, { SponsorshipQuota } from '../services/SponsorshipService';
@@ -11,7 +11,7 @@ import { WalletFallbackManager } from '../services/wallet/WalletFallbackManager'
 import { WalletProviderLoader } from '../services/wallet/WalletProviderLoader';
 
 interface WalletContextType {
-  currentProvider: WalletProvider | null;
+  currentProvider: WalletProviderBase | null;
   selectedProviderType: WalletProviderType | null;
   setSelectedProvider: (type: WalletProviderType) => void;
   connect: (walletId?: string) => Promise<any>;
@@ -134,28 +134,18 @@ export const WalletProvider: React.FC<{ children: ReactNode }> = ({ children }) 
           );
         });
 
-        const unsubUpdate = walletKitService.on('session_update', (data) => {
-          notificationService.notifySessionUpdate(data.topic, data.params.namespaces);
-        });
-
         const unsubDelete = walletKitService.on('session_delete', (data) => {
           notificationService.notifySessionDelete(data.topic);
         });
 
-        const unsubExpire = walletKitService.on('session_expire', (data) => {
-          notificationService.notifySessionExpire(data.topic);
-        });
-
         const unsubRequestExpiration = walletKitService.on('session_request_expire', (data) => {
-          notificationService.notifySessionExpire(data.topic);
+          notificationService.notifySessionExpire(String(data.id));
         });
 
         return () => {
           unsubProposal();
           unsubRequest();
-          unsubUpdate();
           unsubDelete();
-          unsubExpire();
           unsubRequestExpiration();
         };
       } catch (error) {

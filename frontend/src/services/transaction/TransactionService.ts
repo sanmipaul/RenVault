@@ -53,7 +53,7 @@ export class TransactionService {
   private timeout = new TransactionTimeout();
 
   private constructor() {
-    this.walletManager = WalletManager.getInstance();
+    this.walletManager = new WalletManager();
   }
 
   static getInstance(): TransactionService {
@@ -152,7 +152,7 @@ export class TransactionService {
       }
       throw new WalletError(
         WalletErrorCode.TRANSACTION_SIGNING_FAILED,
-        `Failed to sign transaction: ${error.message}`
+        `Failed to sign transaction: ${(error as Error).message}`
       );
     }
   }
@@ -163,7 +163,7 @@ export class TransactionService {
       this.stateManager.setState(txId, TransactionStatus.BROADCASTING);
       this.monitor.recordTransaction();
       const result = await retryWithBackoff(async () => {
-        const response = await broadcastTransaction({ transaction: signedTx.signedTx, network: this.network });
+        const response = await broadcastTransaction(signedTx.signedTx, this.network);
         if (response.error) throw new Error(response.error);
         return response.txid || txId;
       });

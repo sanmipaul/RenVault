@@ -139,6 +139,8 @@ const DepositForm: React.FC<DepositFormProps> = ({
       />
     );
   }
+
+  if (transactionDetails) {
     return (
       <TransactionSigner
         details={transactionDetails}

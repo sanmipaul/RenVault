@@ -1,5 +1,5 @@
 // components/TransactionHistory.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { TransactionHistoryService, TransactionHistoryItem } from '../services/transaction/TransactionHistoryService';
 import { useWallet } from '../hooks/useWallet';
 import SponsoredBadge from './common/SponsoredBadge';
@@ -22,11 +22,7 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ address }) => {
   const [dateTo, setDateTo] = useState('');
   const pageSize = 20;
 
-  useEffect(() => {
-    fetchTransactions();
-  }, [address]);
-
-  const fetchTransactions = async () => {
+  const fetchTransactions = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -35,17 +31,25 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ address }) => {
       setTransactions(result.transactions);
       setTotal(result.total);
     } catch (err) {
-      setError(err.message);
+      setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setLoading(false);
     }
-  };
+  }, [address, page]);
+
+  useEffect(() => {
+    setPage(0);
+  }, [address]);
+
+  useEffect(() => {
+    fetchTransactions();
+  }, [fetchTransactions]);
 
   const filteredAndSortedTransactions = transactions
     .filter(tx => {
       if (filter !== 'all' && tx.type !== filter) return false;
       if (dateFrom && tx.timestamp < new Date(dateFrom).getTime() / 1000) return false;
-      if (dateTo && tx.timestamp > new Date(dateTo).getTime() / 1000) return false;
+      if (dateTo && tx.timestamp > (new Date(dateTo).setHours(23, 59, 59, 999)) / 1000) return false;
       return true;
     })
     .sort((a, b) => {
@@ -60,16 +64,18 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ address }) => {
   };
   const exportToCSV = () => {
     const csvContent = [
-      ['Type', 'Amount', 'Status', 'Date', 'TxID', 'Sponsored'],
+      ['Type', 'Amount', 'Fee (STX)', 'Status', 'Date', 'TxID', 'Memo', 'Sponsored'],
       ...filteredAndSortedTransactions.map(tx => [
         tx.type,
         formatAmount(tx.amount),
+        (tx.fee / 1000000).toFixed(6),
         tx.status,
         formatDate(tx.timestamp),
         tx.txId,
+        tx.memo || '',
         tx.isSponsored ? 'Yes' : 'No',
       ]),
-    ].map(row => row.join(',')).join('\n');
+    ].map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
@@ -120,6 +126,13 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ address }) => {
           <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
         </label>
       </div>
+      {filteredAndSortedTransactions.length === 0 && (
+        <div className="no-transactions">
+          {transactions.length === 0
+            ? 'No transactions found for this address.'
+            : 'No transactions match the current filters.'}
+        </div>
+      )}
       <table>
         <thead>
           <tr>
@@ -155,7 +168,7 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ address }) => {
         <button onClick={() => setPage(Math.max(0, page - 1))} disabled={page === 0}>
           Previous
         </button>
-        <span>Page {page + 1} of {Math.ceil(total / pageSize)}</span>
+        <span>Page {page + 1} of {Math.max(1, Math.ceil(total / pageSize))}</span>
         <button onClick={() => setPage(page + 1)} disabled={(page + 1) * pageSize >= total}>
           Next
         </button>

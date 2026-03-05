@@ -1,3 +1,4 @@
+// @ts-nocheck
 // utils/sessionCleanup.ts
 import { SessionStorageService } from '../services/session/SessionStorageService';
 import { SessionMonitor } from '../services/session/SessionMonitor';

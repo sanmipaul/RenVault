@@ -398,7 +398,7 @@ export const AccessibleMultiChainForm: React.FC<AccessibleMultiChainFormProps> =
         </div>
       </fieldset>
 
-      <style jsx>{`
+      <style>{`
         .accessible-tx-form {
           padding: 20px;
           background: white;

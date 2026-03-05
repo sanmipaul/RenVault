@@ -8,7 +8,7 @@ interface HardwareWalletConnectorProps {
 }
 
 const HardwareWalletConnector: React.FC<HardwareWalletConnectorProps> = ({ providerType }) => {
-  const { connectWallet } = useWallet();
+  const { connect: connectWallet } = useWallet();
   const [connecting, setConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -18,7 +18,7 @@ const HardwareWalletConnector: React.FC<HardwareWalletConnectorProps> = ({ provi
     try {
       await connectWallet(providerType);
     } catch (err) {
-      setError(err.message);
+      setError((err as Error).message);
     } finally {
       setConnecting(false);
     }

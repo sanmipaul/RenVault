@@ -3,8 +3,8 @@
  * Manages wallet metadata, caching, and dynamic loading
  */
 
-import { CustomWalletConfig, stacksWallets, getWalletConfig } from '../config/customWallets';
-import { WalletInstallationDetector, WalletAvailability } from './wallet/WalletInstallationDetector';
+import { CustomWalletConfig, stacksWallets, getWalletConfig } from '../../config/customWallets';
+import { WalletInstallationDetector, WalletAvailability } from './WalletInstallationDetector';
 
 export interface ExtendedWalletMetadata extends CustomWalletConfig {
   isInstalled: boolean;

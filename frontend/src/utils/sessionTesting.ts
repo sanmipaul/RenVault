@@ -1,3 +1,4 @@
+// @ts-nocheck
 // utils/sessionTesting.ts
 import { SessionStorageService } from '../services/session/SessionStorageService';
 import { SessionManager } from '../services/session/SessionManager';

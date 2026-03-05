@@ -4,7 +4,7 @@
  */
 
 import { ChainSwitchService } from './ChainSwitchService';
-import type { ChainType } from '../config/multi-chain-config';
+import type { ChainType } from '../../config/multi-chain-config';
 
 export interface WalletProvider {
   name: string;
@@ -392,7 +392,7 @@ export const useMultiChainWallet = () => {
         setProviders(available);
       })
       .catch(err => {
-        setError(err.message);
+        setError(err instanceof Error ? err.message : 'Unknown error');
       });
 
     return () => {

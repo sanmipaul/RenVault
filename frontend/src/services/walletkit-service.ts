@@ -1,7 +1,6 @@
-import { WalletKit, WalletKitTypes } from '@walletconnect/walletkit';
+import { WalletKit, WalletKitTypes } from '@reown/walletkit';
 import { buildApprovedNamespaces, getSdkError } from '@walletconnect/utils';
 import { createAppKit } from '@reown/appkit';
-import { StacksAdapter } from '@reown/appkit-adapter-stacks'; // assuming it exists, or use built-in
 import { CoreService } from './core-service';
 import { walletConnectConfig } from '../config/walletconnect';
 import { logger } from '../utils/logger';
@@ -27,16 +26,14 @@ export class AppKitService {
       logger.info('Initializing AppKit...');
       const core = CoreService.getInstance();
 
-      // For Stacks, AppKit has built-in support
-      const stacksAdapter = new StacksAdapter();
-
       const appKit = createAppKit({
-        adapters: [stacksAdapter],
+        adapters: [],
         networks: [
           {
-            id: 'stacks:1',
+            id: 1,
             name: 'Stacks Mainnet',
-            network: 'stacks',
+            chainNamespace: 'stacks',
+            caipNetworkId: 'stacks:1',
             nativeCurrency: {
               name: 'STX',
               symbol: 'STX',
@@ -51,7 +48,7 @@ export class AppKitService {
           },
         ],
         metadata: walletConnectConfig.metadata,
-        projectId: walletConnectConfig.projectId,
+        projectId: walletConnectConfig.projectId || '',
       });
 
       AppKitService.instance = new AppKitService(appKit);
@@ -134,9 +131,9 @@ export class AppKitService {
 
 export class WalletKitService {
   private static instance: WalletKitService;
-  private walletKit: WalletKit;
+  private walletKit: InstanceType<typeof WalletKit>;
 
-  private constructor(walletKit: WalletKit) {
+  private constructor(walletKit: InstanceType<typeof WalletKit>) {
     this.walletKit = walletKit;
   }
 
@@ -151,7 +148,7 @@ export class WalletKitService {
     try {
       const core = CoreService.getInstance();
       const walletKit = await WalletKit.init({
-        core: core.getCore(),
+        core: core,
         metadata: walletConnectConfig.metadata,
       });
 
@@ -194,7 +191,7 @@ export class WalletKitService {
     proposal: WalletKitTypes.SessionProposal,
     supportedNamespaces: Record<string, any>,
     retryCount = 0
-  ) {
+  ): Promise<any> {
     try {
       const approvedNamespaces = buildApprovedNamespaces({
         proposal: proposal.params,
@@ -250,7 +247,7 @@ export class WalletKitService {
     id: number,
     result: any,
     retryCount = 0
-  ) {
+  ): Promise<any> {
     try {
       const response = {
         id,
@@ -290,7 +287,7 @@ export class WalletKitService {
     id: number,
     error: { code: number; message: string },
     retryCount = 0
-  ) {
+  ): Promise<any> {
     try {
       const response = {
         id,

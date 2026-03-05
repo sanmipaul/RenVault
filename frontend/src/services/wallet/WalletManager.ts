@@ -1,6 +1,7 @@
 // services/wallet/WalletManager.ts
 import { WalletProvider, WalletProviderType } from '../../types/wallet';
 import { WalletProviderLoader } from './WalletProviderLoader';
+import { MultiSigWalletProvider } from './MultiSigWalletProvider';
 import { getRandomBytes } from '../../utils/crypto';
 import { encryptForStorage, decryptFromStorage } from '../../utils/encryption';
 
@@ -77,7 +78,7 @@ export class WalletManager {
     }
 
     // Check cache first
-    const cacheKey = `connection-${this.currentProvider.getType()}`;
+    const cacheKey = `connection-${this.currentProvider.id}`;
     const cached = this.connectionCache.get(cacheKey);
     if (cached && (Date.now() - cached.timestamp) < this.CACHE_TTL) {
       this.connectionState = cached.data;
@@ -100,7 +101,7 @@ export class WalletManager {
       ]);
 
       // Cache the result
-      this.connectionState = result;
+      this.connectionState = result as { address: string; publicKey: string } | null;
       this.connectionCache.set(cacheKey, { data: result, timestamp: Date.now() });
 
       // Clear timeout

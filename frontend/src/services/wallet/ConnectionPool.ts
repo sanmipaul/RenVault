@@ -10,7 +10,7 @@ export class ConnectionPool {
 
   add(id: string, connection: any): void {
     if (this.connections.size >= this.maxSize) {
-      const firstKey = this.connections.keys().next().value;
+      const firstKey = this.connections.keys().next().value as string;
       const evicted = this.connections.get(firstKey);
       this.connections.delete(firstKey);
       this.onEvict?.(firstKey, evicted);

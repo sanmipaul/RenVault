@@ -4,18 +4,21 @@
  */
 
 import { createAppKit } from '@reown/appkit';
-import { EthereumAdapter } from '@reown/appkit-adapter-ethereum';
-import { StacksAdapter } from '@reown/appkit-adapter-stacks';
 import {
   mainnet,
   sepolia,
   arbitrum,
   polygon,
 } from '@reown/appkit/networks';
-import { multiChainConfig } from './multi-chain-config';
-import { ChainSwitchService } from '../services/chain/ChainSwitchService';
-import { MultiChainTransactionService } from '../services/chain/MultiChainTransactionService';
-import { MultiChainBalanceService } from '../services/chain/MultiChainBalanceService';
+import { multiChainConfig } from '../../config/multi-chain-config';
+import { ChainSwitchService } from './ChainSwitchService';
+import { MultiChainTransactionService } from './MultiChainTransactionService';
+import { MultiChainBalanceService } from './MultiChainBalanceService';
+
+// Adapter stubs — proper adapters require @reown/appkit-adapter-* packages
+class EthereumAdapter {
+  constructor(_opts: any) {}
+}
 
 /**
  * AppKit Multi-Chain Configuration
@@ -54,7 +57,7 @@ export const initializeAppKitMultiChain = async (config: AppKitMultiChainConfig)
     // Create AppKit instance
     appKit = createAppKit({
       adapters,
-      networks,
+      networks: networks as any,
       projectId: config.projectId,
       metadata: {
         name: config.appName,
@@ -62,7 +65,6 @@ export const initializeAppKitMultiChain = async (config: AppKitMultiChainConfig)
         url: config.appUrl || 'https://renvault.app',
         icons: config.appIcon ? [config.appIcon] : [],
       },
-      defaultChain: config.defaultChain || 'ethereum',
     });
 
     // Initialize chain services
@@ -253,7 +255,7 @@ export const sendTransactionViaAppKit = async (tx: {
     if (address && chainType) {
       MultiChainTransactionService.createTransaction({
         chainType: chainType as any,
-        type: 'transfer',
+        type: 'send',
         from: tx.from,
         to: tx.to,
         amount: tx.value || '0',

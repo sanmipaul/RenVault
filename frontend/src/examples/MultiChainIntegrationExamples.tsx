@@ -9,9 +9,9 @@ import { MultiChainBalanceService, useMultiChainBalance } from '../services/chai
 import { MultiChainTransactionService, useMultiChainTransactions } from '../services/chain/MultiChainTransactionService';
 import { MultiChainWalletProviderService, useMultiChainWallet } from '../services/chain/MultiChainWalletProviderService';
 import { NetworkValidationService } from '../services/chain/NetworkValidationService';
-import { ChainSelector } from './chain/ChainSelector';
-import { MultiChainBalanceDisplay } from './chain/MultiChainBalanceDisplay';
-import { TransactionStatus } from './chain/TransactionStatus';
+import { ChainSelector } from '../components/chain/ChainSelector';
+import { MultiChainBalanceDisplay } from '../components/chain/MultiChainBalanceDisplay';
+import { TransactionStatus } from '../components/chain/TransactionStatus';
 import type { ChainType } from '../config/multi-chain-config';
 
 /**
@@ -112,9 +112,9 @@ export const TransactionTrackingExample: React.FC = () => {
       {statistics && (
         <div className="statistics">
           <p>Total Transactions: {statistics.totalTransactions}</p>
-          <p>Confirmed: {statistics.confirmed}</p>
-          <p>Pending: {statistics.pending}</p>
-          <p>Failed: {statistics.failed}</p>
+          <p>Confirmed: {statistics.confirmedCount}</p>
+          <p>Pending: {statistics.pendingCount}</p>
+          <p>Failed: {statistics.failedCount}</p>
         </div>
       )}
 
@@ -233,13 +233,13 @@ export const MultiChainDashboard: React.FC = () => {
         {/* Balance Display */}
         <section className="dashboard-section">
           <h2>Multi-Chain Balances</h2>
-          <MultiChainBalanceDisplay address={address} showAllChains={true} />
+          <MultiChainBalanceDisplay address={address ?? undefined} showAllChains={true} />
         </section>
 
         {/* Transaction History */}
         <section className="dashboard-section">
           <h2>Recent Transactions</h2>
-          <TransactionStatus address={address} maxTransactions={10} />
+          <TransactionStatus address={address ?? undefined} maxTransactions={10} />
         </section>
 
         {/* Chain Statistics */}
@@ -272,7 +272,7 @@ export const MultiChainDashboard: React.FC = () => {
         )}
       </main>
 
-      <style jsx>{`
+      <style>{`
         .dashboard {
           padding: 20px;
           background: #f8fafc;
@@ -442,7 +442,7 @@ export const MultiChainIntegrationExamples: React.FC = () => {
         <ActiveComponent />
       </div>
 
-      <style jsx>{`
+      <style>{`
         .integration-examples {
           padding: 20px;
           background: #f8fafc;
