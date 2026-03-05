@@ -14,22 +14,28 @@ export interface TransactionHistoryItem {
   isSponsored?: boolean;
 }
 
+const NETWORK_BASE_URLS: Record<string, string> = {
+  mainnet: 'https://api.mainnet.hiro.so',
+  testnet: 'https://api.testnet.hiro.so',
+};
+
 export class TransactionHistoryService {
   private static instance: TransactionHistoryService;
   private accountsApi: AccountsApi;
   private transactionsApi: TransactionsApi;
+  private network: string;
 
-  private constructor() {
-    const config = new Configuration({
-      basePath: 'https://api.mainnet.hiro.so', // or testnet
-    });
+  private constructor(network: 'mainnet' | 'testnet' = 'mainnet') {
+    this.network = network;
+    const basePath = NETWORK_BASE_URLS[network] ?? NETWORK_BASE_URLS.mainnet;
+    const config = new Configuration({ basePath });
     this.accountsApi = new AccountsApi(config);
     this.transactionsApi = new TransactionsApi(config);
   }
 
-  static getInstance(): TransactionHistoryService {
-    if (!TransactionHistoryService.instance) {
-      TransactionHistoryService.instance = new TransactionHistoryService();
+  static getInstance(network: 'mainnet' | 'testnet' = 'mainnet'): TransactionHistoryService {
+    if (!TransactionHistoryService.instance || TransactionHistoryService.instance.network !== network) {
+      TransactionHistoryService.instance = new TransactionHistoryService(network);
     }
     return TransactionHistoryService.instance;
   }
