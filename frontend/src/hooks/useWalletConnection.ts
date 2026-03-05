@@ -28,7 +28,14 @@ export const useWalletConnection = () => {
 
   const connect = async (walletType: string) => {
     walletState.setState('connecting');
-    // Implement connection logic
+    try {
+      const result = await walletState.connect(walletType);
+      walletState.setState('connected');
+      walletEvents.emit('connected', result);
+    } catch (error) {
+      walletState.setState('error');
+      walletEvents.emit('error', error);
+    }
   };
 
   const disconnect = () => {
