@@ -14,7 +14,17 @@ export class WalletManager {
   private readonly CACHE_TTL = 5 * 60 * 1000; // 5 minutes
   private readonly CONNECTION_TIMEOUT = 10000; // 10 seconds
 
+  private static readonly ALL_PROVIDER_TYPES: WalletProviderType[] = [
+    'leather', 'xverse', 'hiro', 'walletconnect', 'ledger', 'trezor', 'multisig'
+  ];
+
   constructor() {
+    // Mark all non-critical providers for lazy loading
+    WalletManager.ALL_PROVIDER_TYPES.forEach(type => {
+      if (type !== 'leather') {
+        this.lazyLoadedProviders.add(type);
+      }
+    });
     // Initialize critical providers immediately
     this.initializeCriticalProviders();
   }
