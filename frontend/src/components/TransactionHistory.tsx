@@ -45,7 +45,7 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ address }) => {
     .filter(tx => {
       if (filter !== 'all' && tx.type !== filter) return false;
       if (dateFrom && tx.timestamp < new Date(dateFrom).getTime() / 1000) return false;
-      if (dateTo && tx.timestamp > new Date(dateTo).getTime() / 1000) return false;
+      if (dateTo && tx.timestamp > (new Date(dateTo).setHours(23, 59, 59, 999)) / 1000) return false;
       return true;
     })
     .sort((a, b) => {
