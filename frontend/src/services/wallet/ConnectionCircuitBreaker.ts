@@ -43,6 +43,7 @@ export class ConnectionCircuitBreaker {
   private scheduleReset(): void {
     if (this.resetTimer) clearTimeout(this.resetTimer);
     this.resetTimer = setTimeout(() => {
+      this.resetTimer = null;
       this.state = 'half-open';
       this.failures = 0;
     }, this.resetTimeout);
@@ -50,5 +51,12 @@ export class ConnectionCircuitBreaker {
 
   getState() {
     return this.state;
+  }
+
+  destroy(): void {
+    if (this.resetTimer) {
+      clearTimeout(this.resetTimer);
+      this.resetTimer = null;
+    }
   }
 }
