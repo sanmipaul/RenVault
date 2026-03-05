@@ -9,7 +9,7 @@ import {
   getCSSVariables,
   themeDefaults,
   AppKitThemeConfig,
-} from '../config/appkit-theme';
+} from '../../config/appkit-theme';
 
 export interface ThemeState {
   mode: ThemeMode;

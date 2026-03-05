@@ -14,22 +14,28 @@ export interface TransactionHistoryItem {
   isSponsored?: boolean;
 }
 
+const NETWORK_BASE_URLS: Record<string, string> = {
+  mainnet: 'https://api.mainnet.hiro.so',
+  testnet: 'https://api.testnet.hiro.so',
+};
+
 export class TransactionHistoryService {
   private static instance: TransactionHistoryService;
   private accountsApi: AccountsApi;
   private transactionsApi: TransactionsApi;
+  private network: string;
 
-  private constructor() {
-    const config = new Configuration({
-      basePath: 'https://api.mainnet.hiro.so', // or testnet
-    });
+  private constructor(network: 'mainnet' | 'testnet' = 'mainnet') {
+    this.network = network;
+    const basePath = NETWORK_BASE_URLS[network] ?? NETWORK_BASE_URLS.mainnet;
+    const config = new Configuration({ basePath });
     this.accountsApi = new AccountsApi(config);
     this.transactionsApi = new TransactionsApi(config);
   }
 
-  static getInstance(): TransactionHistoryService {
-    if (!TransactionHistoryService.instance) {
-      TransactionHistoryService.instance = new TransactionHistoryService();
+  static getInstance(network: 'mainnet' | 'testnet' = 'mainnet'): TransactionHistoryService {
+    if (!TransactionHistoryService.instance || TransactionHistoryService.instance.network !== network) {
+      TransactionHistoryService.instance = new TransactionHistoryService(network);
     }
     return TransactionHistoryService.instance;
   }
@@ -42,12 +48,12 @@ export class TransactionHistoryService {
         offset,
       });
 
-      const transactions = response.results.map(tx => ({
+      const transactions = response.results.map((tx: any) => ({
         txId: tx.tx_id,
-        type: this.getTransactionType(tx),
+        type: this.getTransactionType(tx, address),
         amount: tx.tx_type === 'token_transfer' ? parseInt(tx.token_transfer.amount) : undefined,
         timestamp: tx.burn_block_time,
-        status: tx.tx_status === 'success' ? 'success' : tx.tx_status === 'pending' ? 'pending' : 'failed',
+        status: (tx.tx_status === 'success' ? 'success' : tx.tx_status === 'pending' ? 'pending' : 'failed') as 'pending' | 'success' | 'failed',
         to: tx.tx_type === 'token_transfer' ? tx.token_transfer.recipient_address : undefined,
         from: tx.sender_address,
         fee: parseInt(tx.fee_rate),
@@ -60,13 +66,14 @@ export class TransactionHistoryService {
         total: response.total || response.results.length, // Assuming API provides total
       };
     } catch (error) {
-      throw new Error('Failed to fetch transaction history: ' + error.message);
+      throw new Error('Failed to fetch transaction history: ' + (error as Error).message);
     }
   }
 
-  private getTransactionType(tx: any): 'sent' | 'received' | 'contract_call' {
+  private getTransactionType(tx: any, currentAddress: string): 'sent' | 'received' | 'contract_call' {
     if (tx.tx_type === 'token_transfer') {
-      return 'sent'; // Simplified, could check if recipient is self
+      const recipient = tx.token_transfer?.recipient_address;
+      return recipient === currentAddress ? 'received' : 'sent';
     }
     if (tx.tx_type === 'contract_call') {
       return 'contract_call';
@@ -81,7 +88,7 @@ export class TransactionHistoryService {
       });
       return response;
     } catch (error) {
-      throw new Error('Failed to fetch transaction details: ' + error.message);
+      throw new Error('Failed to fetch transaction details: ' + (error as Error).message);
     }
   }
 }

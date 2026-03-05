@@ -96,9 +96,10 @@ export class AppKitService {
       const appKit = createAppKit({
         networks: [
           {
-            id: 'stacks:1',
+            id: 1,
             name: 'Stacks Mainnet',
-            network: 'stacks',
+            chainNamespace: 'stacks' as const,
+            caipNetworkId: 'stacks:1' as const,
             nativeCurrency: {
               name: 'STX',
               symbol: 'STX',
@@ -110,10 +111,10 @@ export class AppKitService {
             blockExplorers: {
               default: { name: 'Stacks Explorer', url: 'https://explorer.stacks.co' },
             },
-          },
+          } as any,
         ],
         metadata: walletConnectConfig.metadata,
-        projectId: walletConnectConfig.projectId,
+        projectId: walletConnectConfig.projectId || '',
         themeMode: walletConnectConfig.appKit.themeMode,
         themeVariables: walletConnectConfig.appKit.themeVariables,
         termsConditionsUrl: walletConnectConfig.termsConditionsUrl,
@@ -128,7 +129,6 @@ export class AppKitService {
           history: true,
           onramp: true,
           swaps: true,
-          sponsoredTransactions: true,
         },
         enableWalletConnect: true,
         enableInjected: true,
@@ -149,7 +149,7 @@ export class AppKitService {
 
       if (shouldRetry) {
         const delay = AppKitService.INIT_RETRY_DELAY * Math.pow(2, retryCount);
-        logger.warn(`AppKit init attempt ${retryCount + 1} failed, retrying in ${delay}ms...`, error);
+        logger.warn(`AppKit init attempt ${retryCount + 1} failed, retrying in ${delay}ms... ${error}`);
 
         await new Promise((resolve) => setTimeout(resolve, delay));
         return AppKitService.init(retryCount + 1, authConfig);
@@ -160,7 +160,7 @@ export class AppKitService {
         'Failed to initialize wallet service'
       );
 
-      logger.error('Failed to initialize AppKit', walletError);
+      logger.error(`Failed to initialize AppKit: ${walletError}`);
       throw walletError;
     }
   }
@@ -230,15 +230,15 @@ export class AppKitService {
     try {
       await this.appKit.close();
     } catch (error) {
-      logger.warn('Error closing modal:', error);
+      logger.warn(`Error closing modal: ${error}`);
     }
   }
 
   getActiveSessions() {
     try {
-      return this.appKit.getActiveSessions ? this.appKit.getActiveSessions() : [];
+      return (this.appKit as any).getActiveSessions ? (this.appKit as any).getActiveSessions() : [];
     } catch (error) {
-      logger.warn('Error getting active sessions:', error);
+      logger.warn(`Error getting active sessions: ${error}`);
       return [];
     }
   }
@@ -256,7 +256,7 @@ export class AppKitService {
       // This is a simplified implementation
       return 'wallet';
     } catch (error) {
-      logger.warn('Error determining auth method:', error);
+      logger.warn(`Error determining auth method: ${error}`);
       return null;
     }
   }
@@ -267,7 +267,7 @@ export class AppKitService {
       logger.info('Successfully disconnected from wallet');
     } catch (error) {
       const walletError = new WalletError(WalletErrorCode.UNKNOWN_ERROR, 'Failed to disconnect');
-      logger.error('Disconnect error:', walletError);
+      logger.error(`Disconnect error: ${walletError}`);
       throw walletError;
     }
   }
@@ -276,10 +276,10 @@ export class AppKitService {
     if (AppKitService.instance) {
       try {
         AppKitService.instance.disconnect().catch((err) => {
-          logger.warn('Error disconnecting during reset:', err);
+          logger.warn(`Error disconnecting during reset: ${err}`);
         });
       } catch (error) {
-        logger.warn('Error during wallet service reset:', error);
+        logger.warn(`Error during wallet service reset: ${error}`);
       } finally {
         AppKitService.instance = null as any;
       }

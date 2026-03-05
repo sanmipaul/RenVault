@@ -2,20 +2,22 @@ import { Core } from '@walletconnect/core';
 import { environment } from '../config/environment';
 import { logger } from '../utils/logger';
 
-export class CoreService {
-  private static instance: Core;
+type CoreInstance = InstanceType<typeof Core>;
 
-  static getInstance(): Core {
+export class CoreService {
+  private static instance: CoreInstance;
+
+  static getInstance(): CoreInstance {
     if (!CoreService.instance) {
       CoreService.instance = CoreService.createCore();
     }
     return CoreService.instance;
   }
 
-  private static createCore(): Core {
+  private static createCore(): CoreInstance {
     try {
       logger.info('Initializing WalletConnect Core...');
-      
+
       const core = new Core({
         projectId: environment.walletConnect.projectId,
         relayUrl: 'wss://relay.walletconnect.org',
@@ -24,7 +26,7 @@ export class CoreService {
       logger.info('Core initialized successfully');
       return core;
     } catch (error) {
-      logger.error('Failed to initialize Core', error as Error);
+      logger.error(`Failed to initialize Core: ${error}`);
       throw error;
     }
   }
@@ -37,7 +39,7 @@ export class CoreService {
         logger.info('Core destroyed');
       }
     } catch (error) {
-      logger.error('Error destroying Core', error as Error);
+      logger.error(`Error destroying Core: ${error}`);
     }
   }
 }

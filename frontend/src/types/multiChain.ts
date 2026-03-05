@@ -441,19 +441,4 @@ export type AsyncFunction<T> = () => Promise<T>;
 export type Listener<T> = (value: T) => void;
 export type Unsubscribe = () => void;
 
-// ============================================================================
-// Export all types as a namespace
-// ============================================================================
-
-export namespace MultiChain {
-  export type {
-    ChainType,
-    Chain,
-    Token,
-    Balance,
-    Transaction,
-    TransactionStatus,
-    WalletState,
-    AppError,
-  };
-}
+// Types are already exported individually above

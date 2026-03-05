@@ -3,7 +3,7 @@
  * Handles deep linking to mobile wallet apps
  */
 
-import { getWalletConfig, CustomWalletConfig } from '../config/customWallets';
+import { getWalletConfig, CustomWalletConfig } from '../../config/customWallets';
 
 export interface DeepLinkOptions {
   walletId: string;

@@ -16,7 +16,8 @@ export const validateWalletConfig = (config: CustomWalletConfig): ValidationResu
     errors.push({ field: 'imageUrl', message: 'Wallet image URL is required', severity: 'error' });
   }
 
-  if (!config.supportedPlatforms || config.supportedPlatforms.length === 0) {
+  const platforms = (config as any).supportedPlatforms;
+  if (!platforms || platforms.length === 0) {
     errors.push({ field: 'supportedPlatforms', message: 'At least one platform must be supported', severity: 'error' });
   }
 

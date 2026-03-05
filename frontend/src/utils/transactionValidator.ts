@@ -1,4 +1,4 @@
-import { TransactionDetails } from '../../services/transaction/TransactionService';
+import { TransactionDetails } from '../services/transaction/TransactionService';
 
 export const validateTransactionAmount = (amount: number): boolean => {
   return amount > 0 && amount <= 1000000 && Number.isFinite(amount);

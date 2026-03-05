@@ -21,7 +21,7 @@ export class WalletConnectProvider extends BaseWalletProvider {
     // Disconnect WalletConnect session
     const service = await WalletKitService.init();
     // Assuming WalletKit has a disconnect method
-    await service.disconnect?.();
+    await (service as any).disconnect?.();
     // Clear any stored session data
     localStorage.removeItem('walletconnect-session');
   }

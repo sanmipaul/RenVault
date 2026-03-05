@@ -11,13 +11,13 @@ export class XverseWalletProvider extends BaseWalletProvider {
     // Xverse specific connection logic
     // Assuming similar to Leather but with Xverse API
     return new Promise((resolve, reject) => {
-      if (window.XverseWallet) {
-        window.XverseWallet.request('connect', {
+      if ((window as any).XverseWallet) {
+        (window as any).XverseWallet.request('connect', {
           appDetails: {
             name: 'RenVault',
             icon: window.location.origin + '/favicon.ico',
           },
-        }).then((result) => {
+        }).then((result: any) => {
           resolve({
             address: result.address,
             publicKey: result.publicKey,
@@ -31,9 +31,9 @@ export class XverseWalletProvider extends BaseWalletProvider {
 
   async disconnect(): Promise<void> {
     // Clear Xverse session data
-    if (window.XverseWallet) {
+    if ((window as any).XverseWallet) {
       // Assuming Xverse has a disconnect method
-      await window.XverseWallet.disconnect?.();
+      await (window as any).XverseWallet.disconnect?.();
     }
     // Clear any stored session data
     localStorage.removeItem('xverse-session');

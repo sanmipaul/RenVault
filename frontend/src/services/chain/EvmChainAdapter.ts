@@ -3,10 +3,8 @@
  * Implements AppKit chain adapter for EVM-compatible chains
  */
 
-import { ChainAdapter } from '@reown/appkit-core';
-import { useContractRead, useContractWrite, useAccount, useSwitchNetwork } from 'wagmi';
-import { getChainConfig, isTestnet, getChainMetadata } from '../config/multi-chain-config';
-import type { ChainType } from '../config/multi-chain-config';
+import { getChainConfig, isTestnet, getChainMetadata } from '../../config/multi-chain-config';
+import type { ChainType } from '../../config/multi-chain-config';
 
 export interface EvmAdapterConfig {
   chainId: ChainType;
@@ -17,7 +15,7 @@ export interface EvmAdapterConfig {
 /**
  * EVM Chain Adapter for AppKit
  */
-export class EvmChainAdapter implements ChainAdapter {
+export class EvmChainAdapter {
   private chainId: ChainType;
   private rpcUrl: string;
   private explorerUrl: string;

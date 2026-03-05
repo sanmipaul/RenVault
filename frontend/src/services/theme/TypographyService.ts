@@ -3,7 +3,7 @@
  * Manages font loading and typography configuration
  */
 
-import { typography } from '../config/appkit-theme';
+import { typography } from '../../config/appkit-theme';
 
 export interface FontLoadOptions {
   preload?: boolean;
@@ -101,7 +101,7 @@ export class TypographyService {
   private static waitForFontLoad(timeout: number): Promise<void> {
     return new Promise((resolve, reject) => {
       if (document.fonts && document.fonts.ready) {
-        document.fonts.ready.then(resolve).catch(reject);
+        document.fonts.ready.then(() => resolve()).catch(reject);
       } else {
         // Fallback for older browsers
         setTimeout(resolve, timeout);
@@ -122,14 +122,14 @@ export class TypographyService {
    * Get font family
    */
   static getFontFamily(family: 'base' | 'heading' | 'mono'): string {
-    return typography.fontFamilies[family];
+    return typography.fontFamily[family];
   }
 
   /**
    * Get font size
    */
   static getFontSize(size: 'xs' | 'sm' | 'base' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl'): string {
-    return typography.fontSize[size];
+    return (typography.fontSize as any)[size];
   }
 
   /**
@@ -143,7 +143,7 @@ export class TypographyService {
    * Get line height
    */
   static getLineHeight(height: 'tight' | 'normal' | 'relaxed' | 'loose'): number {
-    return typography.lineHeight[height];
+    return (typography.lineHeight as any)[height];
   }
 
   /**
@@ -169,7 +169,7 @@ export class TypographyService {
     lineHeight: number;
   } {
     return {
-      fontFamily: typography.fontFamilies.base,
+      fontFamily: typography.fontFamily.base,
       fontSize: typography.fontSize[size],
       fontWeight: typography.fontWeight[weight],
       lineHeight: typography.lineHeight.normal,
@@ -195,7 +195,7 @@ export class TypographyService {
     };
 
     return {
-      fontFamily: typography.fontFamilies.heading,
+      fontFamily: typography.fontFamily.heading,
       fontSize: typography.fontSize[sizes[level]],
       fontWeight: typography.fontWeight.bold,
       lineHeight: typography.lineHeight.tight,

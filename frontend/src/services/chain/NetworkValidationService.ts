@@ -6,7 +6,7 @@
 import { ChainSwitchService } from './ChainSwitchService';
 import { EvmChainAdapter } from './EvmChainAdapter';
 import { StacksChainAdapter } from './StacksChainAdapter';
-import type { ChainType } from '../config/multi-chain-config';
+import type { ChainType } from '../../config/multi-chain-config';
 
 export interface ValidationResult {
   isValid: boolean;

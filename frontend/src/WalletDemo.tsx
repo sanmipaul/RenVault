@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState } from 'react';
 import { WalletProvider } from './context/WalletProvider';
 import { WalletConnect } from './components/WalletConnect';

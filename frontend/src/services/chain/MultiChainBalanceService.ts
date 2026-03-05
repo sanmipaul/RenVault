@@ -6,7 +6,7 @@
 import { ChainSwitchService } from './ChainSwitchService';
 import { EvmChainAdapter } from './EvmChainAdapter';
 import { StacksChainAdapter } from './StacksChainAdapter';
-import type { ChainType } from '../config/multi-chain-config';
+import type { ChainType } from '../../config/multi-chain-config';
 
 export interface Balance {
   chainType: ChainType;
@@ -244,7 +244,7 @@ export const useMultiChainBalance = (address?: string) => {
         setLoading(false);
       })
       .catch(err => {
-        setError(err.message);
+        setError(err instanceof Error ? err.message : 'Unknown error');
         setLoading(false);
       });
 

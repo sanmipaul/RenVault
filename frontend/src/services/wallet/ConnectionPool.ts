@@ -8,7 +8,7 @@ export class ConnectionPool {
 
   add(id: string, connection: any): void {
     if (this.connections.size >= this.maxSize) {
-      const firstKey = this.connections.keys().next().value;
+      const firstKey = this.connections.keys().next().value as string;
       this.connections.delete(firstKey);
     }
     this.connections.set(id, connection);

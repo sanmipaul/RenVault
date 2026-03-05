@@ -5,7 +5,7 @@
 
 import { StacksConnectorAdapter } from './StacksConnectorAdapter';
 import { WalletInstallationDetector } from './WalletInstallationDetector';
-import { CustomWalletConfig, stacksWallets } from '../config/customWallets';
+import { CustomWalletConfig, stacksWallets } from '../../config/customWallets';
 
 export interface FallbackStrategy {
   type: 'none' | 'install-prompt' | 'alternative-wallet' | 'walletconnect';
@@ -260,7 +260,7 @@ export class WalletFallbackManager {
   static setupErrorRecovery(
     onFallback: (result: WalletFallbackResult) => void,
     onSuccess: (walletId: string) => void
-  ): void {
+  ): () => void {
     // Listen for wallet connection errors
     window.addEventListener('error', (event: ErrorEvent) => {
       if (event.message.includes('wallet')) {
