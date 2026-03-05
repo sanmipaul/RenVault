@@ -60,16 +60,18 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ address }) => {
   };
   const exportToCSV = () => {
     const csvContent = [
-      ['Type', 'Amount', 'Status', 'Date', 'TxID', 'Sponsored'],
+      ['Type', 'Amount', 'Fee (STX)', 'Status', 'Date', 'TxID', 'Memo', 'Sponsored'],
       ...filteredAndSortedTransactions.map(tx => [
         tx.type,
         formatAmount(tx.amount),
+        (tx.fee / 1000000).toFixed(6),
         tx.status,
         formatDate(tx.timestamp),
         tx.txId,
+        tx.memo || '',
         tx.isSponsored ? 'Yes' : 'No',
       ]),
-    ].map(row => row.join(',')).join('\n');
+    ].map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
