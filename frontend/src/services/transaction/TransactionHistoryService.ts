@@ -44,7 +44,7 @@ export class TransactionHistoryService {
 
       const transactions = response.results.map((tx: any) => ({
         txId: tx.tx_id,
-        type: this.getTransactionType(tx),
+        type: this.getTransactionType(tx, address),
         amount: tx.tx_type === 'token_transfer' ? parseInt(tx.token_transfer.amount) : undefined,
         timestamp: tx.burn_block_time,
         status: (tx.tx_status === 'success' ? 'success' : tx.tx_status === 'pending' ? 'pending' : 'failed') as 'pending' | 'success' | 'failed',
@@ -64,9 +64,10 @@ export class TransactionHistoryService {
     }
   }
 
-  private getTransactionType(tx: any): 'sent' | 'received' | 'contract_call' {
+  private getTransactionType(tx: any, currentAddress: string): 'sent' | 'received' | 'contract_call' {
     if (tx.tx_type === 'token_transfer') {
-      return 'sent'; // Simplified, could check if recipient is self
+      const recipient = tx.token_transfer?.recipient_address;
+      return recipient === currentAddress ? 'received' : 'sent';
     }
     if (tx.tx_type === 'contract_call') {
       return 'contract_call';
