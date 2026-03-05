@@ -1,5 +1,5 @@
 // components/TransactionHistory.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { TransactionHistoryService, TransactionHistoryItem } from '../services/transaction/TransactionHistoryService';
 import { useWallet } from '../hooks/useWallet';
 import SponsoredBadge from './common/SponsoredBadge';
@@ -24,9 +24,9 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ address }) => {
 
   useEffect(() => {
     fetchTransactions();
-  }, [address, page]);
+  }, [fetchTransactions]);
 
-  const fetchTransactions = async () => {
+  const fetchTransactions = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -39,7 +39,7 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ address }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [address, page]);
 
   const filteredAndSortedTransactions = transactions
     .filter(tx => {
