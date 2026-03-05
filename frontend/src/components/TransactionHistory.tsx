@@ -155,7 +155,7 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ address }) => {
         <button onClick={() => setPage(Math.max(0, page - 1))} disabled={page === 0}>
           Previous
         </button>
-        <span>Page {page + 1} of {Math.ceil(total / pageSize)}</span>
+        <span>Page {page + 1} of {Math.max(1, Math.ceil(total / pageSize))}</span>
         <button onClick={() => setPage(page + 1)} disabled={(page + 1) * pageSize >= total}>
           Next
         </button>
