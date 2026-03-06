@@ -12,7 +12,10 @@ export class ConnectionCircuitBreaker {
 
   async execute<T>(fn: () => Promise<T>): Promise<T> {
     if (this.state === 'open') {
-      throw new Error('Circuit breaker is open');
+      throw new Error(
+        `Circuit breaker is open after ${this.failures} failure(s). ` +
+        `It will transition to half-open in ~${Math.ceil(this.resetTimeout / 1000)}s.`
+      );
     }
 
     try {
