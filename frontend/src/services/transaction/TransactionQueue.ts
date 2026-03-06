@@ -23,6 +23,10 @@ export class TransactionQueue {
     return this.queue[0];
   }
 
+  contains(id: string): boolean {
+    return this.queue.some(item => item.id === id);
+  }
+
   remove(id: string): boolean {
     const index = this.queue.findIndex(item => item.id === id);
     if (index === -1) return false;
