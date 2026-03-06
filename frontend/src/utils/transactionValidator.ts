@@ -1,4 +1,5 @@
 import { TransactionDetails } from '../services/transaction/TransactionService';
+import { isValidStacksPrincipal } from './stacksAddress';
 
 export const validateTransactionAmount = (amount: number): boolean => {
   return amount > 0 && amount <= 1000000 && Number.isFinite(amount);
@@ -7,11 +8,11 @@ export const validateTransactionAmount = (amount: number): boolean => {
 export const validateContractAddress = (address: string): boolean => {
   // contractAddress must be a pure Stacks principal (no contract-name suffix).
   // The contract name lives in TransactionDetails.contractName.
-  return /^(SP|SM|ST)[0-9A-Z]{26,28}$/.test(address);
+  return isValidStacksPrincipal(address);
 };
 
 export const validateContractName = (name: string): boolean => {
-  return /^[a-z0-9-]+$/.test(name);
+  return /^[a-z][a-z0-9-]{0,39}$/.test(name);
 };
 
 export const validateTransactionDetails = (details: TransactionDetails): string[] => {
