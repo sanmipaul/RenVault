@@ -23,6 +23,13 @@ export class TransactionQueue {
     return this.queue[0];
   }
 
+  remove(id: string): boolean {
+    const index = this.queue.findIndex(item => item.id === id);
+    if (index === -1) return false;
+    this.queue.splice(index, 1);
+    return true;
+  }
+
   size(): number {
     return this.queue.length;
   }
