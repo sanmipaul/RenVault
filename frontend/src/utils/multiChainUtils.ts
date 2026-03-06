@@ -181,9 +181,7 @@ export function isValidEvmAddress(address: string): boolean {
 /**
  * Is valid Stacks address
  */
-export function isValidStacksAddress(address: string): boolean {
-  return /^(SP|ST)[0-9A-Z]{31}$/.test(address);
-}
+export { isValidStacksAddress } from './stacksAddress';
 
 /**
  * Validate URL

@@ -1,5 +1,6 @@
 // utils/sessionValidation.ts
 import { WalletSession } from '../services/session/SessionStorageService';
+import { isValidStacksPrincipal } from './stacksAddress';
 
 export interface SessionValidationResult {
   isValid: boolean;
@@ -91,8 +92,7 @@ export const validateWalletAddress = (address: string, providerType: string): Se
     case 'leather':
     case 'hiro':
     case 'xverse':
-      // Stacks addresses should start with SP (mainnet) or ST (testnet)
-      if (!/^S[PT][0-9A-Z]{38,40}$/.test(address)) {
+      if (!isValidStacksPrincipal(address)) {
         errors.push('Invalid Stacks address format');
       }
       break;

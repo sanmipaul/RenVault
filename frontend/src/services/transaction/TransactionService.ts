@@ -20,6 +20,7 @@ import {
   uintCV
 } from '@stacks/transactions';
 import { StacksMainnet } from '@stacks/network';
+import { isValidStacksAddress } from '../../utils/stacksAddress';
 
 export interface TransactionDetails {
   contractAddress: string;
@@ -209,12 +210,7 @@ export class TransactionService {
   }
 
   private isValidStacksAddress(address: string): boolean {
-    // Stacks addresses start with SP, SM, or ST followed by 26-28 base58 chars.
-    // A fully-qualified principal may include an optional ".contract-name" suffix
-    // (lowercase letters, digits, and hyphens), e.g.
-    // "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ren-vault".
-    const stacksAddressRegex = /^(SP|SM|ST)[0-9A-Z]{26,28}(\.[a-z0-9-]+)?$/;
-    return stacksAddressRegex.test(address);
+    return isValidStacksAddress(address);
   }
 
   getTransactionState(txId: string) {
