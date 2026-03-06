@@ -79,6 +79,9 @@ export class TransactionService {
       if (!this.isValidStacksAddress(contractAddress)) {
         throw new WalletError(WalletErrorCode.INVALID_TRANSACTION, 'Invalid contract address format');
       }
+      if (!contractName || !/^[a-z0-9-]+$/.test(contractName)) {
+        throw new WalletError(WalletErrorCode.INVALID_TRANSACTION, 'Invalid contract name: must contain only lowercase letters, digits, and hyphens');
+      }
       const microAmount = Math.floor(amount * 1000000);
       const details: TransactionDetails = {
         contractAddress,
