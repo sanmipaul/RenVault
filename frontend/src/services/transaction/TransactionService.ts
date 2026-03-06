@@ -199,9 +199,11 @@ export class TransactionService {
   }
 
   private isValidStacksAddress(address: string): boolean {
-    // Basic Stacks address validation
-    // Stacks addresses start with SP, SM, or ST and are 28-30 characters long
-    const stacksAddressRegex = /^(SP|SM|ST)[0-9A-Z]{26,28}$/;
+    // Stacks addresses start with SP, SM, or ST followed by 26-28 base58 chars.
+    // A fully-qualified principal may include an optional ".contract-name" suffix
+    // (lowercase letters, digits, and hyphens), e.g.
+    // "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ren-vault".
+    const stacksAddressRegex = /^(SP|SM|ST)[0-9A-Z]{26,28}(\.[a-z0-9-]+)?$/;
     return stacksAddressRegex.test(address);
   }
 
