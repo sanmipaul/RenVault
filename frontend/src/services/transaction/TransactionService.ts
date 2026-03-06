@@ -167,6 +167,11 @@ export class TransactionService {
         const response = await broadcastTransaction(signedTx.signedTx, this.network);
         if (response.error) throw new Error(response.error);
         return response.txid || txId;
+      }, {
+        maxRetries: 3,
+        delayMs: 1000,
+        backoffMultiplier: 2,
+        onRetry: () => { this.monitor.recordRetry(); }
       });
       this.stateManager.setState(txId, TransactionStatus.CONFIRMED);
       this.monitor.recordSuccess(Date.now() - broadcastStart);
