@@ -34,6 +34,10 @@ export class TransactionQueue {
     return true;
   }
 
+  getAll(): ReadonlyArray<{ id: string; details: TransactionDetails; timestamp: number; priority: number }> {
+    return this.queue;
+  }
+
   size(): number {
     return this.queue.length;
   }
