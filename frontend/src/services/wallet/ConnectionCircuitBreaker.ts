@@ -52,8 +52,18 @@ export class ConnectionCircuitBreaker {
     }, this.resetTimeout);
   }
 
-  getState() {
-    return this.state;
+  getState(): {
+    state: 'closed' | 'open' | 'half-open';
+    failures: number;
+    threshold: number;
+    remainingCapacity: number;
+  } {
+    return {
+      state: this.state,
+      failures: this.failures,
+      threshold: this.threshold,
+      remainingCapacity: Math.max(0, this.threshold - this.failures),
+    };
   }
 
   destroy(): void {
