@@ -1,3 +1,5 @@
+import { isValidStacksAddress } from '../utils/stacksAddress';
+
 export class WalletSecurityValidator {
   private trustedDomains = ['renvault.app', 'localhost'];
   private suspiciousPatterns = ['phishing', 'scam', 'fake'];
@@ -9,7 +11,7 @@ export class WalletSecurityValidator {
   }
 
   isValidAddress(address: string): boolean {
-    return address.startsWith('SP') || address.startsWith('ST');
+    return isValidStacksAddress(address);
   }
 
   isTrustedOrigin(origin: string): boolean {
