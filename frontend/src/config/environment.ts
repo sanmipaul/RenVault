@@ -35,6 +35,15 @@ export const validateEnvironment = () => {
     errors.push('REACT_APP_URL is required');
   }
 
+  // Validate contract address format when explicitly overridden via env var.
+  // Accepts bare principals OR fully-qualified "principal.contract-name".
+  if (process.env.REACT_APP_CONTRACT_ADDRESS) {
+    const { isValidStacksAddress } = require('../utils/stacksAddress');
+    if (!isValidStacksAddress(process.env.REACT_APP_CONTRACT_ADDRESS)) {
+      errors.push('REACT_APP_CONTRACT_ADDRESS is not a valid Stacks address');
+    }
+  }
+
   if (environment.isProd) {
     if (!environment.api.analyticsUrl) {
       warnings.push('REACT_APP_ANALYTICS_API_URL is not set for production');
