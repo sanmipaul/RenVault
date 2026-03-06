@@ -20,7 +20,7 @@ import {
   uintCV
 } from '@stacks/transactions';
 import { StacksMainnet } from '@stacks/network';
-import { isValidStacksAddress } from '../../utils/stacksAddress';
+import { isValidStacksAddress, isValidStacksContractId, splitContractId } from '../../utils/stacksAddress';
 
 export interface TransactionDetails {
   contractAddress: string;
@@ -71,6 +71,14 @@ export class TransactionService {
     contractName: string = 'ren-vault'
   ): Promise<TransactionDetails> {
     try {
+      // Accept a fully-qualified contract identifier as contractAddress and
+      // split it automatically so callers don't have to do it themselves.
+      if (isValidStacksContractId(contractAddress)) {
+        const parts = splitContractId(contractAddress)!;
+        contractAddress = parts.principal;
+        contractName = parts.contractName;
+      }
+
       if (amount <= 0) {
         throw new WalletError(WalletErrorCode.INVALID_TRANSACTION, 'Deposit amount must be greater than 0');
       }
@@ -79,9 +87,6 @@ export class TransactionService {
       }
       if (!this.isValidStacksAddress(contractAddress)) {
         throw new WalletError(WalletErrorCode.INVALID_TRANSACTION, 'Invalid contract address format');
-      }
-      if (!contractName || !/^[a-z0-9-]+$/.test(contractName)) {
-        throw new WalletError(WalletErrorCode.INVALID_TRANSACTION, 'Invalid contract name: must contain only lowercase letters, digits, and hyphens');
       }
       const microAmount = Math.floor(amount * 1000000);
       const details: TransactionDetails = {
