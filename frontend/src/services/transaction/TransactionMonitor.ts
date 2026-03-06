@@ -4,6 +4,7 @@ export interface TransactionMetrics {
   failedTransactions: number;
   retriedTransactions: number;
   averageConfirmationTime: number;
+  lastConfirmationTime: number;
 }
 
 export class TransactionMonitor {
@@ -12,7 +13,8 @@ export class TransactionMonitor {
     successfulTransactions: 0,
     failedTransactions: 0,
     retriedTransactions: 0,
-    averageConfirmationTime: 0
+    averageConfirmationTime: 0,
+    lastConfirmationTime: 0
   };
 
   recordTransaction(): void {
@@ -21,6 +23,7 @@ export class TransactionMonitor {
 
   recordSuccess(confirmationTime: number): void {
     this.metrics.successfulTransactions++;
+    this.metrics.lastConfirmationTime = confirmationTime;
     this.updateAverageTime(confirmationTime);
   }
 
@@ -42,6 +45,6 @@ export class TransactionMonitor {
   }
 
   reset(): void {
-    this.metrics = { totalTransactions: 0, successfulTransactions: 0, failedTransactions: 0, retriedTransactions: 0, averageConfirmationTime: 0 };
+    this.metrics = { totalTransactions: 0, successfulTransactions: 0, failedTransactions: 0, retriedTransactions: 0, averageConfirmationTime: 0, lastConfirmationTime: 0 };
   }
 }
