@@ -21,6 +21,7 @@ import {
 } from '@stacks/transactions';
 import { StacksMainnet } from '@stacks/network';
 import { isValidStacksAddress, isValidStacksContractId, splitContractId } from '../../utils/stacksAddress';
+import { environment } from '../../config/environment';
 
 export interface TransactionDetails {
   contractAddress: string;
@@ -67,8 +68,8 @@ export class TransactionService {
   async prepareDepositTransaction(
     amount: number,
     isSponsored: boolean = false,
-    contractAddress: string = 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM',
-    contractName: string = 'ren-vault'
+    contractAddress: string = environment.contracts.renVaultAddress,
+    contractName: string = environment.contracts.renVaultName
   ): Promise<TransactionDetails> {
     try {
       // Accept a fully-qualified contract identifier as contractAddress and
