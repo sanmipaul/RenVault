@@ -36,8 +36,10 @@ export class ConnectionPool {
     return this.connections.has(id);
   }
 
-  remove(id: string): void {
+  remove(id: string): any | undefined {
+    const connection = this.connections.get(id);
     this.connections.delete(id);
+    return connection;
   }
 
   clear(): void {
