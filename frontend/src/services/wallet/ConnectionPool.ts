@@ -21,6 +21,13 @@ export class ConnectionPool {
     this.connections.set(id, connection);
   }
 
+  update(id: string, connection: any): void {
+    if (!this.connections.has(id)) {
+      throw new Error(`ConnectionPool: connection "${id}" does not exist. Use add() to register a new connection.`);
+    }
+    this.connections.set(id, connection);
+  }
+
   get(id: string): any {
     return this.connections.get(id);
   }
