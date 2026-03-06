@@ -66,6 +66,15 @@ export class ConnectionCircuitBreaker {
     };
   }
 
+  reset(): void {
+    if (this.resetTimer) {
+      clearTimeout(this.resetTimer);
+      this.resetTimer = null;
+    }
+    this.state = 'closed';
+    this.failures = 0;
+  }
+
   destroy(): void {
     if (this.resetTimer) {
       clearTimeout(this.resetTimer);
