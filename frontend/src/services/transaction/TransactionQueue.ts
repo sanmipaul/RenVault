@@ -11,6 +11,9 @@ export class TransactionQueue {
   private queue: QueuedTransaction[] = [];
 
   enqueue(id: string, details: TransactionDetails, priority: number = 0): void {
+    if (this.contains(id)) {
+      throw new Error(`Transaction with id "${id}" is already queued`);
+    }
     this.queue.push({ id, details, timestamp: Date.now(), priority });
     this.queue.sort((a, b) => b.priority - a.priority);
   }
