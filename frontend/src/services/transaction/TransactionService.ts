@@ -159,6 +159,7 @@ export class TransactionService {
 
   async broadcastTransaction(signedTx: SignedTransaction): Promise<string> {
     const txId = signedTx.txId;
+    const broadcastStart = Date.now();
     try {
       this.stateManager.setState(txId, TransactionStatus.BROADCASTING);
       this.monitor.recordTransaction();
