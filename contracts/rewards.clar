@@ -74,3 +74,21 @@
 
 (define-read-only (get-contract-owner)
   (ok contract-owner))
+
+;; ---------------------------------------------------------------------------
+;; CHANGELOG
+;; ---------------------------------------------------------------------------
+;; v2 (this revision):
+;;   - set-milestone-reward: guarded by (is-eq tx-sender contract-owner)
+;;   - add-to-reward-pool:   guarded by (is-eq tx-sender contract-owner)
+;;                           also validates amount > 0
+;;   - claimed-rewards map:  REPLACED by claimed-milestones keyed on
+;;                           {user principal, points uint}.  The old boolean
+;;                           per-user flag meant a user who claimed one
+;;                           milestone could never claim another.
+;;   - claim-milestone-reward: pool balance is decremented on each successful
+;;                             claim; insufficient pool balance is rejected
+;;                             with err-insufficient-pool (u404)
+;;   - New read-only helpers: get-milestone-reward, has-claimed-milestone,
+;;                            get-contract-owner
+;; ---------------------------------------------------------------------------
