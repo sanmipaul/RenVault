@@ -10,7 +10,7 @@ import { TransactionRecovery } from '../../utils/transactionRecovery';
 import { TransactionTimeout } from '../../utils/transactionTimeout';
 import { TransactionErrorHandler } from '../../utils/transactionErrorHandler';
 import { retryWithBackoff } from '../../utils/retry';
-import { validateTransactionDetails } from '../../utils/transactionValidator';
+import { validateTransactionDetails, validateContractName } from '../../utils/transactionValidator';
 import { TransactionStatus } from '../../types/transactionState';
 import {
   makeContractCall,
@@ -87,6 +87,9 @@ export class TransactionService {
       }
       if (!this.isValidStacksAddress(contractAddress)) {
         throw new WalletError(WalletErrorCode.INVALID_TRANSACTION, 'Invalid contract address format');
+      }
+      if (!validateContractName(contractName)) {
+        throw new WalletError(WalletErrorCode.INVALID_TRANSACTION, 'Invalid contract name: must start with a letter or digit and contain only lowercase letters, digits, and hyphens');
       }
       const microAmount = Math.floor(amount * 1000000);
       const details: TransactionDetails = {
