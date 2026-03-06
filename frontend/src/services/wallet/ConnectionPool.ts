@@ -9,9 +9,10 @@ export class ConnectionPool {
   }
 
   add(id: string, connection: any): void {
-    // If the ID is already present, Map.set() will overwrite it without
-    // increasing the size, so no eviction is needed.
-    if (!this.connections.has(id) && this.connections.size >= this.maxSize) {
+    if (this.connections.has(id)) {
+      throw new Error(`ConnectionPool: connection "${id}" already exists. Use update() to replace it.`);
+    }
+    if (this.connections.size >= this.maxSize) {
       const firstKey = this.connections.keys().next().value as string;
       const evicted = this.connections.get(firstKey);
       this.connections.delete(firstKey);
