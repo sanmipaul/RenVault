@@ -12,7 +12,10 @@ export class ConnectionCircuitBreaker {
 
   async execute<T>(fn: () => Promise<T>): Promise<T> {
     if (this.state === 'open') {
-      throw new Error('Circuit breaker is open');
+      throw new Error(
+        `Circuit breaker is open after ${this.failures} failure(s). ` +
+        `It will transition to half-open in ~${Math.ceil(this.resetTimeout / 1000)}s.`
+      );
     }
 
     try {
@@ -49,8 +52,27 @@ export class ConnectionCircuitBreaker {
     }, this.resetTimeout);
   }
 
-  getState() {
-    return this.state;
+  getState(): {
+    state: 'closed' | 'open' | 'half-open';
+    failures: number;
+    threshold: number;
+    remainingCapacity: number;
+  } {
+    return {
+      state: this.state,
+      failures: this.failures,
+      threshold: this.threshold,
+      remainingCapacity: Math.max(0, this.threshold - this.failures),
+    };
+  }
+
+  reset(): void {
+    if (this.resetTimer) {
+      clearTimeout(this.resetTimer);
+      this.resetTimer = null;
+    }
+    this.state = 'closed';
+    this.failures = 0;
   }
 
   destroy(): void {
@@ -58,5 +80,7 @@ export class ConnectionCircuitBreaker {
       clearTimeout(this.resetTimer);
       this.resetTimer = null;
     }
+    this.state = 'closed';
+    this.failures = 0;
   }
 }
