@@ -169,7 +169,7 @@ export class TransactionService {
         return response.txid || txId;
       });
       this.stateManager.setState(txId, TransactionStatus.CONFIRMED);
-      this.monitor.recordSuccess(Date.now());
+      this.monitor.recordSuccess(Date.now() - broadcastStart);
       TransactionRecovery.removePendingTransaction(txId);
       return result;
     } catch (error) {
