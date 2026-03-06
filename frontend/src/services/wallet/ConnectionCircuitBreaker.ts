@@ -58,5 +58,7 @@ export class ConnectionCircuitBreaker {
       clearTimeout(this.resetTimer);
       this.resetTimer = null;
     }
+    this.state = 'closed';
+    this.failures = 0;
   }
 }
