@@ -66,7 +66,8 @@ export class TransactionService {
   async prepareDepositTransaction(
     amount: number,
     isSponsored: boolean = false,
-    contractAddress: string = 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ren-vault'
+    contractAddress: string = 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM',
+    contractName: string = 'ren-vault'
   ): Promise<TransactionDetails> {
     try {
       if (amount <= 0) {
@@ -81,7 +82,7 @@ export class TransactionService {
       const microAmount = Math.floor(amount * 1000000);
       const details: TransactionDetails = {
         contractAddress,
-        contractName: 'ren-vault',
+        contractName,
         functionName: 'deposit',
         functionArgs: [uintCV(microAmount)],
         amount: microAmount,
