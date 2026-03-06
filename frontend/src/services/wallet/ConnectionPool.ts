@@ -9,11 +9,21 @@ export class ConnectionPool {
   }
 
   add(id: string, connection: any): void {
+    if (this.connections.has(id)) {
+      throw new Error(`ConnectionPool: connection "${id}" already exists. Use update() to replace it.`);
+    }
     if (this.connections.size >= this.maxSize) {
       const firstKey = this.connections.keys().next().value as string;
       const evicted = this.connections.get(firstKey);
       this.connections.delete(firstKey);
       this.onEvict?.(firstKey, evicted);
+    }
+    this.connections.set(id, connection);
+  }
+
+  update(id: string, connection: any): void {
+    if (!this.connections.has(id)) {
+      throw new Error(`ConnectionPool: connection "${id}" does not exist. Use add() to register a new connection.`);
     }
     this.connections.set(id, connection);
   }
@@ -26,8 +36,10 @@ export class ConnectionPool {
     return this.connections.has(id);
   }
 
-  remove(id: string): void {
+  remove(id: string): any | undefined {
+    const connection = this.connections.get(id);
     this.connections.delete(id);
+    return connection;
   }
 
   clear(): void {
