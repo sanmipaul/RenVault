@@ -6,6 +6,13 @@ export const environment = {
     appUrl: process.env.REACT_APP_URL || (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:3000'),
     appIcon: process.env.REACT_APP_ICON || '',
   },
+  contracts: {
+    // Bare Stacks principal for the ren-vault contract.
+    // May also be supplied as a fully-qualified "principal.contract-name"
+    // identifier; prepareDepositTransaction() will split it automatically.
+    renVaultAddress: process.env.REACT_APP_CONTRACT_ADDRESS || 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM',
+    renVaultName: process.env.REACT_APP_CONTRACT_NAME || 'ren-vault',
+  },
   api: {
     analyticsUrl: process.env.REACT_APP_ANALYTICS_API_URL || '',
     notificationsUrl: process.env.REACT_APP_NOTIFICATIONS_API_URL || '',
