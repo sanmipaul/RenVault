@@ -8,8 +8,8 @@ class FeeCollector {
     if (!poolId || typeof poolId !== 'string') {
       throw new Error('poolId is required');
     }
-    if (typeof amount !== 'number' || amount < 0) {
-      throw new Error('fee amount must be a non-negative number');
+    if (typeof amount !== 'number' || amount <= 0) {
+      throw new Error('fee amount must be a positive number');
     }
     if (!token || typeof token !== 'string') {
       throw new Error('token identifier is required');
