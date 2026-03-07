@@ -116,8 +116,15 @@ function AppContent() {
     };
   }, []);
 
-  // Initialize notification service
-  const notificationService = userData ? new NotificationService(userData.profile.stxAddress.mainnet) : null;
+  // Initialize notification service — use the singleton so the same instance
+  // (and its registered listeners) is reused across re-renders.
+  const notificationService = useMemo(
+    () =>
+      userData
+        ? NotificationService.getInstance(userData.profile.stxAddress.mainnet)
+        : null,
+    [userData?.profile.stxAddress.mainnet]
+  );
   const handle2FASetupComplete = (secret: string, backupCodes: string[]) => {
     setTfaSecret(secret);
     localStorage.setItem(APP_CONFIG.tfaEnabledKey, 'true');
