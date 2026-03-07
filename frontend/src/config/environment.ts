@@ -52,6 +52,19 @@ export const validateEnvironment = () => {
     if (!environment.api.notificationsUrl) {
       warnings.push('REACT_APP_NOTIFICATIONS_API_URL is not set for production');
     }
+
+    // Warn loudly when a testnet address reaches a production build.
+    // The built-in fallback is a testnet principal (ST…); production must
+    // always use a mainnet address (SP… or SM…).
+    if (
+      isValidStacksAddress(environment.contracts.renVaultAddress) &&
+      !isMainnetAddress(environment.contracts.renVaultAddress)
+    ) {
+      warnings.push(
+        'REACT_APP_CONTRACT_ADDRESS is a testnet address in a production build — ' +
+          'set it to a mainnet (SP… or SM…) principal'
+      );
+    }
   }
 
   if (warnings.length > 0) {
