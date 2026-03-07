@@ -36,7 +36,7 @@ class FeeCollector {
     const key = `${poolId}-${token}`;
     const amount = this.fees.get(key) || 0;
     if (amount > 0) {
-      this.fees.set(key, 0);
+      this.fees.delete(key);
       return { recipient, amount, token };
     }
     return null;
