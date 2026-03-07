@@ -50,6 +50,7 @@ class NotificationManager {
       withdrawalNotifications: preferences.withdrawalNotifications !== false,
       stakingNotifications: preferences.stakingNotifications !== false,
       rewardNotifications: preferences.rewardNotifications !== false,
+      // Activity / social notifications
       leaderboardNotifications: preferences.leaderboardNotifications !== false,
       // Security alerts
       securityAlerts: preferences.securityAlerts !== false,
