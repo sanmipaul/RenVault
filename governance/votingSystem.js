@@ -37,15 +37,20 @@ class VotingSystem {
   }
 
   getVotingPower(user) {
-    let totalPower = this.votingPower.get(user) || 1;
-    
-    // Add delegated power
+    // A user who has delegated their own vote away contributes 0 here;
+    // their power is counted at their delegate instead.
+    const hasDelegatedAway = this.delegations.has(user);
+    let totalPower = hasDelegatedAway ? 0 : (this.votingPower.get(user) || 0);
+
+    // Add the own-power of each direct delegator who has NOT themselves
+    // delegated away (chained delegation is not supported; only direct
+    // delegators contribute).
     for (const [delegator, delegate] of this.delegations.entries()) {
-      if (delegate === user) {
-        totalPower += this.votingPower.get(delegator) || 1;
+      if (delegate === user && !this.delegations.has(delegator)) {
+        totalPower += this.votingPower.get(delegator) || 0;
       }
     }
-    
+
     return totalPower;
   }
 
