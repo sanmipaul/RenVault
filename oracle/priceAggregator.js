@@ -29,11 +29,13 @@ class PriceAggregator {
     );
 
     const results = [];
-    for (const outcome of settled) {
+    for (let i = 0; i < settled.length; i++) {
+      const outcome = settled[i];
       if (outcome.status === 'fulfilled') {
         results.push(outcome.value);
       } else {
-        console.warn(`Failed to fetch price from a source:`, outcome.reason?.message);
+        const sourceName = activeSources[i][0];
+        console.warn(`Failed to fetch price from ${sourceName}:`, outcome.reason?.message);
       }
     }
 
