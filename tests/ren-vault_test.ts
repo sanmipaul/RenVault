@@ -162,3 +162,99 @@ Clarinet.test({
         assertEquals(stats['points'], types.uint(1));
     },
 });
+// ===== rewards.clar access-control tests =====
+
+Clarinet.test({
+    name: "Non-owner cannot call set-milestone-reward",
+    async fn(chain: Chain, accounts: Map<string, Account>) {
+        const wallet1 = accounts.get('wallet_1')!;
+
+        let block = chain.mineBlock([
+            Tx.contractCall('rewards', 'set-milestone-reward', [types.uint(5), types.uint(1000000)], wallet1.address)
+        ]);
+
+        block.receipts[0].result.expectErr(types.uint(402)); // err-unauthorized
+    },
+});
+
+Clarinet.test({
+    name: "Owner can call set-milestone-reward",
+    async fn(chain: Chain, accounts: Map<string, Account>) {
+        const deployer = accounts.get('deployer')!;
+
+        let block = chain.mineBlock([
+            Tx.contractCall('rewards', 'set-milestone-reward', [types.uint(5), types.uint(1000000)], deployer.address)
+        ]);
+
+        block.receipts[0].result.expectOk();
+
+        let rewardResult = chain.callReadOnlyFn('rewards', 'get-milestone-reward', [types.uint(5)], deployer.address);
+        rewardResult.result.expectOk().expectUint(1000000);
+    },
+});
+
+Clarinet.test({
+    name: "Non-owner cannot call add-to-reward-pool",
+    async fn(chain: Chain, accounts: Map<string, Account>) {
+        const wallet1 = accounts.get('wallet_1')!;
+
+        let block = chain.mineBlock([
+            Tx.contractCall('rewards', 'add-to-reward-pool', [types.uint(5000000)], wallet1.address)
+        ]);
+
+        block.receipts[0].result.expectErr(types.uint(402)); // err-unauthorized
+    },
+});
+
+Clarinet.test({
+    name: "User can claim a milestone exactly once",
+    async fn(chain: Chain, accounts: Map<string, Account>) {
+        const deployer = accounts.get('deployer')!;
+        const wallet1  = accounts.get('wallet_1')!;
+
+        // Owner sets up milestone and seeds pool
+        chain.mineBlock([
+            Tx.contractCall('rewards', 'set-milestone-reward', [types.uint(1), types.uint(500000)], deployer.address),
+            Tx.contractCall('rewards', 'add-to-reward-pool',   [types.uint(1000000)], deployer.address),
+        ]);
+
+        // First claim should succeed
+        let block = chain.mineBlock([
+            Tx.contractCall('rewards', 'claim-milestone-reward', [types.uint(1)], wallet1.address)
+        ]);
+        block.receipts[0].result.expectOk().expectUint(500000);
+
+        // Second claim of the same milestone must fail
+        block = chain.mineBlock([
+            Tx.contractCall('rewards', 'claim-milestone-reward', [types.uint(1)], wallet1.address)
+        ]);
+        block.receipts[0].result.expectErr(types.uint(401)); // err-already-claimed
+    },
+});
+
+Clarinet.test({
+    name: "User can claim multiple different milestones",
+    async fn(chain: Chain, accounts: Map<string, Account>) {
+        const deployer = accounts.get('deployer')!;
+        const wallet1  = accounts.get('wallet_1')!;
+
+        chain.mineBlock([
+            Tx.contractCall('rewards', 'set-milestone-reward', [types.uint(1), types.uint(100000)], deployer.address),
+            Tx.contractCall('rewards', 'set-milestone-reward', [types.uint(5), types.uint(300000)], deployer.address),
+            Tx.contractCall('rewards', 'add-to-reward-pool',   [types.uint(1000000)], deployer.address),
+        ]);
+
+        let block = chain.mineBlock([
+            Tx.contractCall('rewards', 'claim-milestone-reward', [types.uint(1)], wallet1.address),
+        ]);
+        block.receipts[0].result.expectOk().expectUint(100000);
+
+        block = chain.mineBlock([
+            Tx.contractCall('rewards', 'claim-milestone-reward', [types.uint(5)], wallet1.address),
+        ]);
+        block.receipts[0].result.expectOk().expectUint(300000);
+
+        let rewardsResult = chain.callReadOnlyFn('rewards', 'get-user-rewards', [types.principal(wallet1.address)], wallet1.address);
+        rewardsResult.result.expectOk().expectUint(400000);
+    },
+});

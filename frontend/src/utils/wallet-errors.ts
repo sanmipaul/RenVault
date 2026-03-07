@@ -50,6 +50,13 @@ export enum WalletErrorCode {
   SOCIAL_AUTH_FAILED = 'SOCIAL_AUTH_FAILED',
   EMAIL_VERIFICATION_FAILED = 'EMAIL_VERIFICATION_FAILED',
 
+  // Rewards contract errors
+  REWARD_UNAUTHORIZED = 'REWARD_UNAUTHORIZED',
+  REWARD_NOT_FOUND = 'REWARD_NOT_FOUND',
+  REWARD_ALREADY_CLAIMED = 'REWARD_ALREADY_CLAIMED',
+  REWARD_INVALID_AMOUNT = 'REWARD_INVALID_AMOUNT',
+  REWARD_INSUFFICIENT_POOL = 'REWARD_INSUFFICIENT_POOL',
+
   // General errors
   UNKNOWN_ERROR = 'UNKNOWN_ERROR',
   WALLET_NOT_FOUND = 'WALLET_NOT_FOUND',
@@ -146,6 +153,21 @@ export const getFriendlyErrorMessage = (error: unknown): string => {
     case WalletErrorCode.METHOD_NOT_SUPPORTED:
       return 'The requested operation is not supported. Please try a different action.';
       
+    case WalletErrorCode.REWARD_UNAUTHORIZED:
+      return 'Only the contract owner can perform this action.';
+
+    case WalletErrorCode.REWARD_NOT_FOUND:
+      return 'No reward is configured for this milestone.';
+
+    case WalletErrorCode.REWARD_ALREADY_CLAIMED:
+      return 'You have already claimed this milestone reward.';
+
+    case WalletErrorCode.REWARD_INVALID_AMOUNT:
+      return 'Reward amount must be greater than zero.';
+
+    case WalletErrorCode.REWARD_INSUFFICIENT_POOL:
+      return 'The reward pool does not have enough funds for this claim. Please try again later.';
+
     case WalletErrorCode.UNKNOWN_ERROR:
     default:
       return walletError.message || 'An unexpected error occurred. Please try again.';
