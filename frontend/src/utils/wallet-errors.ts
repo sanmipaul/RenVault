@@ -50,12 +50,10 @@ export enum WalletErrorCode {
   SOCIAL_AUTH_FAILED = 'SOCIAL_AUTH_FAILED',
   EMAIL_VERIFICATION_FAILED = 'EMAIL_VERIFICATION_FAILED',
 
-  // Rewards contract errors
-  REWARD_UNAUTHORIZED = 'REWARD_UNAUTHORIZED',
-  REWARD_NOT_FOUND = 'REWARD_NOT_FOUND',
-  REWARD_ALREADY_CLAIMED = 'REWARD_ALREADY_CLAIMED',
-  REWARD_INVALID_AMOUNT = 'REWARD_INVALID_AMOUNT',
-  REWARD_INSUFFICIENT_POOL = 'REWARD_INSUFFICIENT_POOL',
+  // Vault-factory contract errors
+  VAULT_ALREADY_EXISTS = 'VAULT_ALREADY_EXISTS',
+  VAULT_NOT_FOUND = 'VAULT_NOT_FOUND',
+  VAULT_UNAUTHORIZED = 'VAULT_UNAUTHORIZED',
 
   // General errors
   UNKNOWN_ERROR = 'UNKNOWN_ERROR',
@@ -153,20 +151,14 @@ export const getFriendlyErrorMessage = (error: unknown): string => {
     case WalletErrorCode.METHOD_NOT_SUPPORTED:
       return 'The requested operation is not supported. Please try a different action.';
       
-    case WalletErrorCode.REWARD_UNAUTHORIZED:
-      return 'Only the contract owner can perform this action.';
+    case WalletErrorCode.VAULT_ALREADY_EXISTS:
+      return 'You already have a vault. Each wallet can only hold one vault.';
 
-    case WalletErrorCode.REWARD_NOT_FOUND:
-      return 'No reward is configured for this milestone.';
+    case WalletErrorCode.VAULT_NOT_FOUND:
+      return 'Vault not found. It may have been removed or the ID is invalid.';
 
-    case WalletErrorCode.REWARD_ALREADY_CLAIMED:
-      return 'You have already claimed this milestone reward.';
-
-    case WalletErrorCode.REWARD_INVALID_AMOUNT:
-      return 'Reward amount must be greater than zero.';
-
-    case WalletErrorCode.REWARD_INSUFFICIENT_POOL:
-      return 'The reward pool does not have enough funds for this claim. Please try again later.';
+    case WalletErrorCode.VAULT_UNAUTHORIZED:
+      return 'Only the contract owner can perform this vault action.';
 
     case WalletErrorCode.UNKNOWN_ERROR:
     default:
