@@ -97,7 +97,8 @@ class NotificationManager {
       userId,
       'sendDepositAlert', [amount, balance],
       'sendDepositNotification', [amount],
-      priority
+      priority,
+      'depositNotifications'
     );
   }
 
@@ -106,7 +107,8 @@ class NotificationManager {
       userId,
       'sendWithdrawAlert', [amount, balance],
       'sendWithdrawNotification', [amount],
-      priority
+      priority,
+      'withdrawalNotifications'
     );
   }
 
