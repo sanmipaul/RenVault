@@ -37,12 +37,12 @@ export const validateEnvironment = () => {
     errors.push('REACT_APP_URL is required');
   }
 
-  // Validate contract address format when explicitly overridden via env var.
+  // Validate the resolved contract address (env override or built-in default).
   // Accepts bare principals OR fully-qualified "principal.contract-name".
-  if (process.env.REACT_APP_CONTRACT_ADDRESS) {
-    if (!isValidStacksAddress(process.env.REACT_APP_CONTRACT_ADDRESS)) {
-      errors.push('REACT_APP_CONTRACT_ADDRESS is not a valid Stacks address');
-    }
+  if (!isValidStacksAddress(environment.contracts.renVaultAddress)) {
+    errors.push(
+      `REACT_APP_CONTRACT_ADDRESS "${environment.contracts.renVaultAddress}" is not a valid Stacks address`
+    );
   }
 
   if (environment.isProd) {
