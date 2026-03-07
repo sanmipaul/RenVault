@@ -78,15 +78,21 @@ class PriceAggregator {
   }
 
   async updatePrices(symbols) {
-    const updates = {};
-    
-    for (const symbol of symbols) {
-      try {
+    const settled = await Promise.allSettled(
+      symbols.map(async (symbol) => {
         const priceData = await this.fetchPrice(symbol);
+        return { symbol, priceData };
+      })
+    );
+
+    const updates = {};
+    for (const outcome of settled) {
+      if (outcome.status === 'fulfilled') {
+        const { symbol, priceData } = outcome.value;
         this.prices.set(symbol, priceData);
         updates[symbol] = priceData;
-      } catch (error) {
-        console.error(`Failed to update price for ${symbol}:`, error.message);
+      } else {
+        console.error(`Failed to update price for a symbol:`, outcome.reason?.message);
       }
     }
 
