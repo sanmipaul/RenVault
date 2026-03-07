@@ -14,7 +14,14 @@ class VotingSystem {
   updateVotingPower(user) {
     const balance = this.stakingBalances.get(user) || 0;
     const power = Math.floor(balance / 1000000); // 1 voting power per 1M STX
-    this.votingPower.set(user, Math.max(1, power));
+    if (power > 0) {
+      this.votingPower.set(user, power);
+    } else {
+      // Remove the entry entirely so the user has no governance weight
+      // until they stake. Keeping a phantom entry of 1 would let any
+      // zero-balance address vote and receive delegations.
+      this.votingPower.delete(user);
+    }
   }
 
   delegate(delegator, delegate) {
