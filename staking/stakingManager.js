@@ -135,7 +135,7 @@ class StakingManager {
   }
 
   updateRewardRate(newRate) {
-    if (newRate < 0 || newRate > 0.2) { // Max 20%
+    if (newRate <= 0 || newRate > 0.2) { // Must be positive; max 20%
       throw new Error('Invalid reward rate');
     }
     this.rewardRate = newRate;
