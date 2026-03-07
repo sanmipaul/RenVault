@@ -12,21 +12,28 @@ class PriceAggregator {
   }
 
   async fetchPrice(symbol) {
-    const results = [];
-    
-    for (const [name, source] of this.sources.entries()) {
-      if (!source.active) continue;
-      
-      try {
+    const activeSources = Array.from(this.sources.entries()).filter(
+      ([, source]) => source.active
+    );
+
+    const settled = await Promise.allSettled(
+      activeSources.map(async ([name, source]) => {
         const price = await source.fetcher(symbol);
-        results.push({
+        return {
           source: name,
           price: parseFloat(price),
           weight: source.weight,
-          timestamp: Date.now()
-        });
-      } catch (error) {
-        console.warn(`Failed to fetch price from ${name}:`, error.message);
+          timestamp: Date.now(),
+        };
+      })
+    );
+
+    const results = [];
+    for (const outcome of settled) {
+      if (outcome.status === 'fulfilled') {
+        results.push(outcome.value);
+      } else {
+        console.warn(`Failed to fetch price from a source:`, outcome.reason?.message);
       }
     }
 
