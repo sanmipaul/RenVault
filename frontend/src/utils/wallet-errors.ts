@@ -50,6 +50,11 @@ export enum WalletErrorCode {
   SOCIAL_AUTH_FAILED = 'SOCIAL_AUTH_FAILED',
   EMAIL_VERIFICATION_FAILED = 'EMAIL_VERIFICATION_FAILED',
 
+  // Vault-factory contract errors
+  VAULT_ALREADY_EXISTS = 'VAULT_ALREADY_EXISTS',
+  VAULT_NOT_FOUND = 'VAULT_NOT_FOUND',
+  VAULT_UNAUTHORIZED = 'VAULT_UNAUTHORIZED',
+
   // General errors
   UNKNOWN_ERROR = 'UNKNOWN_ERROR',
   WALLET_NOT_FOUND = 'WALLET_NOT_FOUND',
@@ -146,6 +151,15 @@ export const getFriendlyErrorMessage = (error: unknown): string => {
     case WalletErrorCode.METHOD_NOT_SUPPORTED:
       return 'The requested operation is not supported. Please try a different action.';
       
+    case WalletErrorCode.VAULT_ALREADY_EXISTS:
+      return 'You already have a vault. Each wallet can only hold one vault.';
+
+    case WalletErrorCode.VAULT_NOT_FOUND:
+      return 'Vault not found. It may have been removed or the ID is invalid.';
+
+    case WalletErrorCode.VAULT_UNAUTHORIZED:
+      return 'Only the contract owner can perform this vault action.';
+
     case WalletErrorCode.UNKNOWN_ERROR:
     default:
       return walletError.message || 'An unexpected error occurred. Please try again.';
