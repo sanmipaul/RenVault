@@ -1,3 +1,5 @@
+import { isValidStacksAddress, isMainnetAddress } from '../utils/stacksAddress';
+
 export const environment = {
   walletConnect: {
     projectId: process.env.REACT_APP_WALLETCONNECT_PROJECT_ID,
@@ -38,7 +40,6 @@ export const validateEnvironment = () => {
   // Validate contract address format when explicitly overridden via env var.
   // Accepts bare principals OR fully-qualified "principal.contract-name".
   if (process.env.REACT_APP_CONTRACT_ADDRESS) {
-    const { isValidStacksAddress } = require('../utils/stacksAddress');
     if (!isValidStacksAddress(process.env.REACT_APP_CONTRACT_ADDRESS)) {
       errors.push('REACT_APP_CONTRACT_ADDRESS is not a valid Stacks address');
     }
