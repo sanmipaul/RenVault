@@ -50,6 +50,7 @@ class NotificationManager {
       withdrawalNotifications: preferences.withdrawalNotifications !== false,
       stakingNotifications: preferences.stakingNotifications !== false,
       rewardNotifications: preferences.rewardNotifications !== false,
+      leaderboardNotifications: preferences.leaderboardNotifications !== false,
       // Security alerts
       securityAlerts: preferences.securityAlerts !== false,
       loginAlerts: preferences.loginAlerts !== false,
@@ -117,7 +118,8 @@ class NotificationManager {
       userId,
       'sendLeaderboardUpdate', [rank, score],
       'sendRankingNotification', [rank],
-      priority
+      priority,
+      'leaderboardNotifications'
     );
   }
 
