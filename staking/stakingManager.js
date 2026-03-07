@@ -67,7 +67,7 @@ class StakingManager {
 
     const stakingDuration = Date.now() - stakeTime;
     const epochs = Math.floor(stakingDuration / this.lockPeriod);
-    const rewards = (stake * this.rewardRate * epochs) / 100;
+    const rewards = stake * this.rewardRate * epochs;
 
     return Math.floor(rewards);
   }
