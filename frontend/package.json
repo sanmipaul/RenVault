@@ -10,7 +10,7 @@
     "@stacks/connect": "^7.8.1",
     "@stacks/network": "^6.5.4",
     "@stacks/transactions": "^6.5.4",
-    "@trezor/connect": "^9.0.11",
+    "@trezor/connect": "^9.7.2",
     "@trezor/connect-web": "^9.0.11",
     "@walletconnect/core": "^2.0.0",
     "@walletconnect/utils": "^2.0.0",
