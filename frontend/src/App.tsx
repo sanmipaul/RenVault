@@ -116,8 +116,19 @@ function AppContent() {
     };
   }, []);
 
-  // Initialize notification service
-  const notificationService = userData ? new NotificationService(userData.profile.stxAddress.mainnet) : null;
+  // Derive the notification userId from the connected wallet address so it is
+  // stable and consistent with the key used everywhere else in the app.
+  const notificationUserId = userData?.profile.stxAddress.mainnet ?? null;
+
+  // Initialize notification service — use the singleton so the same instance
+  // (and its registered listeners) is reused across re-renders.
+  const notificationService = useMemo(
+    () =>
+      notificationUserId
+        ? NotificationService.getInstance(notificationUserId)
+        : null,
+    [notificationUserId]
+  );
   const handle2FASetupComplete = (secret: string, backupCodes: string[]) => {
     setTfaSecret(secret);
     localStorage.setItem(APP_CONFIG.tfaEnabledKey, 'true');
