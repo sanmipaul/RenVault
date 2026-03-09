@@ -16,14 +16,19 @@ class LiquidityMining {
 
   stake(poolId, user, amount) {
     const key = `${poolId}-${user}`;
-    const current = this.userStakes.get(key) || { amount: 0, rewardDebt: 0, lastUpdate: Date.now() };
-    
+    // Capture a single timestamp so that calculatePending and lastUpdate
+    // both use exactly the same moment. Two separate Date.now() calls could
+    // yield different values, creating a tiny window of rewards that would
+    // never be paid out or banked.
+    const now = Date.now();
+    const current = this.userStakes.get(key) || { amount: 0, rewardDebt: 0, lastUpdate: now };
+
     const pending = this.calculatePending(poolId, user);
-    
+
     this.userStakes.set(key, {
       amount: current.amount + amount,
       rewardDebt: current.rewardDebt + pending,
-      lastUpdate: Date.now()
+      lastUpdate: now
     });
 
     const program = this.programs.get(poolId);
