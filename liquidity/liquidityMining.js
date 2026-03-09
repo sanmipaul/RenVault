@@ -50,13 +50,18 @@ class LiquidityMining {
     const pending = this.calculatePending(poolId, user);
     const key = `${poolId}-${user}`;
     const stake = this.userStakes.get(key);
-    
+
     if (stake) {
+      // rewardDebt holds rewards banked during previous stake() calls.
+      // It must be included in the payout before being cleared, otherwise
+      // every intermediate stake operation permanently forfeits those rewards.
+      const totalPayout = pending + stake.rewardDebt;
       stake.rewardDebt = 0;
       stake.lastUpdate = Date.now();
       this.userStakes.set(key, stake);
+      return totalPayout;
     }
-    
+
     return pending;
   }
 
