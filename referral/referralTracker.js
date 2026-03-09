@@ -99,7 +99,9 @@ class ReferralTracker {
   }
 
   getEventHistory(limit = 100) {
-    return this.events
+    // Spread to avoid sorting this.events in-place, which would permanently
+    // reorder the internal event log and corrupt subsequent analytics calls.
+    return [...this.events]
       .sort((a, b) => b.timestamp - a.timestamp)
       .slice(0, limit);
   }
