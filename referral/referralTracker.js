@@ -127,16 +127,28 @@ class ReferralTracker {
   }
 
   getTimeSeriesData(period = 'daily') {
+    const SUPPORTED_PERIODS = ['hourly', 'daily', 'weekly'];
+    if (!SUPPORTED_PERIODS.includes(period)) {
+      throw new Error(`Unsupported period "${period}". Must be one of: ${SUPPORTED_PERIODS.join(', ')}`);
+    }
+
     const groupedData = new Map();
-    
+
     this.events.forEach(event => {
       const date = new Date(event.timestamp);
       let key;
-      
-      if (period === 'daily') {
+
+      if (period === 'hourly') {
+        // "2025-03-09T14" — ISO date + hour, no minutes/seconds
+        key = date.toISOString().slice(0, 13);
+      } else if (period === 'daily') {
         key = date.toISOString().split('T')[0];
-      } else if (period === 'hourly') {
-        key = date.toISOString().split(':')[0];
+      } else if (period === 'weekly') {
+        // ISO week: YYYY-Www  (Monday-anchored)
+        const dayOfWeek = date.getUTCDay() || 7; // Sun=0 → 7
+        const monday = new Date(date);
+        monday.setUTCDate(date.getUTCDate() - dayOfWeek + 1);
+        key = monday.toISOString().split('T')[0];
       }
 
       if (!groupedData.has(key)) {
