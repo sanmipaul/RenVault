@@ -63,10 +63,22 @@ class ReferralTracker {
     this.metrics.totalRewards = rewards.reduce((sum, r) => sum + r.commission, 0);
     this.metrics.totalClaimed = claims.reduce((sum, c) => sum + c.amount, 0);
 
-    // Calculate conversion rate (users who made transactions after referral)
-    const activeUsers = new Set(rewards.map(r => r.referrerAddress));
-    this.metrics.conversionRate = registrations.length > 0 
-      ? (activeUsers.size / registrations.length * 100).toFixed(1)
+    // Conversion rate: referred users who went on to make a transaction
+    // (triggering a REFERRAL_REWARD for their referrer) vs all referred users.
+    // We track which userAddress appears in REFERRAL_REGISTRATION events, then
+    // check which of those addresses appears as the transacting party in
+    // REFERRAL_REWARD events (stored as referrerAddress on reward events that
+    // were earned because of that user's activity — use registrations to get
+    // the referred user set and rewards to see who became active).
+    const referredUsers = new Set(registrations.map(e => e.userAddress));
+    const activeReferredUsers = new Set(
+      rewards
+        .map(r => r.referrerAddress)
+        // Keep only addresses that were themselves referred (not original referrers)
+        .filter(addr => referredUsers.has(addr))
+    );
+    this.metrics.conversionRate = referredUsers.size > 0
+      ? (activeReferredUsers.size / referredUsers.size * 100).toFixed(1)
       : 0;
 
     // Update top referrers
@@ -99,7 +111,9 @@ class ReferralTracker {
   }
 
   getEventHistory(limit = 100) {
-    return this.events
+    // Spread to avoid sorting this.events in-place, which would permanently
+    // reorder the internal event log and corrupt subsequent analytics calls.
+    return [...this.events]
       .sort((a, b) => b.timestamp - a.timestamp)
       .slice(0, limit);
   }
@@ -127,16 +141,28 @@ class ReferralTracker {
   }
 
   getTimeSeriesData(period = 'daily') {
+    const SUPPORTED_PERIODS = ['hourly', 'daily', 'weekly'];
+    if (!SUPPORTED_PERIODS.includes(period)) {
+      throw new Error(`Unsupported period "${period}". Must be one of: ${SUPPORTED_PERIODS.join(', ')}`);
+    }
+
     const groupedData = new Map();
-    
+
     this.events.forEach(event => {
       const date = new Date(event.timestamp);
       let key;
-      
-      if (period === 'daily') {
+
+      if (period === 'hourly') {
+        // "2025-03-09T14" — ISO date + hour, no minutes/seconds
+        key = date.toISOString().slice(0, 13);
+      } else if (period === 'daily') {
         key = date.toISOString().split('T')[0];
-      } else if (period === 'hourly') {
-        key = date.toISOString().split(':')[0];
+      } else if (period === 'weekly') {
+        // ISO week: YYYY-Www  (Monday-anchored)
+        const dayOfWeek = date.getUTCDay() || 7; // Sun=0 → 7
+        const monday = new Date(date);
+        monday.setUTCDate(date.getUTCDate() - dayOfWeek + 1);
+        key = monday.toISOString().split('T')[0];
       }
 
       if (!groupedData.has(key)) {
