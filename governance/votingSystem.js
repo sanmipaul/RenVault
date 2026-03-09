@@ -37,16 +37,18 @@ class VotingSystem {
   }
 
   getVotingPower(user) {
-    // A user who has delegated their own vote away contributes 0 here;
-    // their power is counted at their delegate instead.
-    const hasDelegatedAway = this.delegations.has(user);
-    let totalPower = hasDelegatedAway ? 0 : (this.votingPower.get(user) || 0);
+    // A user who has delegated away contributes 0 at their own address;
+    // their stake is counted at their delegate instead.
+    if (this.delegations.has(user)) return 0;
 
-    // Add the own-power of each direct delegator who has NOT themselves
-    // delegated away (chained delegation is not supported; only direct
-    // delegators contribute).
+    let totalPower = this.votingPower.get(user) || 0;
+
+    // Add the own stake of every direct delegator.
+    // We deliberately use each delegator's raw stake (votingPower map),
+    // not their getVotingPower(), so that chained delegators (who already
+    // return 0 for themselves) do not amplify power up the chain.
     for (const [delegator, delegate] of this.delegations.entries()) {
-      if (delegate === user && !this.delegations.has(delegator)) {
+      if (delegate === user) {
         totalPower += this.votingPower.get(delegator) || 0;
       }
     }
