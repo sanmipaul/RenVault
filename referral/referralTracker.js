@@ -63,10 +63,22 @@ class ReferralTracker {
     this.metrics.totalRewards = rewards.reduce((sum, r) => sum + r.commission, 0);
     this.metrics.totalClaimed = claims.reduce((sum, c) => sum + c.amount, 0);
 
-    // Calculate conversion rate (users who made transactions after referral)
-    const activeUsers = new Set(rewards.map(r => r.referrerAddress));
-    this.metrics.conversionRate = registrations.length > 0 
-      ? (activeUsers.size / registrations.length * 100).toFixed(1)
+    // Conversion rate: referred users who went on to make a transaction
+    // (triggering a REFERRAL_REWARD for their referrer) vs all referred users.
+    // We track which userAddress appears in REFERRAL_REGISTRATION events, then
+    // check which of those addresses appears as the transacting party in
+    // REFERRAL_REWARD events (stored as referrerAddress on reward events that
+    // were earned because of that user's activity — use registrations to get
+    // the referred user set and rewards to see who became active).
+    const referredUsers = new Set(registrations.map(e => e.userAddress));
+    const activeReferredUsers = new Set(
+      rewards
+        .map(r => r.referrerAddress)
+        // Keep only addresses that were themselves referred (not original referrers)
+        .filter(addr => referredUsers.has(addr))
+    );
+    this.metrics.conversionRate = referredUsers.size > 0
+      ? (activeReferredUsers.size / referredUsers.size * 100).toFixed(1)
       : 0;
 
     // Update top referrers
