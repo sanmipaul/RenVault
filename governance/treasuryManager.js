@@ -71,7 +71,11 @@ class TreasuryManager {
   }
 
   getTransactionHistory(limit = 50) {
-    return this.transactions
+    // Spread before sorting: Array.prototype.sort is in-place, so sorting
+    // this.transactions directly permanently reorders the internal ledger.
+    // Subsequent getTreasuryStats() or integrity checks would see a scrambled
+    // transaction array that still sums correctly but audits in wrong order.
+    return [...this.transactions]
       .sort((a, b) => b.timestamp - a.timestamp)
       .slice(0, limit);
   }
@@ -82,7 +86,9 @@ class TreasuryManager {
       budgets[category] = {
         ...budget,
         remaining: budget.allocated - budget.spent,
-        utilization: (budget.spent / budget.allocated * 100).toFixed(1)
+        utilization: budget.allocated > 0
+          ? (budget.spent / budget.allocated * 100).toFixed(1)
+          : '0.0'
       };
     }
     return budgets;
