@@ -6,7 +6,14 @@ class TreasuryManager {
     this.budgets = new Map();
   }
 
+  _validateAmount(amount, label = 'amount') {
+    if (typeof amount !== 'number' || !Number.isFinite(amount) || amount <= 0) {
+      throw new Error(`${label} must be a finite positive number`);
+    }
+  }
+
   deposit(amount, source = 'protocol-fees') {
+    this._validateAmount(amount, 'Deposit amount');
     this.balance += amount;
     this.transactions.push({
       type: 'deposit',
@@ -19,6 +26,8 @@ class TreasuryManager {
   }
 
   withdraw(amount, recipient, purpose) {
+    this._validateAmount(amount, 'Withdrawal amount');
+    if (!recipient || typeof recipient !== 'string') throw new Error('recipient must be a non-empty string');
     if (amount > this.balance) throw new Error('Insufficient treasury funds');
     
     this.balance -= amount;
