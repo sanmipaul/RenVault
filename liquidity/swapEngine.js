@@ -10,6 +10,9 @@ class SwapEngine {
   }
 
   calculateSlippage(expectedOut, actualOut) {
+    // Guard against division by zero: if expectedOut is 0, slippage is
+    // undefined (100% is a reasonable sentinel — caller receives nothing).
+    if (expectedOut === 0) return 100;
     return Math.abs((expectedOut - actualOut) / expectedOut) * 100;
   }
 
