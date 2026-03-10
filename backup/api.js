@@ -100,6 +100,21 @@ app.post('/api/wallet/backup', async (req, res) => {
   }
 });
 
+// The download route MUST be registered before /:userId.
+// Express matches routes in registration order; if /:userId came first,
+// GET /api/wallet/backup/download/foo would match with userId="download"
+// and never reach the download handler.
+app.get('/api/wallet/backup/download/:filename', (req, res) => {
+  const filename = sanitizeSegment(req.params.filename);
+  const filepath = path.join(__dirname, 'wallet-backups', filename);
+
+  if (!fs.existsSync(filepath)) {
+    return res.status(404).json({ error: 'Backup not found' });
+  }
+
+  res.download(filepath);
+});
+
 app.get('/api/wallet/backup/:userId', (req, res) => {
   const userId = sanitizeSegment(req.params.userId);
 
@@ -121,22 +136,11 @@ app.get('/api/wallet/backup/:userId', (req, res) => {
         };
       })
       .sort((a, b) => b.created - a.created);
-    
+
     res.json({ backups });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
-});
-
-app.get('/api/wallet/backup/download/:filename', (req, res) => {
-  const filename = sanitizeSegment(req.params.filename);
-  const filepath = path.join(__dirname, 'wallet-backups', filename);
-  
-  if (!fs.existsSync(filepath)) {
-    return res.status(404).json({ error: 'Backup not found' });
-  }
-  
-  res.download(filepath);
 });
 
 // Multi-Signature Wallet Endpoints
