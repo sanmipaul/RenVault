@@ -26,7 +26,14 @@ class SwapEngine {
     const reserveOut = isTokenA ? pool.reserveB : pool.reserveA;
 
     const amountOut = this.calculateSwapOutput(amountIn, reserveIn, reserveOut);
-    
+
+    // Reject before touching reserves: a zero output means the user would pay
+    // amountIn (plus fee) and receive nothing — Math.floor on a tiny input
+    // relative to large reserves produces 0 and the swap silently steals value.
+    if (amountOut === 0) {
+      throw new Error('Insufficient output amount: input too small relative to pool reserves');
+    }
+
     if (amountOut < minAmountOut) {
       throw new Error('Slippage too high');
     }
