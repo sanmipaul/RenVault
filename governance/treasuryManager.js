@@ -57,8 +57,12 @@ class TreasuryManager {
     if (!budget) throw new Error('Budget category not found');
     if (budget.spent + amount > budget.allocated) throw new Error('Budget exceeded');
 
-    budget.spent += amount;
+    // Withdraw first: if the treasury has insufficient funds withdraw() throws
+    // and budget.spent is never touched, keeping both state machines consistent.
+    // Mutating budget.spent before the withdraw would leave the budget showing
+    // as partially spent even though no funds left the treasury.
     this.withdraw(amount, 'budget-spend', `${category}: ${description}`);
+    budget.spent += amount;
     return budget;
   }
 
