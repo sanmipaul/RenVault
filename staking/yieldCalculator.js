@@ -30,6 +30,9 @@ class YieldCalculator {
   }
 
   calculateStakingReturns(stakeAmount, stakingDays, rewardRate = this.baseRewardRate) {
+    if (typeof stakeAmount !== 'number' || stakeAmount <= 0) throw new TypeError('stakeAmount must be a positive number');
+    if (typeof stakingDays !== 'number' || stakingDays <= 0) throw new TypeError('stakingDays must be a positive number');
+    if (typeof rewardRate !== 'number' || rewardRate <= 0) throw new TypeError('rewardRate must be a positive number');
     const periods = stakingDays / 365; // Convert days to years
     
     const simpleYield = this.calculateSimpleYield(stakeAmount, rewardRate, periods);
