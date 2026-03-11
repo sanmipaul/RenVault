@@ -14,6 +14,12 @@ class PoolManager {
 
   calculateLiquidity(amountA, amountB, reserveA, reserveB, totalSupply) {
     if (totalSupply === 0) return Math.sqrt(amountA * amountB);
+    // Guard against division by zero: if either reserve has been fully
+    // drained (reserveA or reserveB === 0), the proportion-based formula
+    // would produce Infinity, corrupting totalSupply calculations.
+    if (reserveA <= 0 || reserveB <= 0) {
+      throw new Error('Cannot calculate liquidity: pool reserves must be positive');
+    }
     return Math.min((amountA * totalSupply) / reserveA, (amountB * totalSupply) / reserveB);
   }
 
