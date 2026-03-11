@@ -49,15 +49,23 @@ class DataExporter {
     }
 
     const userData = [];
+    const failedAddresses = [];
 
     for (const address of userAddresses) {
       const data = await this.exportUserData(address);
-      if (data) userData.push(data);
+      if (data) {
+        userData.push(data);
+      } else {
+        failedAddresses.push(address);
+      }
     }
 
     return {
       exportedAt: new Date().toISOString(),
+      totalRequested: userAddresses.length,
       totalUsers: userData.length,
+      failedCount: failedAddresses.length,
+      failedAddresses,
       users: userData
     };
   }
