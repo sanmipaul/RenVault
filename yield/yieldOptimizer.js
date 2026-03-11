@@ -24,6 +24,8 @@ class YieldOptimizer {
   }
 
   optimizeAllocation(userBalance, riskTolerance) {
+    if (typeof userBalance !== 'number' || userBalance < 0) throw new Error('userBalance must be a non-negative number');
+    if (!riskTolerance || typeof riskTolerance !== 'string') throw new Error('riskTolerance is required');
     const strategies = Array.from(this.strategies.values())
       .filter(s => s.active && userBalance >= s.minAmount)
       .sort((a, b) => b.apy - a.apy);
