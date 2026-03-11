@@ -130,8 +130,12 @@ class RecoveryManager {
       }
     }
 
-    if (backupData.version !== '1.0') {
-      return { valid: false, error: 'Unsupported backup version' };
+    const SUPPORTED_VERSIONS = ['1.0'];
+    if (!SUPPORTED_VERSIONS.includes(backupData.version)) {
+      return {
+        valid: false,
+        error: `Unsupported backup version "${backupData.version}". Supported: ${SUPPORTED_VERSIONS.join(', ')}`
+      };
     }
 
     return { valid: true };
