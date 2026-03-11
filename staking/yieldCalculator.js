@@ -10,8 +10,12 @@ class YieldCalculator {
   }
 
   calculateCompoundYield(principal, rate, periods, compoundingFrequency = this.compoundingFrequency) {
-    const periodsPerCompound = periods / compoundingFrequency;
-    return principal * Math.pow(1 + (rate / compoundingFrequency), compoundingFrequency * periodsPerCompound) - principal;
+    // Standard compound interest: P * (1 + r/n)^(n*t) - P
+    // where n = compoundingFrequency, t = periods (in years).
+    // The old code computed n * (t/n) = t as the exponent, collapsing
+    // daily compounding to simple annual compounding and drastically
+    // under-reporting returns for high-frequency compounding schedules.
+    return principal * Math.pow(1 + (rate / compoundingFrequency), compoundingFrequency * periods) - principal;
   }
 
   calculateAPY(rate, compoundingFrequency = this.compoundingFrequency) {
