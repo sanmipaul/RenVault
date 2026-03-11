@@ -11,6 +11,9 @@ class YieldOptimizer {
   }
 
   addStrategy(name, config) {
+    if (!name || typeof name !== 'string') throw new Error('strategy name is required');
+    if (!config || typeof config.apy !== 'number' || config.apy < 0) throw new Error('config.apy must be a non-negative number');
+    if (typeof config.minAmount !== 'number' || config.minAmount < 0) throw new Error('config.minAmount must be a non-negative number');
     this.strategies.set(name, {
       name,
       apy: config.apy,
