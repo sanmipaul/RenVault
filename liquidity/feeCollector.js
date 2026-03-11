@@ -45,7 +45,7 @@ class FeeCollector {
   getAllPoolFees(poolId) {
     const poolFees = {};
     for (const [key, amount] of this.fees.entries()) {
-      if (key.startsWith(poolId)) {
+      if (key.startsWith(`${poolId}-`)) {
         const token = key.split('-')[1];
         poolFees[token] = amount;
       }

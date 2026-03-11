@@ -34,7 +34,7 @@ class ImpermanentLossCalculator {
     const position = this.positions.get(key);
     if (!position) return null;
 
-    const { amountA, amountB, initialPriceA, initialPriceB, initialValue } = position;
+    const { amountA, amountB, initialPriceA, initialPriceB } = position;
 
     // Current value if held
     const holdValue = (amountA * currentPriceA) + (amountB * currentPriceB);
