@@ -10,16 +10,21 @@ class LiquidityRewards {
     if (!user || typeof user !== 'string') throw new TypeError('user must be a non-empty string');
     if (typeof amount !== 'number' || amount <= 0) throw new TypeError('amount must be a positive number');
     const key = `${poolId}-${user}`;
-    const current = this.userRewards.get(key) || { amount: 0, lastUpdate: Date.now() };
-    
+    // Capture a single timestamp so that timeElapsed and the stored lastUpdate
+    // are derived from the same instant. Two separate Date.now() calls could
+    // yield different values, creating a tiny window of rewards that would
+    // be neither banked into pendingRewards nor included in the next window.
+    const now = Date.now();
+    const current = this.userRewards.get(key) || { amount: 0, lastUpdate: now };
+
     // Calculate pending rewards
-    const timeElapsed = (Date.now() - current.lastUpdate) / (1000 * 60 * 60 * 24 * 365);
+    const timeElapsed = (now - current.lastUpdate) / (1000 * 60 * 60 * 24 * 365);
     const pendingRewards = current.amount * this.rewardRate * timeElapsed;
-    
+
     this.userRewards.set(key, {
       amount: current.amount + amount,
       pendingRewards: (current.pendingRewards || 0) + pendingRewards,
-      lastUpdate: Date.now()
+      lastUpdate: now
     });
   }
 
