@@ -48,11 +48,14 @@ class BackupScheduler {
       }
     };
     
-    // Create initial backup
-    this.createScheduledBackup();
-    
+    // Create initial backup — await inside an IIFE so the Promise is not
+    // abandoned; unhandled rejections would crash modern Node.js processes.
+    (async () => {
+      await this.createScheduledBackup();
+    })().catch(err => console.error('Initial backup failed:', err.message));
+
     // Schedule recurring backups
-    setTimeout(backup, intervalMs);
+    this.initialTimeoutId = setTimeout(backup, intervalMs);
   }
 
   stop() {
