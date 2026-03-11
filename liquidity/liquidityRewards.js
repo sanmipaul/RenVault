@@ -54,8 +54,11 @@ class LiquidityRewards {
   }
 
   getPoolStats(poolId) {
+    // Use a sentinel-terminated prefix so that querying 'pool1' does not
+    // accidentally include entries from 'pool10', 'pool100', etc.
+    const prefix = `${poolId}-`;
     const poolRewards = Array.from(this.userRewards.entries())
-      .filter(([key]) => key.startsWith(poolId))
+      .filter(([key]) => key.startsWith(prefix))
       .reduce((total, [, position]) => total + position.amount, 0);
     
     return {
