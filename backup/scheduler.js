@@ -82,10 +82,12 @@ class BackupScheduler {
   }
 
   getStatus() {
+    // Do not expose the full user address list in the status response —
+    // the /api/backup/schedule/status endpoint is unauthenticated and
+    // returning all enrolled addresses would leak wallet identities.
     return {
       running: this.isRunning,
-      userCount: this.knownUsers.size,
-      users: Array.from(this.knownUsers)
+      userCount: this.knownUsers.size
     };
   }
 }
