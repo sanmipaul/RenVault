@@ -5,6 +5,9 @@ class SwapEngine {
   }
 
   calculateSwapOutput(amountIn, reserveIn, reserveOut) {
+    if (typeof amountIn !== 'number' || amountIn <= 0) throw new Error('amountIn must be a positive number');
+    if (typeof reserveIn !== 'number' || reserveIn <= 0) throw new Error('reserveIn must be a positive number');
+    if (typeof reserveOut !== 'number' || reserveOut <= 0) throw new Error('reserveOut must be a positive number');
     const amountInWithFee = amountIn * (1 - this.feeRate);
     return Math.floor((amountInWithFee * reserveOut) / (reserveIn + amountInWithFee));
   }
