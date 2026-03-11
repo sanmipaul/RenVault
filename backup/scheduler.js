@@ -8,7 +8,14 @@ class BackupScheduler {
   }
 
   addUser(address) {
+    if (!address || typeof address !== 'string') {
+      throw new TypeError('address must be a non-empty string');
+    }
     this.knownUsers.add(address);
+  }
+
+  removeUser(address) {
+    this.knownUsers.delete(address);
   }
 
   addUsers(addresses) {
