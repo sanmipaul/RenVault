@@ -12,7 +12,14 @@ class BackupScheduler {
   }
 
   addUsers(addresses) {
-    addresses.forEach(addr => this.knownUsers.add(addr));
+    if (!Array.isArray(addresses)) {
+      throw new TypeError('addresses must be an array');
+    }
+    addresses.forEach(addr => {
+      if (addr && typeof addr === 'string') {
+        this.knownUsers.add(addr);
+      }
+    });
   }
 
   async createScheduledBackup() {
