@@ -60,7 +60,11 @@ class BackupScheduler {
 
   stop() {
     this.isRunning = false;
-    console.log('⏹️ Backup scheduler stopped');
+    if (this.initialTimeoutId) {
+      clearTimeout(this.initialTimeoutId);
+      this.initialTimeoutId = null;
+    }
+    console.log('Backup scheduler stopped');
   }
 
   getStatus() {
