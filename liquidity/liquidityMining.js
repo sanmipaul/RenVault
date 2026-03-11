@@ -5,6 +5,10 @@ class LiquidityMining {
   }
 
   createProgram(poolId, rewardToken, rewardRate, duration) {
+    if (!poolId || typeof poolId !== 'string') throw new Error('poolId is required');
+    if (!rewardToken || typeof rewardToken !== 'string') throw new Error('rewardToken is required');
+    if (typeof rewardRate !== 'number' || rewardRate <= 0) throw new Error('rewardRate must be a positive number');
+    if (typeof duration !== 'number' || duration <= 0) throw new Error('duration must be a positive number');
     this.programs.set(poolId, {
       rewardToken,
       rewardRate,
