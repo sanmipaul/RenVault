@@ -76,11 +76,11 @@ class RecoveryManager {
       return { error: validation.error };
     }
 
-    const totalBalance = backupData.users.reduce((sum, user) => 
-      sum + parseInt(user.balance), 0);
-    
-    const totalPoints = backupData.users.reduce((sum, user) => 
-      sum + parseInt(user.points), 0);
+    const totalBalance = backupData.users.reduce((sum, user) =>
+      sum + parseInt(user.balance, 10), 0);
+
+    const totalPoints = backupData.users.reduce((sum, user) =>
+      sum + parseInt(user.points, 10), 0);
 
     return {
       exportedAt: backupData.exportedAt,
