@@ -45,7 +45,7 @@ class ImpermanentLossCalculator {
     
     // LP value with constant product
     const lpMultiplier = 2 * Math.sqrt(priceRatio) / (1 + priceRatio);
-    const lpValue = initialValue * lpMultiplier;
+    const lpValue = holdValue * lpMultiplier;
     
     // Impermanent loss
     const impermanentLoss = ((lpValue - holdValue) / holdValue) * 100;
