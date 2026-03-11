@@ -48,17 +48,20 @@ class DataExporter {
       throw new Error('userAddresses must not be empty');
     }
 
+    const results = await Promise.allSettled(
+      userAddresses.map(address => this.exportUserData(address))
+    );
+
     const userData = [];
     const failedAddresses = [];
 
-    for (const address of userAddresses) {
-      const data = await this.exportUserData(address);
-      if (data) {
-        userData.push(data);
+    results.forEach((result, i) => {
+      if (result.status === 'fulfilled' && result.value) {
+        userData.push(result.value);
       } else {
-        failedAddresses.push(address);
+        failedAddresses.push(userAddresses[i]);
       }
-    }
+    });
 
     return {
       exportedAt: new Date().toISOString(),
