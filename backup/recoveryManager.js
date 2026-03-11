@@ -14,7 +14,11 @@ class RecoveryManager {
     }
 
     const data = fs.readFileSync(filepath, 'utf8');
-    return JSON.parse(data);
+    try {
+      return JSON.parse(data);
+    } catch (err) {
+      throw new Error(`Backup file "${filename}" contains invalid JSON: ${err.message}`);
+    }
   }
 
   listBackups() {
