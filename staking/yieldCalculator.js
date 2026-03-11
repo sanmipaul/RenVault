@@ -101,6 +101,7 @@ class YieldCalculator {
   }
 
   calculateRiskAdjustedReturn(stakeAmount, rewardRate, riskFactor = 1) {
+    if (typeof riskFactor !== 'number' || riskFactor <= 0) throw new TypeError('riskFactor must be a positive number');
     const baseReturn = this.calculateStakingReturns(stakeAmount, 365, rewardRate);
     const adjustedRate = rewardRate / riskFactor;
     const adjustedReturn = this.calculateStakingReturns(stakeAmount, 365, adjustedRate);
