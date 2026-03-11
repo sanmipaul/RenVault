@@ -6,6 +6,9 @@ class LiquidityRewards {
   }
 
   addLiquidityProvider(poolId, user, amount) {
+    if (!poolId || typeof poolId !== 'string') throw new TypeError('poolId must be a non-empty string');
+    if (!user || typeof user !== 'string') throw new TypeError('user must be a non-empty string');
+    if (typeof amount !== 'number' || amount <= 0) throw new TypeError('amount must be a positive number');
     const key = `${poolId}-${user}`;
     const current = this.userRewards.get(key) || { amount: 0, lastUpdate: Date.now() };
     
