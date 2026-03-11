@@ -32,6 +32,10 @@ class BackupScheduler {
   }
 
   start(intervalHours = 24) {
+    if (this.isRunning) {
+      console.warn('Backup scheduler is already running. Call stop() before starting again.');
+      return;
+    }
     this.isRunning = true;
     const intervalMs = intervalHours * 60 * 60 * 1000;
     
