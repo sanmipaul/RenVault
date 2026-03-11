@@ -41,8 +41,15 @@ class DataExporter {
   }
 
   async exportAllUsers(userAddresses) {
+    if (!Array.isArray(userAddresses)) {
+      throw new TypeError('userAddresses must be an array');
+    }
+    if (userAddresses.length === 0) {
+      throw new Error('userAddresses must not be empty');
+    }
+
     const userData = [];
-    
+
     for (const address of userAddresses) {
       const data = await this.exportUserData(address);
       if (data) userData.push(data);
