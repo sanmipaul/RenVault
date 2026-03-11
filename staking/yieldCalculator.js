@@ -50,6 +50,9 @@ class YieldCalculator {
   }
 
   calculateBreakEven(stakeAmount, gasCosts, rewardRate = this.baseRewardRate) {
+    if (typeof stakeAmount !== 'number' || stakeAmount <= 0) throw new TypeError('stakeAmount must be a positive number');
+    if (typeof gasCosts !== 'number' || gasCosts < 0) throw new TypeError('gasCosts must be a non-negative number');
+    if (typeof rewardRate !== 'number' || rewardRate <= 0) throw new TypeError('rewardRate must be a positive number');
     const dailyReward = (stakeAmount * rewardRate) / 365;
     const breakEvenDays = gasCosts / dailyReward;
     
