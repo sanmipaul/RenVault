@@ -51,8 +51,14 @@ class RecoveryManager {
     }
 
     for (const user of backupData.users) {
-      if (!user.address || !user.balance || !user.points) {
-        return { valid: false, error: 'Invalid user data structure' };
+      if (!user.address) {
+        return { valid: false, error: 'Invalid user data structure: missing address' };
+      }
+      if (user.balance === undefined || user.balance === null) {
+        return { valid: false, error: 'Invalid user data structure: missing balance' };
+      }
+      if (user.points === undefined || user.points === null) {
+        return { valid: false, error: 'Invalid user data structure: missing points' };
       }
     }
 
