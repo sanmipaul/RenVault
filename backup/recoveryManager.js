@@ -87,8 +87,10 @@ class RecoveryManager {
       totalUsers: backupData.totalUsers,
       totalBalance: totalBalance,
       totalPoints: totalPoints,
-      averageBalance: Math.floor(totalBalance / backupData.totalUsers),
-      averagePoints: Math.floor(totalPoints / backupData.totalUsers)
+      averageBalance: backupData.users.length > 0
+        ? Math.floor(totalBalance / backupData.users.length) : 0,
+      averagePoints: backupData.users.length > 0
+        ? Math.floor(totalPoints / backupData.users.length) : 0
     };
   }
 
