@@ -46,7 +46,7 @@ class LiquidityMining {
     
     if (!stake || !program || program.totalStaked === 0) return 0;
 
-    const timeElapsed = Math.min(Date.now(), program.endTime) - stake.lastUpdate;
+    const timeElapsed = Math.max(0, Math.min(Date.now(), program.endTime) - stake.lastUpdate);
     const userShare = stake.amount / program.totalStaked;
     const rewards = (timeElapsed / 1000) * program.rewardRate * userShare;
     
