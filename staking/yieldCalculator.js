@@ -115,6 +115,7 @@ class YieldCalculator {
   }
 
   generateYieldProjection(stakeAmount, rewardRate, maxDays = 365) {
+    if (typeof maxDays !== 'number' || maxDays <= 0) throw new TypeError('maxDays must be a positive number');
     const projection = [];
     
     for (let day = 1; day <= maxDays; day += 30) { // Monthly intervals
