@@ -74,6 +74,13 @@ class DataExporter {
   }
 
   saveBackup(data, filename) {
+    if (data === undefined || data === null) {
+      throw new Error('Cannot save backup: data is null or undefined');
+    }
+    if (!filename || typeof filename !== 'string') {
+      throw new Error('Cannot save backup: filename must be a non-empty string');
+    }
+
     const backupDir = path.join(__dirname, 'backups');
     if (!fs.existsSync(backupDir)) {
       fs.mkdirSync(backupDir, { recursive: true });
@@ -81,8 +88,8 @@ class DataExporter {
 
     const filepath = path.join(backupDir, filename);
     fs.writeFileSync(filepath, JSON.stringify(data, null, 2));
-    
-    console.log(`✅ Backup saved: ${filepath}`);
+
+    console.log(`Backup saved: ${filepath}`);
     return filepath;
   }
 
