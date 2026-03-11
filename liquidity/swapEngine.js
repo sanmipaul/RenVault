@@ -13,6 +13,8 @@ class SwapEngine {
   }
 
   calculateSlippage(expectedOut, actualOut) {
+    if (typeof expectedOut !== 'number' || expectedOut <= 0) throw new Error('expectedOut must be a positive number');
+    if (typeof actualOut !== 'number' || actualOut < 0) throw new Error('actualOut must be a non-negative number');
     return Math.abs((expectedOut - actualOut) / expectedOut) * 100;
   }
 
