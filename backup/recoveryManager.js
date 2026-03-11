@@ -84,7 +84,7 @@ class RecoveryManager {
 
     return {
       exportedAt: backupData.exportedAt,
-      totalUsers: backupData.totalUsers,
+      totalUsers: backupData.users.length,
       totalBalance: totalBalance,
       totalPoints: totalPoints,
       averageBalance: backupData.users.length > 0
