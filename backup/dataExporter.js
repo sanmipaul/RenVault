@@ -87,7 +87,11 @@ class DataExporter {
     }
 
     const filepath = path.join(backupDir, filename);
-    fs.writeFileSync(filepath, JSON.stringify(data, null, 2));
+    try {
+      fs.writeFileSync(filepath, JSON.stringify(data, null, 2));
+    } catch (err) {
+      throw new Error(`Failed to write backup file "${filepath}": ${err.message}`);
+    }
 
     console.log(`Backup saved: ${filepath}`);
     return filepath;
