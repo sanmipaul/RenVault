@@ -70,6 +70,10 @@ class YieldCalculator {
   }
 
   calculateOptimalStakingPeriod(stakeAmount, targetReturn, rewardRate = this.baseRewardRate) {
+    if (typeof stakeAmount !== 'number' || stakeAmount <= 0) throw new TypeError('stakeAmount must be a positive number');
+    if (typeof targetReturn !== 'number') throw new TypeError('targetReturn must be a number');
+    if (targetReturn <= stakeAmount) throw new Error('targetReturn must be greater than stakeAmount to produce a positive yield');
+    if (typeof rewardRate !== 'number' || rewardRate <= 0) throw new TypeError('rewardRate must be a positive number');
     const targetYield = targetReturn - stakeAmount;
     const periods = targetYield / (stakeAmount * rewardRate);
     const days = periods * 365;
