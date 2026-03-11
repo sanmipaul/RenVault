@@ -9,7 +9,12 @@ class PoolManager {
   }
 
   calculatePrice(reserveA, reserveB, amountA) {
-    return Math.floor((amountA * reserveB) / (reserveA + amountA));
+    if (typeof reserveA !== 'number' || reserveA < 0) throw new TypeError('reserveA must be a non-negative number');
+    if (typeof reserveB !== 'number' || reserveB < 0) throw new TypeError('reserveB must be a non-negative number');
+    if (typeof amountA !== 'number' || amountA <= 0) throw new TypeError('amountA must be a positive number');
+    const denominator = reserveA + amountA;
+    if (denominator === 0) throw new Error('Cannot calculate price: reserveA + amountA must be non-zero');
+    return Math.floor((amountA * reserveB) / denominator);
   }
 
   calculateLiquidity(amountA, amountB, reserveA, reserveB, totalSupply) {
