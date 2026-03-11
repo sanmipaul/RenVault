@@ -19,6 +19,9 @@ class LiquidityMining {
   }
 
   stake(poolId, user, amount) {
+    if (!poolId || typeof poolId !== 'string') throw new Error('poolId is required');
+    if (!user || typeof user !== 'string') throw new Error('user is required');
+    if (typeof amount !== 'number' || amount <= 0) throw new Error('amount must be a positive number');
     const key = `${poolId}-${user}`;
     const current = this.userStakes.get(key) || { amount: 0, rewardDebt: 0, lastUpdate: Date.now() };
     
