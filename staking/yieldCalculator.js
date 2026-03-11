@@ -13,6 +13,10 @@ class YieldCalculator {
   }
 
   calculateCompoundYield(principal, rate, periods, compoundingFrequency = this.compoundingFrequency) {
+    if (typeof principal !== 'number' || principal < 0) throw new TypeError('principal must be a non-negative number');
+    if (typeof rate !== 'number' || rate < 0) throw new TypeError('rate must be a non-negative number');
+    if (typeof periods !== 'number' || periods < 0) throw new TypeError('periods must be a non-negative number');
+    if (typeof compoundingFrequency !== 'number' || compoundingFrequency <= 0) throw new TypeError('compoundingFrequency must be a positive number');
     // Standard compound interest: P * (1 + r/n)^(n*t) - P
     // where n = compoundingFrequency, t = periods (in years).
     // The old code computed n * (t/n) = t as the exponent, collapsing
