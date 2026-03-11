@@ -61,8 +61,14 @@ class RecoveryManager {
       if (user.balance === undefined || user.balance === null) {
         return { valid: false, error: 'Invalid user data structure: missing balance' };
       }
+      if (isNaN(parseInt(user.balance, 10))) {
+        return { valid: false, error: `Invalid user data structure: balance "${user.balance}" is not numeric` };
+      }
       if (user.points === undefined || user.points === null) {
         return { valid: false, error: 'Invalid user data structure: missing points' };
+      }
+      if (isNaN(parseInt(user.points, 10))) {
+        return { valid: false, error: `Invalid user data structure: points "${user.points}" is not numeric` };
       }
     }
 
