@@ -29,6 +29,8 @@ class LiquidityRewards {
   }
 
   calculateRewards(poolId, user) {
+    if (!poolId || typeof poolId !== 'string') throw new TypeError('poolId must be a non-empty string');
+    if (!user || typeof user !== 'string') throw new TypeError('user must be a non-empty string');
     const key = `${poolId}-${user}`;
     const position = this.userRewards.get(key);
     if (!position) return 0;
