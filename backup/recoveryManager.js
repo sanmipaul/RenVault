@@ -41,7 +41,7 @@ class RecoveryManager {
     const required = ['exportedAt', 'totalUsers', 'users'];
     
     for (const field of required) {
-      if (!backupData[field]) {
+      if (backupData[field] === undefined || backupData[field] === null) {
         return { valid: false, error: `Missing field: ${field}` };
       }
     }
@@ -107,7 +107,7 @@ class RecoveryManager {
     const required = ['address', 'publicKey', 'encryptedMnemonic', 'createdAt', 'version'];
     
     for (const field of required) {
-      if (!backupData[field]) {
+      if (backupData[field] === undefined || backupData[field] === null) {
         return { valid: false, error: `Missing field: ${field}` };
       }
     }
