@@ -90,6 +90,8 @@ class YieldCalculator {
   }
 
   compareStakingOptions(stakeAmount, options) {
+    if (typeof stakeAmount !== 'number' || stakeAmount <= 0) throw new TypeError('stakeAmount must be a positive number');
+    if (!Array.isArray(options) || options.length === 0) throw new TypeError('options must be a non-empty array');
     return options.map(option => ({
       name: option.name,
       rewardRate: option.rewardRate,
