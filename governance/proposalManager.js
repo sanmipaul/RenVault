@@ -51,9 +51,10 @@ class ProposalManager {
     if (Date.now() < proposal.endTime) throw new Error('Voting still active');
     if (proposal.executed) throw new Error('Already executed');
 
+    proposal.executed = true;
+
     if (proposal.votesFor > proposal.votesAgainst) {
       proposal.status = 'passed';
-      proposal.executed = true;
       return { success: true, result: 'executed' };
     } else {
       proposal.status = 'rejected';

@@ -49,6 +49,12 @@ class StakingManager {
     if (newStake === 0) {
       this.stakes.delete(userAddress);
       this.stakeTimestamps.delete(userAddress);
+    } else {
+      // Reset the lock timer so the remaining stake must wait a full lock
+      // period before another unstake is permitted.  Without this reset a
+      // user who has held for one lock period could drain their entire
+      // position through rapid repeated partial unstakes.
+      this.stakeTimestamps.set(userAddress, Date.now());
     }
 
     return {
@@ -135,7 +141,7 @@ class StakingManager {
   }
 
   updateRewardRate(newRate) {
-    if (newRate < 0 || newRate > 0.2) { // Max 20%
+    if (newRate <= 0 || newRate > 0.2) { // Must be positive; max 20%
       throw new Error('Invalid reward rate');
     }
     this.rewardRate = newRate;

@@ -4,6 +4,18 @@ class SwapEngine {
     this.feeRate = 0.003; // 0.3%
   }
 
+  createPool(poolId, tokenA, tokenB, reserveA, reserveB) {
+    if (!poolId || typeof poolId !== 'string') throw new Error('poolId must be a non-empty string');
+    if (!tokenA || !tokenB) throw new Error('tokenA and tokenB are required');
+    if (tokenA === tokenB) throw new Error('tokenA and tokenB must be different');
+    if (typeof reserveA !== 'number' || reserveA <= 0) throw new Error('reserveA must be a positive number');
+    if (typeof reserveB !== 'number' || reserveB <= 0) throw new Error('reserveB must be a positive number');
+    if (this.pools.has(poolId)) throw new Error(`Pool "${poolId}" already exists`);
+
+    this.pools.set(poolId, { tokenA, tokenB, reserveA, reserveB });
+    return { poolId, tokenA, tokenB, reserveA, reserveB };
+  }
+
   calculateSwapOutput(amountIn, reserveIn, reserveOut) {
     if (typeof amountIn !== 'number' || amountIn <= 0) throw new Error('amountIn must be a positive number');
     if (typeof reserveIn !== 'number' || reserveIn <= 0) throw new Error('reserveIn must be a positive number');
@@ -31,7 +43,14 @@ class SwapEngine {
     const reserveOut = isTokenA ? pool.reserveB : pool.reserveA;
 
     const amountOut = this.calculateSwapOutput(amountIn, reserveIn, reserveOut);
-    
+
+    // Reject before touching reserves: a zero output means the user would pay
+    // amountIn (plus fee) and receive nothing — Math.floor on a tiny input
+    // relative to large reserves produces 0 and the swap silently steals value.
+    if (amountOut === 0) {
+      throw new Error('Insufficient output amount: input too small relative to pool reserves');
+    }
+
     if (amountOut < minAmountOut) {
       throw new Error('Slippage too high');
     }

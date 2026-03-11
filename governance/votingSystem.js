@@ -14,7 +14,14 @@ class VotingSystem {
   updateVotingPower(user) {
     const balance = this.stakingBalances.get(user) || 0;
     const power = Math.floor(balance / 1000000); // 1 voting power per 1M STX
-    this.votingPower.set(user, Math.max(1, power));
+    if (power > 0) {
+      this.votingPower.set(user, power);
+    } else {
+      // Remove the entry entirely so the user has no governance weight
+      // until they stake. Keeping a phantom entry of 1 would let any
+      // zero-balance address vote and receive delegations.
+      this.votingPower.delete(user);
+    }
   }
 
   delegate(delegator, delegate) {
@@ -30,15 +37,22 @@ class VotingSystem {
   }
 
   getVotingPower(user) {
-    let totalPower = this.votingPower.get(user) || 1;
-    
-    // Add delegated power
+    // A user who has delegated away contributes 0 at their own address;
+    // their stake is counted at their delegate instead.
+    if (this.delegations.has(user)) return 0;
+
+    let totalPower = this.votingPower.get(user) || 0;
+
+    // Add the own stake of every direct delegator.
+    // We deliberately use each delegator's raw stake (votingPower map),
+    // not their getVotingPower(), so that chained delegators (who already
+    // return 0 for themselves) do not amplify power up the chain.
     for (const [delegator, delegate] of this.delegations.entries()) {
       if (delegate === user) {
-        totalPower += this.votingPower.get(delegator) || 1;
+        totalPower += this.votingPower.get(delegator) || 0;
       }
     }
-    
+
     return totalPower;
   }
 

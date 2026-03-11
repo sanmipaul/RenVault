@@ -1,3 +1,5 @@
+import { isValidStacksAddress, isMainnetAddress } from '../utils/stacksAddress';
+
 export const environment = {
   walletConnect: {
     projectId: process.env.REACT_APP_WALLETCONNECT_PROJECT_ID,
@@ -35,13 +37,12 @@ export const validateEnvironment = () => {
     errors.push('REACT_APP_URL is required');
   }
 
-  // Validate contract address format when explicitly overridden via env var.
+  // Validate the resolved contract address (env override or built-in default).
   // Accepts bare principals OR fully-qualified "principal.contract-name".
-  if (process.env.REACT_APP_CONTRACT_ADDRESS) {
-    const { isValidStacksAddress } = require('../utils/stacksAddress');
-    if (!isValidStacksAddress(process.env.REACT_APP_CONTRACT_ADDRESS)) {
-      errors.push('REACT_APP_CONTRACT_ADDRESS is not a valid Stacks address');
-    }
+  if (!isValidStacksAddress(environment.contracts.renVaultAddress)) {
+    errors.push(
+      `REACT_APP_CONTRACT_ADDRESS "${environment.contracts.renVaultAddress}" is not a valid Stacks address`
+    );
   }
 
   if (environment.isProd) {
@@ -50,6 +51,19 @@ export const validateEnvironment = () => {
     }
     if (!environment.api.notificationsUrl) {
       warnings.push('REACT_APP_NOTIFICATIONS_API_URL is not set for production');
+    }
+
+    // Warn loudly when a testnet address reaches a production build.
+    // The built-in fallback is a testnet principal (ST…); production must
+    // always use a mainnet address (SP… or SM…).
+    if (
+      isValidStacksAddress(environment.contracts.renVaultAddress) &&
+      !isMainnetAddress(environment.contracts.renVaultAddress)
+    ) {
+      warnings.push(
+        'REACT_APP_CONTRACT_ADDRESS is a testnet address in a production build — ' +
+          'set it to a mainnet (SP… or SM…) principal'
+      );
     }
   }
 
