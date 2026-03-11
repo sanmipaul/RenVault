@@ -6,6 +6,9 @@ class YieldCalculator {
   }
 
   calculateSimpleYield(principal, rate, periods) {
+    if (typeof principal !== 'number' || principal < 0) throw new TypeError('principal must be a non-negative number');
+    if (typeof rate !== 'number' || rate < 0) throw new TypeError('rate must be a non-negative number');
+    if (typeof periods !== 'number' || periods < 0) throw new TypeError('periods must be a non-negative number');
     return principal * rate * periods;
   }
 
