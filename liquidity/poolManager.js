@@ -29,7 +29,13 @@ class PoolManager {
   }
 
   addPool(tokenA, tokenB, reserveA, reserveB) {
+    if (!tokenA || typeof tokenA !== 'string') throw new TypeError('tokenA must be a non-empty string');
+    if (!tokenB || typeof tokenB !== 'string') throw new TypeError('tokenB must be a non-empty string');
+    if (tokenA === tokenB) throw new Error('tokenA and tokenB must be different');
+    if (typeof reserveA !== 'number' || reserveA <= 0) throw new TypeError('reserveA must be a positive number');
+    if (typeof reserveB !== 'number' || reserveB <= 0) throw new TypeError('reserveB must be a positive number');
     const poolId = `${tokenA}-${tokenB}`;
+    if (this.pools.has(poolId)) throw new Error(`Pool "${poolId}" already exists`);
     this.pools.set(poolId, { tokenA, tokenB, reserveA, reserveB, totalSupply: 0 });
     return poolId;
   }
