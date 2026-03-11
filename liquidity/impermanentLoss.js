@@ -34,7 +34,7 @@ class ImpermanentLossCalculator {
     const position = this.positions.get(key);
     if (!position) return null;
 
-    const { amountA, amountB, initialPriceA, initialPriceB, initialValue } = position;
+    const { amountA, amountB, initialPriceA, initialPriceB } = position;
 
     // Current value if held
     const holdValue = (amountA * currentPriceA) + (amountB * currentPriceB);
@@ -45,7 +45,7 @@ class ImpermanentLossCalculator {
     
     // LP value with constant product
     const lpMultiplier = 2 * Math.sqrt(priceRatio) / (1 + priceRatio);
-    const lpValue = initialValue * lpMultiplier;
+    const lpValue = holdValue * lpMultiplier;
     
     // Impermanent loss
     const impermanentLoss = ((lpValue - holdValue) / holdValue) * 100;

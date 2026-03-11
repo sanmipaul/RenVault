@@ -5,6 +5,10 @@ class LiquidityMining {
   }
 
   createProgram(poolId, rewardToken, rewardRate, duration) {
+    if (!poolId || typeof poolId !== 'string') throw new Error('poolId is required');
+    if (!rewardToken || typeof rewardToken !== 'string') throw new Error('rewardToken is required');
+    if (typeof rewardRate !== 'number' || rewardRate <= 0) throw new Error('rewardRate must be a positive number');
+    if (typeof duration !== 'number' || duration <= 0) throw new Error('duration must be a positive number');
     this.programs.set(poolId, {
       rewardToken,
       rewardRate,
@@ -15,6 +19,9 @@ class LiquidityMining {
   }
 
   stake(poolId, user, amount) {
+    if (!poolId || typeof poolId !== 'string') throw new Error('poolId is required');
+    if (!user || typeof user !== 'string') throw new Error('user is required');
+    if (typeof amount !== 'number' || amount <= 0) throw new Error('amount must be a positive number');
     const key = `${poolId}-${user}`;
     // Capture a single timestamp so that calculatePending and lastUpdate
     // both use exactly the same moment. Two separate Date.now() calls could

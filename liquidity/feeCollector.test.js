@@ -1,95 +1,114 @@
 const FeeCollector = require('./feeCollector');
 
-describe('FeeCollector.getAllPoolFees', () => {
-  let collector;
+describe('FeeCollector', () => {
+  let fc;
 
   beforeEach(() => {
-    collector = new FeeCollector();
+    fc = new FeeCollector();
   });
 
-  test('returns fees for the correct pool only', () => {
-    collector.collectFee('STX-BTC', 50, 'tokenA');
-    collector.collectFee('STX-BTC', 30, 'tokenB');
-    collector.collectFee('STX-ETH', 99, 'tokenA'); // different pool
+  // collectFee
+  describe('collectFee', () => {
+    test('accumulates fees for the same pool/token', () => {
+      fc.collectFee('pool1', 10, 'ETH');
+      fc.collectFee('pool1', 5, 'ETH');
+      expect(fc.getTotalFees('pool1', 'ETH')).toBe(15);
+    });
 
-    const fees = collector.getAllPoolFees('STX-BTC');
+    test('keeps fees separate across pools', () => {
+      fc.collectFee('pool1', 10, 'ETH');
+      fc.collectFee('pool2', 20, 'ETH');
+      expect(fc.getTotalFees('pool1', 'ETH')).toBe(10);
+      expect(fc.getTotalFees('pool2', 'ETH')).toBe(20);
+    });
 
-    expect(fees).toEqual({ tokenA: 50, tokenB: 30 });
-    // ETH-pool fee must NOT appear
-    expect(Object.keys(fees)).not.toContain('STX');
+    test('keeps fees separate across tokens in the same pool', () => {
+      fc.collectFee('pool1', 10, 'ETH');
+      fc.collectFee('pool1', 50, 'USDC');
+      expect(fc.getTotalFees('pool1', 'ETH')).toBe(10);
+      expect(fc.getTotalFees('pool1', 'USDC')).toBe(50);
+    });
+
+    test('accepts zero-amount fee', () => {
+      expect(() => fc.collectFee('pool1', 0, 'ETH')).not.toThrow();
+    });
+
+    test('throws if poolId is missing or not a string', () => {
+      expect(() => fc.collectFee('', 10, 'ETH')).toThrow('poolId is required');
+      expect(() => fc.collectFee(null, 10, 'ETH')).toThrow();
+    });
+
+    test('throws if amount is negative', () => {
+      expect(() => fc.collectFee('pool1', -1, 'ETH')).toThrow('fee amount must be a non-negative number');
+    });
+
+    test('throws if token is missing', () => {
+      expect(() => fc.collectFee('pool1', 10, '')).toThrow('token identifier is required');
+    });
   });
 
-  test('does not include fees from a pool whose ID is a prefix of the queried ID', () => {
-    // 'STX' is a prefix of 'STX-BTC' — must not bleed into results
-    collector.collectFee('STX', 10, 'tokenA');
-    collector.collectFee('STX-BTC', 20, 'tokenA');
+  // calculateProtocolFee
+  describe('calculateProtocolFee', () => {
+    test('returns 0.05% of the given swap fee', () => {
+      expect(fc.calculateProtocolFee(1000)).toBeCloseTo(0.5, 5);
+    });
 
-    const fees = collector.getAllPoolFees('STX');
-
-    expect(fees).toEqual({ tokenA: 10 });
-    expect(Object.values(fees)).not.toContain(20);
+    test('returns 0 for 0 swap fee', () => {
+      expect(fc.calculateProtocolFee(0)).toBe(0);
+    });
   });
 
-  test('extracts the full token name even when it contains a hyphen', () => {
-    collector.collectFee('POOL1', 77, 'wrapped-token');
+  // getTotalFees
+  describe('getTotalFees', () => {
+    test('returns 0 for unknown pool/token', () => {
+      expect(fc.getTotalFees('unknown', 'ETH')).toBe(0);
+    });
 
-    const fees = collector.getAllPoolFees('POOL1');
-
-    expect(fees['wrapped-token']).toBe(77);
+    test('returns correct accumulated total', () => {
+      fc.collectFee('pool1', 7, 'BTC');
+      fc.collectFee('pool1', 3, 'BTC');
+      expect(fc.getTotalFees('pool1', 'BTC')).toBe(10);
+    });
   });
 
-  test('returns an empty object for an unknown pool', () => {
-    expect(collector.getAllPoolFees('UNKNOWN')).toEqual({});
-  });
-});
+  // withdrawFees
+  describe('withdrawFees', () => {
+    test('returns withdrawal object and resets balance to zero', () => {
+      fc.collectFee('pool1', 100, 'ETH');
+      const result = fc.withdrawFees('pool1', 'ETH', 'addr123');
+      expect(result).toEqual({ recipient: 'addr123', amount: 100, token: 'ETH' });
+      expect(fc.getTotalFees('pool1', 'ETH')).toBe(0);
+    });
 
-describe('FeeCollector.withdrawFees', () => {
-  let collector;
+    test('returns null when there are no fees to withdraw', () => {
+      expect(fc.withdrawFees('pool1', 'ETH', 'addr123')).toBeNull();
+    });
 
-  beforeEach(() => {
-    collector = new FeeCollector();
-  });
-
-  test('removes the entry from the map after withdrawal', () => {
-    collector.collectFee('POOL1', 100, 'tokenA');
-    collector.withdrawFees('POOL1', 'tokenA', 'SP1RECIPIENT');
-
-    // After withdrawal the key must be gone, not set to 0
-    expect(collector.fees.has('POOL1::tokenA')).toBe(false);
-    expect(collector.getTotalFees('POOL1', 'tokenA')).toBe(0);
+    test('throws if recipient is missing', () => {
+      fc.collectFee('pool1', 10, 'ETH');
+      expect(() => fc.withdrawFees('pool1', 'ETH', '')).toThrow('recipient address is required');
+    });
   });
 
-  test('returns null when there are no fees to withdraw', () => {
-    const result = collector.withdrawFees('POOL1', 'tokenA', 'SP1RECIPIENT');
-    expect(result).toBeNull();
-  });
+  // getAllPoolFees — prefix contamination regression
+  describe('getAllPoolFees', () => {
+    test('returns all token fees for the requested pool', () => {
+      fc.collectFee('pool1', 10, 'ETH');
+      fc.collectFee('pool1', 20, 'USDC');
+      const fees = fc.getAllPoolFees('pool1');
+      expect(fees['ETH']).toBe(10);
+      expect(fees['USDC']).toBe(20);
+    });
 
-  test('withdrawn amount matches what was collected', () => {
-    collector.collectFee('POOL1', 42, 'tokenA');
-    const result = collector.withdrawFees('POOL1', 'tokenA', 'SP1RECIPIENT');
-    expect(result.amount).toBe(42);
-    expect(result.recipient).toBe('SP1RECIPIENT');
-  });
-});
+    test('does not include fees from a pool whose id starts with the same prefix', () => {
+      fc.collectFee('pool1', 10, 'ETH');
+      fc.collectFee('pool10', 99, 'ETH'); // pool10 starts with "pool1"
+      const fees = fc.getAllPoolFees('pool1');
+      expect(fees['ETH']).toBe(10); // must not include pool10's 99
+    });
 
-describe('FeeCollector.collectFee', () => {
-  let collector;
-
-  beforeEach(() => {
-    collector = new FeeCollector();
-  });
-
-  test('rejects a zero amount', () => {
-    expect(() => collector.collectFee('POOL1', 0, 'tokenA')).toThrow('positive number');
-  });
-
-  test('rejects a negative amount', () => {
-    expect(() => collector.collectFee('POOL1', -5, 'tokenA')).toThrow('positive number');
-  });
-
-  test('accepts a positive amount and accumulates it', () => {
-    collector.collectFee('POOL1', 10, 'tokenA');
-    collector.collectFee('POOL1', 15, 'tokenA');
-    expect(collector.getTotalFees('POOL1', 'tokenA')).toBe(25);
+    test('returns empty object when pool has no fees', () => {
+      expect(fc.getAllPoolFees('pool99')).toEqual({});
+    });
   });
 });

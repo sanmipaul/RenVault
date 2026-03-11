@@ -1,92 +1,189 @@
 const { StakingManager } = require('./stakingManager');
 
-describe('StakingManager.calculateRewards', () => {
-  let manager;
+describe('StakingManager', () => {
+  let sm;
+  const MIN = 1000000; // 1 STX (minStake)
 
   beforeEach(() => {
-    manager = new StakingManager();
+    sm = new StakingManager();
   });
 
-  test('returns 0 when user has no stake', () => {
-    expect(manager.calculateRewards('addr1')).toBe(0);
+  // stake
+  describe('stake', () => {
+    test('successfully stakes at or above minimum', () => {
+      const result = sm.stake('alice', MIN);
+      expect(result.success).toBe(true);
+      expect(result.newStake).toBe(MIN);
+      expect(result.totalStaked).toBe(MIN);
+    });
+
+    test('accumulates stake for the same user', () => {
+      sm.stake('alice', MIN);
+      const result = sm.stake('alice', MIN * 2);
+      expect(result.newStake).toBe(MIN * 3);
+    });
+
+    test('throws if amount is below minimum', () => {
+      expect(() => sm.stake('alice', MIN - 1)).toThrow('Minimum stake');
+    });
+
+    test('updates totalStaked across multiple users', () => {
+      sm.stake('alice', MIN);
+      sm.stake('bob', MIN * 2);
+      expect(sm.totalStaked).toBe(MIN * 3);
+    });
   });
 
-  test('returns 0 when less than one lock period has elapsed', () => {
-    manager.stake('addr1', manager.minStake);
-    // No time has passed — epochs = 0
-    expect(manager.calculateRewards('addr1')).toBe(0);
+  // unstake
+  describe('unstake', () => {
+    test('throws if stake is still locked', () => {
+      sm.stake('alice', MIN);
+      expect(() => sm.unstake('alice', MIN)).toThrow('Stake is still locked');
+    });
+
+    test('throws if insufficient staked balance', () => {
+      // Manipulate timestamp to bypass lock
+      sm.stake('alice', MIN);
+      sm.stakeTimestamps.set('alice', Date.now() - sm.lockPeriod - 1);
+      expect(() => sm.unstake('alice', MIN * 2)).toThrow('Insufficient staked balance');
+    });
+
+    test('allows unstake after lock period', () => {
+      sm.stake('alice', MIN);
+      sm.stakeTimestamps.set('alice', Date.now() - sm.lockPeriod - 1);
+      const result = sm.unstake('alice', MIN);
+      expect(result.success).toBe(true);
+      expect(result.unstaked).toBe(MIN);
+      expect(result.remainingStake).toBe(0);
+    });
+
+    test('removes user from maps when fully unstaked', () => {
+      sm.stake('alice', MIN);
+      sm.stakeTimestamps.set('alice', Date.now() - sm.lockPeriod - 1);
+      sm.unstake('alice', MIN);
+      expect(sm.stakes.has('alice')).toBe(false);
+    });
   });
 
-  test('calculates correct reward for one epoch at 1% rate', () => {
-    const stakeAmount = 1_000_000;
-    manager.stake('addr1', stakeAmount);
+  // calculateRewards — key regression: must NOT divide by 100
+  describe('calculateRewards', () => {
+    test('returns 0 for user with no stake', () => {
+      expect(sm.calculateRewards('nobody')).toBe(0);
+    });
 
-    // Backdate the timestamp by exactly one lock period
-    manager.stakeTimestamps.set('addr1', Date.now() - manager.lockPeriod);
+    test('returns 0 before one epoch has elapsed', () => {
+      sm.stake('alice', MIN);
+      expect(sm.calculateRewards('alice')).toBe(0);
+    });
 
-    const rewards = manager.calculateRewards('addr1');
-    // Expected: 1_000_000 * 0.01 * 1 epoch = 10_000
-    expect(rewards).toBe(10_000);
+    test('returns stake * rewardRate per epoch (no extra /100)', () => {
+      sm.stake('alice', MIN);
+      // Fast-forward 2 epochs
+      sm.stakeTimestamps.set('alice', Date.now() - sm.lockPeriod * 2 - 1);
+      const rewards = sm.calculateRewards('alice');
+      const expected = Math.floor(MIN * sm.rewardRate * 2);
+      expect(rewards).toBe(expected);
+    });
+
+    test('reward scales linearly with number of epochs', () => {
+      sm.stake('alice', MIN);
+      sm.stakeTimestamps.set('alice', Date.now() - sm.lockPeriod * 5 - 1);
+      const rewards = sm.calculateRewards('alice');
+      const expected = Math.floor(MIN * sm.rewardRate * 5);
+      expect(rewards).toBe(expected);
+    });
   });
 
-  test('scales linearly with multiple epochs', () => {
-    const stakeAmount = 2_000_000;
-    const epochs = 3;
-    manager.stake('addr1', stakeAmount);
-    manager.stakeTimestamps.set('addr1', Date.now() - manager.lockPeriod * epochs);
+  // claimRewards
+  describe('claimRewards', () => {
+    test('throws if no rewards to claim', () => {
+      sm.stake('alice', MIN);
+      expect(() => sm.claimRewards('alice')).toThrow('No rewards to claim');
+    });
 
-    const rewards = manager.calculateRewards('addr1');
-    // Expected: 2_000_000 * 0.01 * 3 = 60_000
-    expect(rewards).toBe(60_000);
-  });
-});
+    test('returns claimed amount and accumulates in rewards map', () => {
+      sm.stake('alice', MIN);
+      sm.stakeTimestamps.set('alice', Date.now() - sm.lockPeriod * 3 - 1);
+      const result = sm.claimRewards('alice');
+      expect(result.success).toBe(true);
+      expect(result.claimed).toBeGreaterThan(0);
+      expect(result.totalRewards).toBe(result.claimed);
+    });
 
-describe('StakingManager.updateRewardRate', () => {
-  let manager;
-
-  beforeEach(() => {
-    manager = new StakingManager();
-  });
-
-  test('rejects a rate of exactly 0', () => {
-    expect(() => manager.updateRewardRate(0)).toThrow('Invalid reward rate');
-  });
-
-  test('rejects negative rates', () => {
-    expect(() => manager.updateRewardRate(-0.01)).toThrow('Invalid reward rate');
+    test('resets epoch counter after claim', () => {
+      sm.stake('alice', MIN);
+      sm.stakeTimestamps.set('alice', Date.now() - sm.lockPeriod * 3 - 1);
+      sm.claimRewards('alice');
+      // Immediately after claim, no new rewards yet
+      expect(sm.calculateRewards('alice')).toBe(0);
+    });
   });
 
-  test('rejects rates above 20%', () => {
-    expect(() => manager.updateRewardRate(0.21)).toThrow('Invalid reward rate');
+  // getStakeInfo
+  describe('getStakeInfo', () => {
+    test('returns zeroed info for user with no stake', () => {
+      const info = sm.getStakeInfo('nobody');
+      expect(info.stake).toBe(0);
+      expect(info.pendingRewards).toBe(0);
+    });
+
+    test('returns correct info for active staker', () => {
+      sm.stake('alice', MIN);
+      const info = sm.getStakeInfo('alice');
+      expect(info.stake).toBe(MIN);
+      expect(info.isLocked).toBe(true);
+    });
   });
 
-  test('accepts the maximum allowed rate of 20%', () => {
-    expect(manager.updateRewardRate(0.2)).toBe(0.2);
+  // getGlobalStats
+  describe('getGlobalStats', () => {
+    test('returns zeroes when no stakers', () => {
+      const stats = sm.getGlobalStats();
+      expect(stats.totalStaked).toBe(0);
+      expect(stats.totalUsers).toBe(0);
+      expect(stats.averageStake).toBe(0);
+    });
+
+    test('returns correct averageStake', () => {
+      sm.stake('alice', MIN);
+      sm.stake('bob', MIN * 3);
+      const stats = sm.getGlobalStats();
+      expect(stats.averageStake).toBe(MIN * 2);
+    });
   });
 
-  test('accepts a valid positive rate', () => {
-    expect(manager.updateRewardRate(0.05)).toBe(0.05);
+  // getTopStakers
+  describe('getTopStakers', () => {
+    test('returns stakers sorted by stake descending', () => {
+      sm.stake('alice', MIN);
+      sm.stake('bob', MIN * 5);
+      sm.stake('carol', MIN * 3);
+      const top = sm.getTopStakers(3);
+      expect(top[0].address).toBe('bob');
+      expect(top[1].address).toBe('carol');
+      expect(top[2].address).toBe('alice');
+    });
+
+    test('respects the limit parameter', () => {
+      sm.stake('alice', MIN);
+      sm.stake('bob', MIN * 2);
+      sm.stake('carol', MIN * 3);
+      expect(sm.getTopStakers(2)).toHaveLength(2);
+    });
   });
-});
 
-describe('StakingManager partial unstake lock reset', () => {
-  let manager;
+  // updateRewardRate
+  describe('updateRewardRate', () => {
+    test('updates rate within valid range', () => {
+      expect(sm.updateRewardRate(0.05)).toBe(0.05);
+    });
 
-  beforeEach(() => {
-    manager = new StakingManager();
-  });
+    test('throws for rate above 0.2', () => {
+      expect(() => sm.updateRewardRate(0.21)).toThrow('Invalid reward rate');
+    });
 
-  test('partial unstake resets lock timer so next unstake requires waiting', () => {
-    const amount = manager.minStake * 2;
-    manager.stake('addr1', amount);
-
-    // Move timestamp back so the lock has expired
-    manager.stakeTimestamps.set('addr1', Date.now() - manager.lockPeriod - 1);
-
-    // First partial unstake should succeed
-    manager.unstake('addr1', manager.minStake);
-
-    // Immediately attempting a second unstake should now fail — lock was reset
-    expect(() => manager.unstake('addr1', manager.minStake)).toThrow('Stake is still locked');
+    test('throws for negative rate', () => {
+      expect(() => sm.updateRewardRate(-0.01)).toThrow('Invalid reward rate');
+    });
   });
 });

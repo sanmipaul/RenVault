@@ -17,14 +17,16 @@ class SwapEngine {
   }
 
   calculateSwapOutput(amountIn, reserveIn, reserveOut) {
+    if (typeof amountIn !== 'number' || amountIn <= 0) throw new Error('amountIn must be a positive number');
+    if (typeof reserveIn !== 'number' || reserveIn <= 0) throw new Error('reserveIn must be a positive number');
+    if (typeof reserveOut !== 'number' || reserveOut <= 0) throw new Error('reserveOut must be a positive number');
     const amountInWithFee = amountIn * (1 - this.feeRate);
     return Math.floor((amountInWithFee * reserveOut) / (reserveIn + amountInWithFee));
   }
 
   calculateSlippage(expectedOut, actualOut) {
-    // Guard against division by zero: if expectedOut is 0, slippage is
-    // undefined (100% is a reasonable sentinel — caller receives nothing).
-    if (expectedOut === 0) return 100;
+    if (typeof expectedOut !== 'number' || expectedOut <= 0) throw new Error('expectedOut must be a positive number');
+    if (typeof actualOut !== 'number' || actualOut < 0) throw new Error('actualOut must be a non-negative number');
     return Math.abs((expectedOut - actualOut) / expectedOut) * 100;
   }
 
