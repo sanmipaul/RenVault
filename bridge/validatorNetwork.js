@@ -7,7 +7,9 @@ class ValidatorNetwork {
   }
 
   registerValidator(address, stake, publicKey) {
-    if (stake < this.validatorStake) {
+    if (!address || typeof address !== 'string') throw new Error('address is required');
+    if (!publicKey || typeof publicKey !== 'string') throw new Error('publicKey is required');
+    if (typeof stake !== 'number' || stake < this.validatorStake) {
       throw new Error('Insufficient stake');
     }
 
