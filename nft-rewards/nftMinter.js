@@ -62,6 +62,7 @@ class NFTMinter {
   }
 
   transferToken(tokenId, fromAddress, toAddress) {
+    if (!toAddress || typeof toAddress !== 'string') throw new Error('toAddress is required');
     const token = this.mintedTokens.get(tokenId);
     if (!token || token.owner !== fromAddress) {
       return { success: false, error: 'Invalid transfer' };
