@@ -60,6 +60,21 @@ Clarinet.test({
 });
 
 Clarinet.test({
+  name: "Staking rejects stake below minimum",
+  async fn(chain: Chain, accounts: Map<string, Account>) {
+    const user = accounts.get('wallet_1')!;
+
+    let block = chain.mineBlock([
+      Tx.contractCall('staking', 'stake', [
+        types.uint(500000) // below 1 STX minimum
+      ], user.address)
+    ]);
+
+    assertEquals(block.receipts[0].result.expectErr(), types.uint(404));
+  }
+});
+
+Clarinet.test({
   name: "Staking prevents early unstaking",
   async fn(chain: Chain, accounts: Map<string, Account>) {
     const user = accounts.get('wallet_1')!;
