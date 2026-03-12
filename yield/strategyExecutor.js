@@ -96,6 +96,7 @@ class StrategyExecutor {
 
   calculateCurrentAllocation(strategies) {
     const total = strategies.reduce((sum, s) => sum + s.amount, 0);
+    if (total === 0) return { staking: 0, liquidity: 0, lending: 0 };
     const byType = strategies.reduce((acc, s) => {
       acc[s.strategyType] = (acc[s.strategyType] || 0) + s.amount;
       return acc;
