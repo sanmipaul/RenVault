@@ -9,6 +9,9 @@ class BridgeManager {
   }
 
   async initiateBridge(fromChain, toChain, amount, userAddress) {
+    if (!this.supportedChains.includes(fromChain)) {
+      throw new Error('Unsupported source chain');
+    }
     if (!this.supportedChains.includes(toChain)) {
       throw new Error('Unsupported target chain');
     }
