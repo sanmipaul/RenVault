@@ -43,6 +43,7 @@ class ReferralManager {
   }
 
   processReferralReward(userAddress, transactionAmount) {
+    if (typeof transactionAmount !== 'number' || transactionAmount < 0) throw new Error('transactionAmount must be a non-negative number');
     const referrer = this.referrals.get(userAddress);
     if (!referrer) return { commission: 0 };
 
