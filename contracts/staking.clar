@@ -43,6 +43,7 @@
     (var-set total-staked (- (var-get total-staked) amount))
     ;; Transfer from contract to caller — sender captured before as-contract
     (try! (as-contract (stx-transfer? amount tx-sender sender)))
+    (print {event: "unstaked", user: sender, amount: amount, block: block-height})
     (ok amount)))
 
 ;; Calculate rewards
