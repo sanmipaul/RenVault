@@ -7,6 +7,9 @@ class PriceAggregator {
   }
 
   addSource(name, fetcher, weight = 1) {
+    if (!name || typeof name !== 'string') throw new Error('source name is required');
+    if (typeof fetcher !== 'function') throw new Error('fetcher must be a function');
+    if (typeof weight !== 'number' || weight <= 0) throw new Error('weight must be a positive number');
     this.sources.set(name, { fetcher, weight, active: true });
     this.weights.set(name, weight);
   }
