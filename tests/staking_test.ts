@@ -106,22 +106,46 @@ Clarinet.test({
 });
 
 Clarinet.test({
-  name: "Staking prevents early unstaking",
+  name: "Unstake rejects zero-amount withdrawal with err u408",
   async fn(chain: Chain, accounts: Map<string, Account>) {
     const user = accounts.get('wallet_1')!;
-    
+
     chain.mineBlock([
       Tx.contractCall('staking', 'stake', [
         types.uint(1000000)
       ], user.address)
     ]);
-    
+
+    // Advance past lock period
+    chain.mineEmptyBlockUntil(200);
+
+    let block = chain.mineBlock([
+      Tx.contractCall('staking', 'unstake', [
+        types.uint(0)
+      ], user.address)
+    ]);
+
+    assertEquals(block.receipts[0].result.expectErr(), types.uint(408));
+  }
+});
+
+Clarinet.test({
+  name: "Staking prevents early unstaking",
+  async fn(chain: Chain, accounts: Map<string, Account>) {
+    const user = accounts.get('wallet_1')!;
+
+    chain.mineBlock([
+      Tx.contractCall('staking', 'stake', [
+        types.uint(1000000)
+      ], user.address)
+    ]);
+
     let block = chain.mineBlock([
       Tx.contractCall('staking', 'unstake', [
         types.uint(500000)
       ], user.address)
     ]);
-    
+
     assertEquals(block.receipts[0].result.expectErr(), types.uint(405));
   }
 });
