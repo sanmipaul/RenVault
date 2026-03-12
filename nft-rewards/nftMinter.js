@@ -96,7 +96,7 @@ class NFTMinter {
   }
 
   generateTxId() {
-    return '0x' + Math.random().toString(16).substr(2, 64);
+    return '0x' + require('crypto').randomBytes(32).toString('hex');
   }
 }
 
