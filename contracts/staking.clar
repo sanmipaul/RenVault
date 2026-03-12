@@ -32,6 +32,7 @@
   (let ((sender tx-sender)
         (current-stake (default-to u0 (map-get? user-stakes tx-sender)))
         (stake-time (default-to u0 (map-get? stake-timestamps tx-sender))))
+    (asserts! (> amount u0) (err u408))
     (asserts! (>= current-stake amount) err-insufficient-balance)
     (asserts! (>= (- block-height stake-time) (var-get lock-period)) (err u405))
     ;; State updates before external call (CEI pattern)
