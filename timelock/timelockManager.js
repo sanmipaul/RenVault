@@ -56,6 +56,7 @@ class TimelockManager {
     const transaction = this.queuedTransactions.get(txId);
     if (!transaction) throw new Error('Transaction not found');
     if (transaction.executed) throw new Error('Already executed');
+    if (transaction.cancelled) throw new Error('Already cancelled');
 
     transaction.cancelled = true;
     transaction.cancelledAt = Date.now();
