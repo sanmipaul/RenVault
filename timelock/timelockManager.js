@@ -100,6 +100,8 @@ class TimelockManager {
   }
 
   setDelays(minDelay, maxDelay) {
+    if (typeof minDelay !== 'number' || minDelay <= 0) throw new Error('minDelay must be a positive number');
+    if (typeof maxDelay !== 'number' || maxDelay <= 0) throw new Error('maxDelay must be a positive number');
     if (minDelay >= maxDelay) throw new Error('Invalid delay configuration');
     
     this.minDelay = minDelay;
