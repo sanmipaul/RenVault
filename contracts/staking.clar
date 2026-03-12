@@ -27,6 +27,7 @@
       (map-set user-stakes tx-sender (+ current-stake amount))
       (map-set stake-timestamps tx-sender block-height)
       (var-set total-staked (+ (var-get total-staked) amount))
+      (print {event: "staked", user: tx-sender, amount: amount, block: block-height})
       (ok amount))))
 
 ;; Unstake STX
