@@ -21,6 +21,7 @@ class DelayCalculator {
 
     // If it's a number (milliseconds)
     if (typeof input === 'number') {
+      if (input <= 0) throw new Error('delay must be a positive number of milliseconds');
       return input;
     }
 
