@@ -20,18 +20,15 @@
 
 ;; Stake STX
 (define-public (stake (amount uint))
-  (begin
+  (let ((current-stake (default-to u0 (map-get? user-stakes tx-sender))))
     (asserts! (>= amount (var-get min-stake)) (err u404))
-    (let ((current-stake (default-to u0 (map-get? user-stakes tx-sender))))
-      (asserts! (<= (+ current-stake amount) (var-get max-stake)) (err u411)))
+    (asserts! (<= (+ current-stake amount) (var-get max-stake)) (err u411))
     (try! (stx-transfer? amount tx-sender (as-contract tx-sender)))
-
-    (let ((current-stake (default-to u0 (map-get? user-stakes tx-sender))))
-      (map-set user-stakes tx-sender (+ current-stake amount))
-      (map-set stake-timestamps tx-sender block-height)
-      (var-set total-staked (+ (var-get total-staked) amount))
-      (print {event: "staked", user: tx-sender, amount: amount, block: block-height})
-      (ok amount))))
+    (map-set user-stakes tx-sender (+ current-stake amount))
+    (map-set stake-timestamps tx-sender block-height)
+    (var-set total-staked (+ (var-get total-staked) amount))
+    (print {event: "staked", user: tx-sender, amount: amount, block: block-height})
+    (ok amount)))
 
 ;; Unstake STX
 (define-public (unstake (amount uint))
