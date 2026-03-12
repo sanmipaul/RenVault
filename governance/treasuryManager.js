@@ -74,7 +74,7 @@ class TreasuryManager {
       budgets[category] = {
         ...budget,
         remaining: budget.allocated - budget.spent,
-        utilization: (budget.spent / budget.allocated * 100).toFixed(1)
+        utilization: budget.allocated > 0 ? (budget.spent / budget.allocated * 100).toFixed(1) : '0.0'
       };
     }
     return budgets;
