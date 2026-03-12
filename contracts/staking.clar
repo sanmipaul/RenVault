@@ -54,12 +54,18 @@
         (ok reward))
       (ok u0))))
 
-;; Claim rewards
+;; Claim rewards — transfers STX from reward pool to user
 (define-public (claim-rewards)
-  (let ((rewards-result (unwrap! (calculate-rewards tx-sender) (err u406))))
+  (let ((sender tx-sender)
+        (rewards-result (unwrap! (calculate-rewards tx-sender) (err u406))))
     (asserts! (> rewards-result u0) (err u407))
-    (map-set user-rewards tx-sender (+ (default-to u0 (map-get? user-rewards tx-sender)) rewards-result))
-    (map-set stake-timestamps tx-sender block-height)
+    (asserts! (>= (var-get reward-pool) rewards-result) (err u410))
+    ;; Update state before transfer (CEI pattern)
+    (map-set user-rewards sender (+ (default-to u0 (map-get? user-rewards sender)) rewards-result))
+    (map-set stake-timestamps sender block-height)
+    (var-set reward-pool (- (var-get reward-pool) rewards-result))
+    ;; Pay out rewards to the caller
+    (try! (as-contract (stx-transfer? rewards-result tx-sender sender)))
     (ok rewards-result)))
 
 ;; Owner deposits STX to fund reward payouts
