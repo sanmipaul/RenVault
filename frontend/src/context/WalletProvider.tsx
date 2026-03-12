@@ -51,7 +51,11 @@ const WalletContext = createContext<WalletContextType | undefined>(undefined);
 
 export const WalletProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { address, isConnected, status } = useAppKitAccount();
-  const [userId] = useState('user-' + Math.random().toString(36).substring(7));
+  // Derive userId from the connected wallet address so it matches the key used
+  // in App.tsx and in localStorage (notifications_<address>).  Fall back to a
+  // stable session ID only when no address is available yet.
+  const [fallbackId] = useState('user-' + Math.random().toString(36).substring(7));
+  const userId = address ?? fallbackId;
   const [sponsorshipQuota, setSponsorshipQuota] = useState<SponsorshipQuota | null>(null);
   const [currentStacksAdapter, setCurrentStacksAdapter] = useState<StacksConnectorAdapter | null>(null);
   const [appKitWallets, setAppKitWallets] = useState<any[]>([]);

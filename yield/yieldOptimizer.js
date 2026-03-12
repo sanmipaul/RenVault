@@ -11,6 +11,9 @@ class YieldOptimizer {
   }
 
   addStrategy(name, config) {
+    if (!name || typeof name !== 'string') throw new Error('strategy name is required');
+    if (!config || typeof config.apy !== 'number' || config.apy < 0) throw new Error('config.apy must be a non-negative number');
+    if (typeof config.minAmount !== 'number' || config.minAmount < 0) throw new Error('config.minAmount must be a non-negative number');
     this.strategies.set(name, {
       name,
       apy: config.apy,
@@ -21,6 +24,8 @@ class YieldOptimizer {
   }
 
   optimizeAllocation(userBalance, riskTolerance) {
+    if (typeof userBalance !== 'number' || userBalance < 0) throw new Error('userBalance must be a non-negative number');
+    if (!riskTolerance || typeof riskTolerance !== 'string') throw new Error('riskTolerance is required');
     const strategies = Array.from(this.strategies.values())
       .filter(s => s.active && userBalance >= s.minAmount)
       .sort((a, b) => b.apy - a.apy);
@@ -35,6 +40,8 @@ class YieldOptimizer {
   }
 
   calculateExpectedYield(amount, allocation) {
+    if (typeof amount !== 'number' || amount < 0) throw new Error('amount must be a non-negative number');
+    if (!allocation || typeof allocation !== 'object') throw new Error('allocation is required');
     const stakingYield = (amount * allocation.staking / 100) * this.rewardRates.staking;
     const liquidityYield = (amount * allocation.liquidity / 100) * this.rewardRates.liquidity;
     const lendingYield = (amount * allocation.lending / 100) * this.rewardRates.lending;
@@ -65,6 +72,7 @@ class YieldOptimizer {
   calculateImprovement(current, optimal) {
     const currentYield = this.calculateExpectedYield(100, current);
     const optimalYield = this.calculateExpectedYield(100, optimal);
+    if (currentYield === 0) return '0.00';
     return ((optimalYield - currentYield) / currentYield * 100).toFixed(2);
   }
 }

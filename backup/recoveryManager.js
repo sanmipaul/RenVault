@@ -14,7 +14,11 @@ class RecoveryManager {
     }
 
     const data = fs.readFileSync(filepath, 'utf8');
-    return JSON.parse(data);
+    try {
+      return JSON.parse(data);
+    } catch (err) {
+      throw new Error(`Backup file "${filename}" contains invalid JSON: ${err.message}`);
+    }
   }
 
   listBackups() {
@@ -41,7 +45,7 @@ class RecoveryManager {
     const required = ['exportedAt', 'totalUsers', 'users'];
     
     for (const field of required) {
-      if (!backupData[field]) {
+      if (backupData[field] === undefined || backupData[field] === null) {
         return { valid: false, error: `Missing field: ${field}` };
       }
     }
@@ -51,8 +55,20 @@ class RecoveryManager {
     }
 
     for (const user of backupData.users) {
-      if (!user.address || !user.balance || !user.points) {
-        return { valid: false, error: 'Invalid user data structure' };
+      if (!user.address) {
+        return { valid: false, error: 'Invalid user data structure: missing address' };
+      }
+      if (user.balance === undefined || user.balance === null) {
+        return { valid: false, error: 'Invalid user data structure: missing balance' };
+      }
+      if (isNaN(parseInt(user.balance, 10))) {
+        return { valid: false, error: `Invalid user data structure: balance "${user.balance}" is not numeric` };
+      }
+      if (user.points === undefined || user.points === null) {
+        return { valid: false, error: 'Invalid user data structure: missing points' };
+      }
+      if (isNaN(parseInt(user.points, 10))) {
+        return { valid: false, error: `Invalid user data structure: points "${user.points}" is not numeric` };
       }
     }
 
@@ -66,19 +82,21 @@ class RecoveryManager {
       return { error: validation.error };
     }
 
-    const totalBalance = backupData.users.reduce((sum, user) => 
-      sum + parseInt(user.balance), 0);
-    
-    const totalPoints = backupData.users.reduce((sum, user) => 
-      sum + parseInt(user.points), 0);
+    const totalBalance = backupData.users.reduce((sum, user) =>
+      sum + parseInt(user.balance, 10), 0);
+
+    const totalPoints = backupData.users.reduce((sum, user) =>
+      sum + parseInt(user.points, 10), 0);
 
     return {
       exportedAt: backupData.exportedAt,
-      totalUsers: backupData.totalUsers,
+      totalUsers: backupData.users.length,
       totalBalance: totalBalance,
       totalPoints: totalPoints,
-      averageBalance: Math.floor(totalBalance / backupData.totalUsers),
-      averagePoints: Math.floor(totalPoints / backupData.totalUsers)
+      averageBalance: backupData.users.length > 0
+        ? Math.floor(totalBalance / backupData.users.length) : 0,
+      averagePoints: backupData.users.length > 0
+        ? Math.floor(totalPoints / backupData.users.length) : 0
     };
   }
 
@@ -107,13 +125,17 @@ class RecoveryManager {
     const required = ['address', 'publicKey', 'encryptedMnemonic', 'createdAt', 'version'];
     
     for (const field of required) {
-      if (!backupData[field]) {
+      if (backupData[field] === undefined || backupData[field] === null) {
         return { valid: false, error: `Missing field: ${field}` };
       }
     }
 
-    if (backupData.version !== '1.0') {
-      return { valid: false, error: 'Unsupported backup version' };
+    const SUPPORTED_VERSIONS = ['1.0'];
+    if (!SUPPORTED_VERSIONS.includes(backupData.version)) {
+      return {
+        valid: false,
+        error: `Unsupported backup version "${backupData.version}". Supported: ${SUPPORTED_VERSIONS.join(', ')}`
+      };
     }
 
     return { valid: true };

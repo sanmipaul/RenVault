@@ -50,6 +50,8 @@ class NotificationManager {
       withdrawalNotifications: preferences.withdrawalNotifications !== false,
       stakingNotifications: preferences.stakingNotifications !== false,
       rewardNotifications: preferences.rewardNotifications !== false,
+      // Activity / social notifications
+      leaderboardNotifications: preferences.leaderboardNotifications !== false,
       // Security alerts
       securityAlerts: preferences.securityAlerts !== false,
       loginAlerts: preferences.loginAlerts !== false,
@@ -97,7 +99,8 @@ class NotificationManager {
       userId,
       'sendDepositAlert', [amount, balance],
       'sendDepositNotification', [amount],
-      priority
+      priority,
+      'depositNotifications'
     );
   }
 
@@ -106,7 +109,8 @@ class NotificationManager {
       userId,
       'sendWithdrawAlert', [amount, balance],
       'sendWithdrawNotification', [amount],
-      priority
+      priority,
+      'withdrawalNotifications'
     );
   }
 
@@ -115,7 +119,8 @@ class NotificationManager {
       userId,
       'sendLeaderboardUpdate', [rank, score],
       'sendRankingNotification', [rank],
-      priority
+      priority,
+      'leaderboardNotifications'
     );
   }
 

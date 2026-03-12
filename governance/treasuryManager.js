@@ -6,6 +6,12 @@ class TreasuryManager {
     this.budgets = new Map();
   }
 
+  _validateAmount(amount, label = 'amount') {
+    if (typeof amount !== 'number' || !Number.isFinite(amount) || amount <= 0) {
+      throw new Error(`${label} must be a finite positive number`);
+    }
+  }
+
   deposit(amount, source = 'protocol-fees') {
     if (typeof amount !== 'number' || amount <= 0) throw new Error('deposit amount must be a positive number');
     this.balance += amount;
@@ -53,8 +59,12 @@ class TreasuryManager {
     if (!budget) throw new Error('Budget category not found');
     if (budget.spent + amount > budget.allocated) throw new Error('Budget exceeded');
 
-    budget.spent += amount;
+    // Withdraw first: if the treasury has insufficient funds withdraw() throws
+    // and budget.spent is never touched, keeping both state machines consistent.
+    // Mutating budget.spent before the withdraw would leave the budget showing
+    // as partially spent even though no funds left the treasury.
     this.withdraw(amount, 'budget-spend', `${category}: ${description}`);
+    budget.spent += amount;
     return budget;
   }
 
@@ -63,7 +73,11 @@ class TreasuryManager {
   }
 
   getTransactionHistory(limit = 50) {
-    return this.transactions
+    // Spread before sorting: Array.prototype.sort is in-place, so sorting
+    // this.transactions directly permanently reorders the internal ledger.
+    // Subsequent getTreasuryStats() or integrity checks would see a scrambled
+    // transaction array that still sums correctly but audits in wrong order.
+    return [...this.transactions]
       .sort((a, b) => b.timestamp - a.timestamp)
       .slice(0, limit);
   }

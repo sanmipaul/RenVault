@@ -41,30 +41,59 @@ class DataExporter {
   }
 
   async exportAllUsers(userAddresses) {
-    const userData = [];
-    
-    for (const address of userAddresses) {
-      const data = await this.exportUserData(address);
-      if (data) userData.push(data);
+    if (!Array.isArray(userAddresses)) {
+      throw new TypeError('userAddresses must be an array');
     }
+    if (userAddresses.length === 0) {
+      throw new Error('userAddresses must not be empty');
+    }
+
+    const results = await Promise.allSettled(
+      userAddresses.map(address => this.exportUserData(address))
+    );
+
+    const userData = [];
+    const failedAddresses = [];
+
+    results.forEach((result, i) => {
+      if (result.status === 'fulfilled' && result.value) {
+        userData.push(result.value);
+      } else {
+        failedAddresses.push(userAddresses[i]);
+      }
+    });
 
     return {
       exportedAt: new Date().toISOString(),
+      totalRequested: userAddresses.length,
       totalUsers: userData.length,
+      failedCount: failedAddresses.length,
+      failedAddresses,
       users: userData
     };
   }
 
   saveBackup(data, filename) {
+    if (data === undefined || data === null) {
+      throw new Error('Cannot save backup: data is null or undefined');
+    }
+    if (!filename || typeof filename !== 'string') {
+      throw new Error('Cannot save backup: filename must be a non-empty string');
+    }
+
     const backupDir = path.join(__dirname, 'backups');
     if (!fs.existsSync(backupDir)) {
       fs.mkdirSync(backupDir, { recursive: true });
     }
 
     const filepath = path.join(backupDir, filename);
-    fs.writeFileSync(filepath, JSON.stringify(data, null, 2));
-    
-    console.log(`✅ Backup saved: ${filepath}`);
+    try {
+      fs.writeFileSync(filepath, JSON.stringify(data, null, 2));
+    } catch (err) {
+      throw new Error(`Failed to write backup file "${filepath}": ${err.message}`);
+    }
+
+    console.log(`Backup saved: ${filepath}`);
     return filepath;
   }
 

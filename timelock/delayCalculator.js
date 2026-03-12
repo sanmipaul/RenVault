@@ -21,6 +21,7 @@ class DelayCalculator {
 
     // If it's a number (milliseconds)
     if (typeof input === 'number') {
+      if (input <= 0) throw new Error('delay must be a positive number of milliseconds');
       return input;
     }
 
@@ -80,6 +81,9 @@ class DelayCalculator {
   }
 
   validateDelay(delay, minDelay, maxDelay) {
+    if (typeof minDelay !== 'number' || minDelay <= 0) throw new Error('minDelay must be a positive number');
+    if (typeof maxDelay !== 'number' || maxDelay <= 0) throw new Error('maxDelay must be a positive number');
+    if (minDelay >= maxDelay) throw new Error('minDelay must be less than maxDelay');
     const ms = this.calculateDelay(delay);
     
     if (ms < minDelay) {

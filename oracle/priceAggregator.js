@@ -15,21 +15,30 @@ class PriceAggregator {
   }
 
   async fetchPrice(symbol) {
-    const results = [];
-    
-    for (const [name, source] of this.sources.entries()) {
-      if (!source.active) continue;
-      
-      try {
+    const activeSources = Array.from(this.sources.entries()).filter(
+      ([, source]) => source.active
+    );
+
+    const settled = await Promise.allSettled(
+      activeSources.map(async ([name, source]) => {
         const price = await source.fetcher(symbol);
-        results.push({
+        return {
           source: name,
           price: parseFloat(price),
           weight: source.weight,
-          timestamp: Date.now()
-        });
-      } catch (error) {
-        console.warn(`Failed to fetch price from ${name}:`, error.message);
+          timestamp: Date.now(),
+        };
+      })
+    );
+
+    const results = [];
+    for (let i = 0; i < settled.length; i++) {
+      const outcome = settled[i];
+      if (outcome.status === 'fulfilled') {
+        results.push(outcome.value);
+      } else {
+        const sourceName = activeSources[i][0];
+        console.warn(`Failed to fetch price from ${sourceName}:`, outcome.reason?.message);
       }
     }
 
@@ -73,15 +82,21 @@ class PriceAggregator {
   }
 
   async updatePrices(symbols) {
-    const updates = {};
-    
-    for (const symbol of symbols) {
-      try {
+    const settled = await Promise.allSettled(
+      symbols.map(async (symbol) => {
         const priceData = await this.fetchPrice(symbol);
+        return { symbol, priceData };
+      })
+    );
+
+    const updates = {};
+    for (const outcome of settled) {
+      if (outcome.status === 'fulfilled') {
+        const { symbol, priceData } = outcome.value;
         this.prices.set(symbol, priceData);
         updates[symbol] = priceData;
-      } catch (error) {
-        console.error(`Failed to update price for ${symbol}:`, error.message);
+      } else {
+        console.error(`Failed to update price for a symbol:`, outcome.reason?.message);
       }
     }
 
