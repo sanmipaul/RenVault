@@ -20,6 +20,8 @@ class TreasuryManager {
   }
 
   withdraw(amount, recipient, purpose) {
+    if (typeof amount !== 'number' || amount <= 0) throw new Error('withdrawal amount must be a positive number');
+    if (!recipient || typeof recipient !== 'string') throw new Error('recipient is required');
     if (amount > this.balance) throw new Error('Insufficient treasury funds');
     
     this.balance -= amount;
@@ -35,6 +37,8 @@ class TreasuryManager {
   }
 
   createBudget(category, amount, period = 'monthly') {
+    if (!category || typeof category !== 'string') throw new Error('category is required');
+    if (typeof amount !== 'number' || amount <= 0) throw new Error('budget amount must be a positive number');
     this.budgets.set(category, {
       allocated: amount,
       spent: 0,
