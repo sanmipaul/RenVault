@@ -16,7 +16,7 @@ class VotingSystem {
   updateVotingPower(user) {
     const balance = this.stakingBalances.get(user) || 0;
     const power = Math.floor(balance / 1000000); // 1 voting power per 1M STX
-    this.votingPower.set(user, Math.max(1, power));
+    this.votingPower.set(user, power);
   }
 
   delegate(delegator, delegate) {
