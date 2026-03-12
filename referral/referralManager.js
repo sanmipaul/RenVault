@@ -107,6 +107,9 @@ class ReferralManager {
     }
     
     if (newSettings.referrerCommission !== undefined) {
+      if (typeof newSettings.referrerCommission !== 'number' || newSettings.referrerCommission < 0) {
+        throw new Error('referrerCommission must be a non-negative number');
+      }
       if (newSettings.referrerCommission > this.settings.maxCommission) {
         throw new Error(`Commission cannot exceed ${this.settings.maxCommission}%`);
       }
