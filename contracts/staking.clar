@@ -106,10 +106,18 @@
 (define-read-only (get-total-staked)
   (var-get total-staked))
 
+(define-read-only (get-reward-pool)
+  (var-get reward-pool))
+
+(define-read-only (get-max-stake)
+  (var-get max-stake))
+
 (define-read-only (get-staking-info)
   {
     total-staked: (var-get total-staked),
     reward-rate: (var-get reward-rate),
     min-stake: (var-get min-stake),
-    lock-period: (var-get lock-period)
+    max-stake: (var-get max-stake),
+    lock-period: (var-get lock-period),
+    reward-pool: (var-get reward-pool)
   })
