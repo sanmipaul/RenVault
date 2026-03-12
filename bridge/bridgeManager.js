@@ -15,6 +15,9 @@ class BridgeManager {
     if (!this.supportedChains.includes(toChain)) {
       throw new Error('Unsupported target chain');
     }
+    if (typeof amount !== 'number' || amount <= 0) {
+      throw new Error('amount must be a positive number');
+    }
 
     const txId = this.generateTxId();
     const bridgeData = {
