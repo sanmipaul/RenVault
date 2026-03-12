@@ -42,6 +42,7 @@ class ValidatorNetwork {
   }
 
   slashValidator(address, amount) {
+    if (typeof amount !== 'number' || amount <= 0) throw new Error('slash amount must be a positive number');
     const validator = this.validators.get(address);
     if (!validator) return false;
 
