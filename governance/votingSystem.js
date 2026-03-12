@@ -20,6 +20,8 @@ class VotingSystem {
   }
 
   delegate(delegator, delegate) {
+    if (!delegator || typeof delegator !== 'string') throw new Error('delegator is required');
+    if (!delegate || typeof delegate !== 'string') throw new Error('delegate is required');
     if (delegator === delegate) throw new Error('Cannot delegate to self');
     
     this.delegations.set(delegator, delegate);
