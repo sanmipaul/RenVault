@@ -136,6 +136,7 @@ class PriceValidator {
     
     const returns = [];
     for (let i = 1; i < prices.length; i++) {
+      if (prices[i-1] === 0) continue;
       returns.push((prices[i] - prices[i-1]) / prices[i-1]);
     }
 
