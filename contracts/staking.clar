@@ -29,14 +29,16 @@
 
 ;; Unstake STX
 (define-public (unstake (amount uint))
-  (let ((current-stake (default-to u0 (map-get? user-stakes tx-sender)))
+  (let ((sender tx-sender)
+        (current-stake (default-to u0 (map-get? user-stakes tx-sender)))
         (stake-time (default-to u0 (map-get? stake-timestamps tx-sender))))
     (asserts! (>= current-stake amount) err-insufficient-balance)
     (asserts! (>= (- block-height stake-time) (var-get lock-period)) (err u405))
-    
-    (try! (as-contract (stx-transfer? amount tx-sender tx-sender)))
-    (map-set user-stakes tx-sender (- current-stake amount))
+    ;; State updates before external call (CEI pattern)
+    (map-set user-stakes sender (- current-stake amount))
     (var-set total-staked (- (var-get total-staked) amount))
+    ;; Transfer from contract to caller — sender captured before as-contract
+    (try! (as-contract (stx-transfer? amount tx-sender sender)))
     (ok amount)))
 
 ;; Calculate rewards
