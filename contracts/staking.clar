@@ -14,6 +14,8 @@
 (define-data-var reward-rate uint u100) ;; 1% per epoch
 (define-data-var min-stake uint u1000000) ;; 1 STX minimum
 (define-data-var lock-period uint u144) ;; 1 day in blocks
+;; Reward pool — funded by owner to back claimable rewards
+(define-data-var reward-pool uint u0)
 
 ;; Stake STX
 (define-public (stake (amount uint))
@@ -59,6 +61,15 @@
     (map-set user-rewards tx-sender (+ (default-to u0 (map-get? user-rewards tx-sender)) rewards-result))
     (map-set stake-timestamps tx-sender block-height)
     (ok rewards-result)))
+
+;; Owner deposits STX to fund reward payouts
+(define-public (fund-reward-pool (amount uint))
+  (begin
+    (asserts! (is-eq tx-sender contract-owner) err-unauthorized)
+    (asserts! (> amount u0) (err u409))
+    (try! (stx-transfer? amount tx-sender (as-contract tx-sender)))
+    (var-set reward-pool (+ (var-get reward-pool) amount))
+    (ok amount)))
 
 ;; Set staking parameters
 (define-public (set-reward-rate (rate uint))
