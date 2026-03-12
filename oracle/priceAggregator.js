@@ -68,6 +68,7 @@ class PriceAggregator {
       return sum + Math.pow(result.price - average, 2);
     }, 0) / results.length;
 
+    if (average === 0) return 0;
     return Math.sqrt(variance) / average;
   }
 
