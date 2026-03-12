@@ -13,6 +13,7 @@
 (define-data-var total-staked uint u0)
 (define-data-var reward-rate uint u100) ;; 1% per epoch
 (define-data-var min-stake uint u1000000) ;; 1 STX minimum
+(define-data-var max-stake uint u100000000000) ;; 100,000 STX maximum per user
 (define-data-var lock-period uint u144) ;; 1 day in blocks
 ;; Reward pool — funded by owner to back claimable rewards
 (define-data-var reward-pool uint u0)
@@ -21,8 +22,10 @@
 (define-public (stake (amount uint))
   (begin
     (asserts! (>= amount (var-get min-stake)) (err u404))
+    (let ((current-stake (default-to u0 (map-get? user-stakes tx-sender))))
+      (asserts! (<= (+ current-stake amount) (var-get max-stake)) (err u411)))
     (try! (stx-transfer? amount tx-sender (as-contract tx-sender)))
-    
+
     (let ((current-stake (default-to u0 (map-get? user-stakes tx-sender))))
       (map-set user-stakes tx-sender (+ current-stake amount))
       (map-set stake-timestamps tx-sender block-height)
