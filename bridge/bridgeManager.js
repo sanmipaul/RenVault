@@ -61,7 +61,7 @@ class BridgeManager {
   }
 
   generateTxId() {
-    return crypto.randomBytes(32);
+    return crypto.randomBytes(32).toString('hex');
   }
 
   getTransactionStatus(txId) {
