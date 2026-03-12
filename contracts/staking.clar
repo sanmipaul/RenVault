@@ -13,30 +13,37 @@
 (define-data-var total-staked uint u0)
 (define-data-var reward-rate uint u100) ;; 1% per epoch
 (define-data-var min-stake uint u1000000) ;; 1 STX minimum
+(define-data-var max-stake uint u100000000000) ;; 100,000 STX maximum per user
 (define-data-var lock-period uint u144) ;; 1 day in blocks
+;; Reward pool — funded by owner to back claimable rewards
+(define-data-var reward-pool uint u0)
 
 ;; Stake STX
 (define-public (stake (amount uint))
-  (begin
+  (let ((current-stake (default-to u0 (map-get? user-stakes tx-sender))))
     (asserts! (>= amount (var-get min-stake)) (err u404))
+    (asserts! (<= (+ current-stake amount) (var-get max-stake)) (err u411))
     (try! (stx-transfer? amount tx-sender (as-contract tx-sender)))
-    
-    (let ((current-stake (default-to u0 (map-get? user-stakes tx-sender))))
-      (map-set user-stakes tx-sender (+ current-stake amount))
-      (map-set stake-timestamps tx-sender block-height)
-      (var-set total-staked (+ (var-get total-staked) amount))
-      (ok amount))))
+    (map-set user-stakes tx-sender (+ current-stake amount))
+    (map-set stake-timestamps tx-sender block-height)
+    (var-set total-staked (+ (var-get total-staked) amount))
+    (print {event: "staked", user: tx-sender, amount: amount, block: block-height})
+    (ok amount)))
 
 ;; Unstake STX
 (define-public (unstake (amount uint))
-  (let ((current-stake (default-to u0 (map-get? user-stakes tx-sender)))
+  (let ((sender tx-sender)
+        (current-stake (default-to u0 (map-get? user-stakes tx-sender)))
         (stake-time (default-to u0 (map-get? stake-timestamps tx-sender))))
+    (asserts! (> amount u0) (err u408))
     (asserts! (>= current-stake amount) err-insufficient-balance)
     (asserts! (>= (- block-height stake-time) (var-get lock-period)) (err u405))
-    
-    (try! (as-contract (stx-transfer? amount tx-sender tx-sender)))
-    (map-set user-stakes tx-sender (- current-stake amount))
+    ;; State updates before external call (CEI pattern)
+    (map-set user-stakes sender (- current-stake amount))
     (var-set total-staked (- (var-get total-staked) amount))
+    ;; Transfer from contract to caller — sender captured before as-contract
+    (try! (as-contract (stx-transfer? amount tx-sender sender)))
+    (print {event: "unstaked", user: sender, amount: amount, block: block-height})
     (ok amount)))
 
 ;; Calculate rewards
@@ -49,25 +56,58 @@
         (ok reward))
       (ok u0))))
 
-;; Claim rewards
+;; Claim rewards — transfers STX from reward pool to user
 (define-public (claim-rewards)
-  (let ((rewards-result (unwrap! (calculate-rewards tx-sender) (err u406))))
+  (let ((sender tx-sender)
+        (rewards-result (unwrap! (calculate-rewards tx-sender) (err u406))))
     (asserts! (> rewards-result u0) (err u407))
-    (map-set user-rewards tx-sender (+ (default-to u0 (map-get? user-rewards tx-sender)) rewards-result))
-    (map-set stake-timestamps tx-sender block-height)
+    (asserts! (>= (var-get reward-pool) rewards-result) (err u410))
+    ;; Update state before transfer (CEI pattern)
+    (map-set user-rewards sender (+ (default-to u0 (map-get? user-rewards sender)) rewards-result))
+    (map-set stake-timestamps sender block-height)
+    (var-set reward-pool (- (var-get reward-pool) rewards-result))
+    ;; Pay out rewards to the caller
+    (try! (as-contract (stx-transfer? rewards-result tx-sender sender)))
+    (print {event: "rewards-claimed", user: sender, amount: rewards-result, block: block-height})
     (ok rewards-result)))
+
+;; Owner deposits STX to fund reward payouts
+(define-public (fund-reward-pool (amount uint))
+  (begin
+    (asserts! (is-eq tx-sender contract-owner) err-unauthorized)
+    (asserts! (> amount u0) (err u409))
+    (try! (stx-transfer? amount tx-sender (as-contract tx-sender)))
+    (var-set reward-pool (+ (var-get reward-pool) amount))
+    (ok amount)))
 
 ;; Set staking parameters
 (define-public (set-reward-rate (rate uint))
   (begin
     (asserts! (is-eq tx-sender contract-owner) err-unauthorized)
+    (asserts! (> rate u0) (err u414))
     (var-set reward-rate rate)
     (ok true)))
 
 (define-public (set-min-stake (amount uint))
   (begin
     (asserts! (is-eq tx-sender contract-owner) err-unauthorized)
+    (asserts! (> amount u0) (err u415))
+    (asserts! (< amount (var-get max-stake)) (err u416))
     (var-set min-stake amount)
+    (ok true)))
+
+(define-public (set-max-stake (amount uint))
+  (begin
+    (asserts! (is-eq tx-sender contract-owner) err-unauthorized)
+    (asserts! (> amount (var-get min-stake)) (err u412))
+    (var-set max-stake amount)
+    (ok true)))
+
+(define-public (set-lock-period (blocks uint))
+  (begin
+    (asserts! (is-eq tx-sender contract-owner) err-unauthorized)
+    (asserts! (> blocks u0) (err u413))
+    (var-set lock-period blocks)
     (ok true)))
 
 ;; Read functions
@@ -80,10 +120,24 @@
 (define-read-only (get-total-staked)
   (var-get total-staked))
 
+(define-read-only (get-reward-pool)
+  (var-get reward-pool))
+
+(define-read-only (get-max-stake)
+  (var-get max-stake))
+
+(define-read-only (get-lock-period)
+  (var-get lock-period))
+
+(define-read-only (get-stake-timestamp (user principal))
+  (default-to u0 (map-get? stake-timestamps user)))
+
 (define-read-only (get-staking-info)
   {
     total-staked: (var-get total-staked),
     reward-rate: (var-get reward-rate),
     min-stake: (var-get min-stake),
-    lock-period: (var-get lock-period)
+    max-stake: (var-get max-stake),
+    lock-period: (var-get lock-period),
+    reward-pool: (var-get reward-pool)
   })
