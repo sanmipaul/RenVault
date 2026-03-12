@@ -88,6 +88,7 @@ class EmergencyMonitor {
   }
 
   setThreshold(type, value) {
+    if (typeof value !== 'number' || value < 0) throw new Error('threshold value must be a non-negative number');
     if (this.thresholds.hasOwnProperty(type)) {
       this.thresholds[type] = value;
       return true;
