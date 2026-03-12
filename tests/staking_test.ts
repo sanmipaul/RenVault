@@ -30,8 +30,8 @@ Clarinet.test({
     let stake = chain.callReadOnlyFn('staking', 'get-user-stake', [
       types.principal(user.address)
     ], user.address);
-    
-    assertEquals(stake.result.expectOk(), types.uint(1500000));
+
+    assertEquals(stake.result.expectUint(), 1500000);
   }
 });
 
