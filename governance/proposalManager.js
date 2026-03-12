@@ -7,6 +7,8 @@ class ProposalManager {
   }
 
   createProposal(proposer, title, description, type = 'general') {
+    if (!proposer || typeof proposer !== 'string') throw new Error('proposer is required');
+    if (!title || typeof title !== 'string') throw new Error('title is required');
     const proposalId = ++this.proposalCounter;
     const proposal = {
       id: proposalId,
