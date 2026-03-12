@@ -75,6 +75,37 @@ Clarinet.test({
 });
 
 Clarinet.test({
+  name: "Staking enforces max-stake cap per user",
+  async fn(chain: Chain, accounts: Map<string, Account>) {
+    const deployer = accounts.get('deployer')!;
+    const user = accounts.get('wallet_1')!;
+
+    // Lower the max-stake so the test is feasible
+    chain.mineBlock([
+      Tx.contractCall('staking', 'set-max-stake', [
+        types.uint(5000000)
+      ], deployer.address)
+    ]);
+
+    // Stake up to the cap
+    chain.mineBlock([
+      Tx.contractCall('staking', 'stake', [
+        types.uint(5000000)
+      ], user.address)
+    ]);
+
+    // Attempt to stake 1 more uSTX — should fail with err u411
+    let block = chain.mineBlock([
+      Tx.contractCall('staking', 'stake', [
+        types.uint(1000000)
+      ], user.address)
+    ]);
+
+    assertEquals(block.receipts[0].result.expectErr(), types.uint(411));
+  }
+});
+
+Clarinet.test({
   name: "Staking prevents early unstaking",
   async fn(chain: Chain, accounts: Map<string, Account>) {
     const user = accounts.get('wallet_1')!;
