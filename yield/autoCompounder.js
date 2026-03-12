@@ -6,6 +6,8 @@ class AutoCompounder {
   }
 
   enableAutoCompound(userAddress, strategyId) {
+    if (!userAddress || typeof userAddress !== 'string') throw new Error('userAddress is required');
+    if (!strategyId || typeof strategyId !== 'string') throw new Error('strategyId is required');
     this.compoundingSchedule.set(userAddress, {
       strategyId,
       enabled: true,
