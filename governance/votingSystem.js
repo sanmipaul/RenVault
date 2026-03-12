@@ -7,6 +7,8 @@ class VotingSystem {
   }
 
   setStakingBalance(user, balance) {
+    if (!user || typeof user !== 'string') throw new Error('user is required');
+    if (typeof balance !== 'number' || balance < 0) throw new Error('balance must be a non-negative number');
     this.stakingBalances.set(user, balance);
     this.updateVotingPower(user);
   }
