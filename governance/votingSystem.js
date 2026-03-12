@@ -34,15 +34,15 @@ class VotingSystem {
   }
 
   getVotingPower(user) {
-    let totalPower = this.votingPower.get(user) || 1;
-    
+    let totalPower = this.votingPower.get(user) || 0;
+
     // Add delegated power
     for (const [delegator, delegate] of this.delegations.entries()) {
       if (delegate === user) {
-        totalPower += this.votingPower.get(delegator) || 1;
+        totalPower += this.votingPower.get(delegator) || 0;
       }
     }
-    
+
     return totalPower;
   }
 
@@ -60,7 +60,7 @@ class VotingSystem {
       user,
       delegatedTo,
       delegatedFrom,
-      ownPower: this.votingPower.get(user) || 1,
+      ownPower: this.votingPower.get(user) || 0,
       totalPower: this.getVotingPower(user)
     };
   }
