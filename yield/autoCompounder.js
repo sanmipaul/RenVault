@@ -51,7 +51,7 @@ class AutoCompounder {
   }
 
   calculateCompoundAmount(rewards) {
-    // Simple compound calculation
+    if (typeof rewards !== 'number' || rewards < 0) throw new Error('rewards must be a non-negative number');
     return rewards * 1.01; // 1% bonus for compounding
   }
 
