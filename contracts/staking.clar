@@ -84,12 +84,15 @@
 (define-public (set-reward-rate (rate uint))
   (begin
     (asserts! (is-eq tx-sender contract-owner) err-unauthorized)
+    (asserts! (> rate u0) (err u414))
     (var-set reward-rate rate)
     (ok true)))
 
 (define-public (set-min-stake (amount uint))
   (begin
     (asserts! (is-eq tx-sender contract-owner) err-unauthorized)
+    (asserts! (> amount u0) (err u415))
+    (asserts! (< amount (var-get max-stake)) (err u416))
     (var-set min-stake amount)
     (ok true)))
 
