@@ -8,7 +8,9 @@ class TimelockManager {
   }
 
   queueTransaction(target, functionName, args, delay) {
-    if (delay < this.minDelay || delay > this.maxDelay) {
+    if (!target || typeof target !== 'string') throw new Error('target is required');
+    if (!functionName || typeof functionName !== 'string') throw new Error('functionName is required');
+    if (typeof delay !== 'number' || delay < this.minDelay || delay > this.maxDelay) {
       throw new Error('Invalid delay period');
     }
 
