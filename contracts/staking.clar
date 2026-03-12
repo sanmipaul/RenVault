@@ -123,6 +123,12 @@
 (define-read-only (get-max-stake)
   (var-get max-stake))
 
+(define-read-only (get-lock-period)
+  (var-get lock-period))
+
+(define-read-only (get-stake-timestamp (user principal))
+  (default-to u0 (map-get? stake-timestamps user)))
+
 (define-read-only (get-staking-info)
   {
     total-staked: (var-get total-staked),
