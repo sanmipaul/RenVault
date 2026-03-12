@@ -45,6 +45,9 @@ class AchievementTracker {
     
     switch (activity.type) {
       case 'deposit':
+        if (typeof activity.amount !== 'number' || activity.amount < 0) {
+          throw new Error('deposit amount must be a non-negative number');
+        }
         progress.deposits += 1;
         progress.totalAmount += activity.amount;
         break;
