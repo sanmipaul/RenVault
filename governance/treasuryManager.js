@@ -7,6 +7,7 @@ class TreasuryManager {
   }
 
   deposit(amount, source = 'protocol-fees') {
+    if (typeof amount !== 'number' || amount <= 0) throw new Error('deposit amount must be a positive number');
     this.balance += amount;
     this.transactions.push({
       type: 'deposit',
