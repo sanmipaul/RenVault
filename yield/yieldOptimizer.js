@@ -40,6 +40,8 @@ class YieldOptimizer {
   }
 
   calculateExpectedYield(amount, allocation) {
+    if (typeof amount !== 'number' || amount < 0) throw new Error('amount must be a non-negative number');
+    if (!allocation || typeof allocation !== 'object') throw new Error('allocation is required');
     const stakingYield = (amount * allocation.staking / 100) * this.rewardRates.staking;
     const liquidityYield = (amount * allocation.liquidity / 100) * this.rewardRates.liquidity;
     const lendingYield = (amount * allocation.lending / 100) * this.rewardRates.lending;
