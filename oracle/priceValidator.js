@@ -148,10 +148,11 @@ class PriceValidator {
 
   calculateTrend(prices) {
     if (prices.length < 2) return 0;
-    
+
     const first = prices[0];
     const last = prices[prices.length - 1];
-    
+
+    if (first === 0) return 0;
     return (last - first) / first;
   }
 
