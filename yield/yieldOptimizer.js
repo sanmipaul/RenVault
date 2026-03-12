@@ -72,6 +72,7 @@ class YieldOptimizer {
   calculateImprovement(current, optimal) {
     const currentYield = this.calculateExpectedYield(100, current);
     const optimalYield = this.calculateExpectedYield(100, optimal);
+    if (currentYield === 0) return '0.00';
     return ((optimalYield - currentYield) / currentYield * 100).toFixed(2);
   }
 }
