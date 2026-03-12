@@ -60,6 +60,7 @@ class ProposalManager {
       return { success: true, result: 'executed' };
     } else {
       proposal.status = 'rejected';
+      proposal.executed = true;
       return { success: false, result: 'rejected' };
     }
   }
