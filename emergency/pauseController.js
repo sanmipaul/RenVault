@@ -15,6 +15,7 @@ class PauseController {
   }
 
   addEmergencyContact(address) {
+    if (!address || typeof address !== 'string') throw new Error('address is required');
     this.emergencyContacts.add(address);
     return { success: true, contact: address };
   }
