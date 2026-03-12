@@ -68,6 +68,7 @@
     (var-set reward-pool (- (var-get reward-pool) rewards-result))
     ;; Pay out rewards to the caller
     (try! (as-contract (stx-transfer? rewards-result tx-sender sender)))
+    (print {event: "rewards-claimed", user: sender, amount: rewards-result, block: block-height})
     (ok rewards-result)))
 
 ;; Owner deposits STX to fund reward payouts
