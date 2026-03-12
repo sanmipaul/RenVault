@@ -29,6 +29,7 @@ class ProposalManager {
   }
 
   vote(proposalId, voter, support, votingPower = 1) {
+    if (typeof votingPower !== 'number' || votingPower <= 0) throw new Error('votingPower must be a positive number');
     const proposal = this.proposals.get(proposalId);
     if (!proposal) throw new Error('Proposal not found');
     if (Date.now() > proposal.endTime) throw new Error('Voting period ended');
