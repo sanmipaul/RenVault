@@ -74,6 +74,7 @@ class AutoCompounder {
   }
 
   setCompoundFrequency(hours) {
+    if (typeof hours !== 'number' || hours <= 0) throw new Error('hours must be a positive number');
     this.compoundFrequency = hours * 3600000;
   }
 }
