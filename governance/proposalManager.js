@@ -7,6 +7,8 @@ class ProposalManager {
   }
 
   createProposal(proposer, title, description, type = 'general') {
+    if (!proposer || typeof proposer !== 'string') throw new Error('proposer is required');
+    if (!title || typeof title !== 'string') throw new Error('title is required');
     const proposalId = ++this.proposalCounter;
     const proposal = {
       id: proposalId,
@@ -27,6 +29,7 @@ class ProposalManager {
   }
 
   vote(proposalId, voter, support, votingPower = 1) {
+    if (typeof votingPower !== 'number' || votingPower <= 0) throw new Error('votingPower must be a positive number');
     const proposal = this.proposals.get(proposalId);
     if (!proposal) throw new Error('Proposal not found');
     if (Date.now() > proposal.endTime) throw new Error('Voting period ended');
@@ -58,6 +61,7 @@ class ProposalManager {
       return { success: true, result: 'executed' };
     } else {
       proposal.status = 'rejected';
+      proposal.executed = true;
       return { success: false, result: 'rejected' };
     }
   }

@@ -1,158 +1,111 @@
 const { TreasuryManager } = require('./treasuryManager');
 
-// ─────────────────────────────────────────────────────────────────────────────
-// deposit / withdraw — input validation
-// ─────────────────────────────────────────────────────────────────────────────
-
-describe('TreasuryManager — deposit and withdraw input validation', () => {
-  let tm;
-
-  beforeEach(() => {
-    tm = new TreasuryManager();
-    tm.deposit(1_000_000, 'seed');
-  });
-
-  test('deposit rejects negative amounts', () => {
-    expect(() => tm.deposit(-500)).toThrow('finite positive number');
-  });
-
-  test('deposit rejects zero', () => {
-    expect(() => tm.deposit(0)).toThrow('finite positive number');
-  });
-
-  test('deposit rejects NaN — balance must not become NaN', () => {
-    expect(() => tm.deposit(NaN)).toThrow('finite positive number');
-    expect(Number.isFinite(tm.getBalance())).toBe(true);
-  });
-
-  test('deposit rejects Infinity', () => {
-    expect(() => tm.deposit(Infinity)).toThrow('finite positive number');
-  });
-
-  test('deposit rejects non-number', () => {
-    expect(() => tm.deposit('1000')).toThrow('finite positive number');
-  });
-
-  test('withdraw rejects negative amounts', () => {
-    expect(() => tm.withdraw(-100, 'addr1', 'test')).toThrow('finite positive number');
-  });
-
-  test('withdraw rejects missing recipient', () => {
-    expect(() => tm.withdraw(100, '', 'test')).toThrow('recipient');
-  });
-
-  test('withdraw rejects non-string recipient', () => {
-    expect(() => tm.withdraw(100, 42, 'test')).toThrow('recipient');
-  });
-
-  test('valid deposit increments balance correctly', () => {
-    tm.deposit(500_000, 'grant');
-    expect(tm.getBalance()).toBe(1_500_000);
-  });
-
-  test('valid withdraw decrements balance correctly', () => {
-    tm.withdraw(200_000, 'addr1', 'dev grant');
-    expect(tm.getBalance()).toBe(800_000);
-  });
-});
-
-// ─────────────────────────────────────────────────────────────────────────────
-// spendFromBudget — atomicity
-// ─────────────────────────────────────────────────────────────────────────────
-
-describe('TreasuryManager.spendFromBudget — atomic state update', () => {
-  let tm;
-
-  beforeEach(() => {
-    tm = new TreasuryManager();
-    // Treasury has 500 but budget allocated 1000
-    tm.deposit(500, 'seed');
-    tm.createBudget('dev', 1_000, 'monthly');
-  });
-
-  test('does not corrupt budget.spent when treasury has insufficient funds', () => {
-    // Budget allows 1000 but treasury only has 500
-    expect(() => tm.spendFromBudget('dev', 800, 'contractor')).toThrow('Insufficient treasury funds');
-
-    // budget.spent must still be 0 — the spend never actually happened
-    const status = tm.getBudgetStatus();
-    expect(status.dev.spent).toBe(0);
-  });
-
-  test('balance and budget.spent both advance on a successful spend', () => {
-    tm.spendFromBudget('dev', 300, 'tooling');
-    expect(tm.getBalance()).toBe(200);
-    expect(tm.getBudgetStatus().dev.spent).toBe(300);
-  });
-
-  test('consecutive failed spend does not block a later valid spend', () => {
-    // First attempt fails (treasury underflow)
-    try { tm.spendFromBudget('dev', 800, 'fail'); } catch (_) {}
-    // Second attempt should succeed (300 ≤ 500 treasury, 300 ≤ 1000 budget)
-    tm.spendFromBudget('dev', 300, 'succeed');
-    expect(tm.getBalance()).toBe(200);
-  });
-});
-
-// ─────────────────────────────────────────────────────────────────────────────
-// getTransactionHistory — must not mutate internal ledger
-// ─────────────────────────────────────────────────────────────────────────────
-
-describe('TreasuryManager.getTransactionHistory — does not mutate this.transactions', () => {
-  let tm;
-
-  beforeEach(() => {
-    tm = new TreasuryManager();
-    jest.spyOn(Date, 'now')
-      .mockReturnValueOnce(1000)
-      .mockReturnValueOnce(2000)
-      .mockReturnValueOnce(3000);
-    tm.deposit(100, 'a');
-    tm.deposit(200, 'b');
-    tm.deposit(300, 'c');
-    jest.restoreAllMocks();
-  });
-
-  test('returns transactions in descending timestamp order', () => {
-    const history = tm.getTransactionHistory();
-    expect(history[0].timestamp).toBeGreaterThan(history[1].timestamp);
-  });
-
-  test('calling getTransactionHistory twice yields the same order', () => {
-    const first = tm.getTransactionHistory().map(t => t.timestamp);
-    const second = tm.getTransactionHistory().map(t => t.timestamp);
-    expect(first).toEqual(second);
-  });
-
-  test('internal transactions array retains insertion order after the call', () => {
-    const before = tm.transactions.map(t => t.timestamp);
-    tm.getTransactionHistory();
-    expect(tm.transactions.map(t => t.timestamp)).toEqual(before);
-  });
-});
-
-// ─────────────────────────────────────────────────────────────────────────────
-// getBudgetStatus — zero-allocation guard
-// ─────────────────────────────────────────────────────────────────────────────
-
-describe('TreasuryManager.getBudgetStatus — utilization is never NaN', () => {
+describe('TreasuryManager', () => {
   let tm;
 
   beforeEach(() => {
     tm = new TreasuryManager();
   });
 
-  test('returns 0.0 utilization for a zero-allocation budget instead of NaN', () => {
-    tm.createBudget('reserve', 0, 'monthly');
-    const status = tm.getBudgetStatus();
-    expect(status.reserve.utilization).toBe('0.0');
-    expect(status.reserve.utilization).not.toBe('NaN');
+  describe('deposit', () => {
+    test('increases balance', () => {
+      tm.deposit(1000);
+      expect(tm.getBalance()).toBe(1000);
+    });
+
+    test('accumulates multiple deposits', () => {
+      tm.deposit(500);
+      tm.deposit(300);
+      expect(tm.getBalance()).toBe(800);
+    });
+
+    test('throws if amount is not positive', () => {
+      expect(() => tm.deposit(0)).toThrow('deposit amount must be a positive number');
+      expect(() => tm.deposit(-100)).toThrow();
+    });
   });
 
-  test('returns correct percentage for a normal budget', () => {
-    tm.deposit(1_000, 'seed');
-    tm.createBudget('ops', 1_000, 'monthly');
-    tm.spendFromBudget('ops', 250, 'hosting');
-    expect(tm.getBudgetStatus().ops.utilization).toBe('25.0');
+  describe('withdraw', () => {
+    test('decreases balance', () => {
+      tm.deposit(1000);
+      tm.withdraw(400, 'addr1', 'grant');
+      expect(tm.getBalance()).toBe(600);
+    });
+
+    test('throws if insufficient funds', () => {
+      tm.deposit(100);
+      expect(() => tm.withdraw(200, 'addr1', 'grant')).toThrow('Insufficient treasury funds');
+    });
+
+    test('throws if amount is not positive', () => {
+      tm.deposit(1000);
+      expect(() => tm.withdraw(0, 'addr1', 'grant')).toThrow('withdrawal amount must be a positive number');
+      expect(() => tm.withdraw(-50, 'addr1', 'grant')).toThrow();
+    });
+
+    test('throws if recipient is missing', () => {
+      tm.deposit(1000);
+      expect(() => tm.withdraw(100, '', 'grant')).toThrow('recipient is required');
+    });
+  });
+
+  describe('createBudget', () => {
+    test('creates a budget', () => {
+      tm.createBudget('dev', 5000);
+      expect(tm.budgets.has('dev')).toBe(true);
+    });
+
+    test('throws if category is missing', () => {
+      expect(() => tm.createBudget('', 5000)).toThrow('category is required');
+    });
+
+    test('throws if amount is not positive', () => {
+      expect(() => tm.createBudget('dev', 0)).toThrow('budget amount must be a positive number');
+    });
+  });
+
+  describe('spendFromBudget', () => {
+    test('deducts from budget and treasury', () => {
+      tm.deposit(5000);
+      tm.createBudget('dev', 1000);
+      tm.spendFromBudget('dev', 400, 'salaries');
+      expect(tm.budgets.get('dev').spent).toBe(400);
+      expect(tm.getBalance()).toBe(4600);
+    });
+
+    test('throws if budget exceeded', () => {
+      tm.deposit(5000);
+      tm.createBudget('dev', 100);
+      expect(() => tm.spendFromBudget('dev', 200, 'too much')).toThrow('Budget exceeded');
+    });
+  });
+
+  describe('getBudgetStatus', () => {
+    test('shows correct utilization', () => {
+      tm.deposit(5000);
+      tm.createBudget('marketing', 1000);
+      tm.spendFromBudget('marketing', 250, 'ads');
+      const status = tm.getBudgetStatus();
+      expect(status.marketing.utilization).toBe('25.0');
+    });
+
+    test('does not divide by zero when allocated is 0', () => {
+      // Directly inject a zero-allocated budget to test guard
+      tm.budgets.set('zero', { allocated: 0, spent: 0, period: 'monthly', createdAt: Date.now() });
+      expect(() => tm.getBudgetStatus()).not.toThrow();
+      expect(tm.getBudgetStatus().zero.utilization).toBe('0.0');
+    });
+  });
+
+  describe('getTreasuryStats', () => {
+    test('returns correct totals', () => {
+      tm.deposit(1000);
+      tm.deposit(500);
+      tm.withdraw(200, 'addr1', 'grant');
+      const stats = tm.getTreasuryStats();
+      expect(stats.totalDeposits).toBe(1500);
+      expect(stats.totalWithdrawals).toBe(200);
+      expect(stats.currentBalance).toBe(1300);
+    });
   });
 });

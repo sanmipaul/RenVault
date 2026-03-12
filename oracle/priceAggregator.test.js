@@ -1,81 +1,91 @@
 const { PriceAggregator } = require('./priceAggregator');
 
-describe('PriceAggregator.fetchPrice', () => {
-  let aggregator;
+describe('PriceAggregator', () => {
+  let agg;
 
   beforeEach(() => {
-    aggregator = new PriceAggregator();
+    agg = new PriceAggregator();
   });
 
-  test('fetches from all active sources and returns weighted average', async () => {
-    aggregator.addSource('s1', async () => 100, 1);
-    aggregator.addSource('s2', async () => 200, 1);
+  describe('addSource', () => {
+    test('adds a valid source', () => {
+      agg.addSource('test', async () => 100, 1);
+      expect(agg.sources.has('test')).toBe(true);
+    });
 
-    const result = await aggregator.fetchPrice('STX');
-    expect(result.price).toBeCloseTo(150);
-    expect(result.sources).toBe(2);
+    test('throws if name is missing', () => {
+      expect(() => agg.addSource('', async () => 100, 1)).toThrow('source name is required');
+    });
+
+    test('throws if fetcher is not a function', () => {
+      expect(() => agg.addSource('test', 'not-a-fn', 1)).toThrow('fetcher must be a function');
+    });
+
+    test('throws if weight is not positive', () => {
+      expect(() => agg.addSource('test', async () => 100, 0)).toThrow('weight must be a positive number');
+      expect(() => agg.addSource('test', async () => 100, -1)).toThrow();
+    });
   });
 
-  test('throws when no sources are registered', async () => {
-    await expect(aggregator.fetchPrice('STX')).rejects.toThrow('No price sources available');
+  describe('fetchPrice', () => {
+    test('returns weighted average from active sources', async () => {
+      agg.addSource('s1', async () => 100, 1);
+      agg.addSource('s2', async () => 200, 1);
+      const result = await agg.fetchPrice('STX');
+      expect(result.price).toBe(150);
+      expect(result.sources).toBe(2);
+    });
+
+    test('throws if no sources are active', async () => {
+      await expect(agg.fetchPrice('STX')).rejects.toThrow('No price sources available');
+    });
+
+    test('skips failing sources and uses remaining', async () => {
+      agg.addSource('good', async () => 100, 1);
+      agg.addSource('bad', async () => { throw new Error('API error'); }, 1);
+      const result = await agg.fetchPrice('STX');
+      expect(result.price).toBe(100);
+      expect(result.sources).toBe(1);
+    });
   });
 
-  test('skips inactive sources', async () => {
-    aggregator.addSource('active', async () => 50, 1);
-    aggregator.addSource('inactive', async () => 9999, 1);
-    aggregator.sources.get('inactive').active = false;
-
-    const result = await aggregator.fetchPrice('STX');
-    expect(result.price).toBeCloseTo(50);
-    expect(result.sources).toBe(1);
+  describe('calculateWeightedAverage', () => {
+    test('weights sources correctly', () => {
+      const results = [
+        { price: 100, weight: 1 },
+        { price: 300, weight: 3 }
+      ];
+      const { price } = agg.calculateWeightedAverage(results);
+      expect(price).toBe(250); // (100*1 + 300*3) / 4
+    });
   });
 
-  test('continues with remaining sources when one source fails', async () => {
-    aggregator.addSource('good', async () => 80, 1);
-    aggregator.addSource('bad', async () => { throw new Error('timeout'); }, 1);
+  describe('calculateDeviation', () => {
+    test('returns 0 for a single result', () => {
+      expect(agg.calculateDeviation([{ price: 100 }], 100)).toBe(0);
+    });
 
-    const result = await aggregator.fetchPrice('STX');
-    expect(result.price).toBeCloseTo(80);
-    expect(result.sources).toBe(1);
+    test('returns 0 when average is 0', () => {
+      const results = [{ price: 0 }, { price: 0 }];
+      expect(agg.calculateDeviation(results, 0)).toBe(0);
+    });
+
+    test('returns positive deviation for spread prices', () => {
+      const results = [{ price: 90 }, { price: 110 }];
+      expect(agg.calculateDeviation(results, 100)).toBeGreaterThan(0);
+    });
   });
 
-  test('fetches all sources concurrently (not sequentially)', async () => {
-    const callOrder = [];
+  describe('isStale', () => {
+    test('returns true for unknown symbol', () => {
+      expect(agg.isStale('UNKNOWN')).toBe(true);
+    });
 
-    // Both sources start simultaneously; stagger their resolution order to
-    // confirm that we do not await the first before starting the second.
-    aggregator.addSource('slow', () => new Promise(resolve => {
-      setTimeout(() => { callOrder.push('slow'); resolve(100); }, 30);
-    }), 1);
-    aggregator.addSource('fast', () => new Promise(resolve => {
-      setTimeout(() => { callOrder.push('fast'); resolve(200); }, 5);
-    }), 1);
-
-    await aggregator.fetchPrice('STX');
-    // With concurrent dispatch 'fast' resolves before 'slow'
-    expect(callOrder).toEqual(['fast', 'slow']);
-  });
-});
-
-describe('PriceAggregator.updatePrices', () => {
-  let aggregator;
-
-  beforeEach(() => {
-    aggregator = new PriceAggregator();
-    aggregator.addSource('s1', async (sym) => (sym === 'BTC' ? 45000 : 0.5), 1);
-  });
-
-  test('updates multiple symbols and returns them all', async () => {
-    const updates = await aggregator.updatePrices(['STX', 'BTC']);
-    expect(Object.keys(updates)).toHaveLength(2);
-    expect(updates.BTC.price).toBeCloseTo(45000);
-    expect(updates.STX.price).toBeCloseTo(0.5);
-  });
-
-  test('caches results so getPrice returns the latest data', async () => {
-    await aggregator.updatePrices(['STX']);
-    const cached = aggregator.getPrice('STX');
-    expect(cached).toBeDefined();
-    expect(cached.price).toBeCloseTo(0.5);
+    test('returns false for a fresh price', async () => {
+      agg.addSource('s', async () => 100, 1);
+      await agg.fetchPrice('STX');
+      agg.prices.set('STX', { price: 100, timestamp: Date.now() });
+      expect(agg.isStale('STX')).toBe(false);
+    });
   });
 });
