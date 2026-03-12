@@ -96,6 +96,20 @@
     (var-set min-stake amount)
     (ok true)))
 
+(define-public (set-max-stake (amount uint))
+  (begin
+    (asserts! (is-eq tx-sender contract-owner) err-unauthorized)
+    (asserts! (> amount (var-get min-stake)) (err u412))
+    (var-set max-stake amount)
+    (ok true)))
+
+(define-public (set-lock-period (blocks uint))
+  (begin
+    (asserts! (is-eq tx-sender contract-owner) err-unauthorized)
+    (asserts! (> blocks u0) (err u413))
+    (var-set lock-period blocks)
+    (ok true)))
+
 ;; Read functions
 (define-read-only (get-user-stake (user principal))
   (default-to u0 (map-get? user-stakes user)))
