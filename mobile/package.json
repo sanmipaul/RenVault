@@ -1,6 +1,6 @@
 {
   "name": "renvault-mobile",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
     "start": "expo start",
@@ -20,5 +20,18 @@
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"
-  }
+  },
+  "author": "RenVault Team",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sanmipaul/RenVault.git"
+  },
+  "homepage": "https://github.com/sanmipaul/RenVault#readme",
+  "keywords": [
+    "stacks",
+    "bitcoin",
+    "defi",
+    "clarity",
+    "renvault"
+  ]
 }

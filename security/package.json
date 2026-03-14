@@ -1,6 +1,6 @@
 {
   "name": "renvault-security-audit",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Security audit tools for RenVault protocol",
   "main": "auditRunner.js",
   "scripts": {
@@ -12,7 +12,18 @@
     "@stacks/transactions": "^6.5.0",
     "chalk": "^4.1.2"
   },
-  "keywords": ["security", "audit", "clarity", "stacks"],
-  "author": "RenVault Security Team",
-  "license": "MIT"
+  "keywords": [
+    "stacks",
+    "bitcoin",
+    "defi",
+    "clarity",
+    "renvault"
+  ],
+  "author": "RenVault Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sanmipaul/RenVault.git"
+  },
+  "homepage": "https://github.com/sanmipaul/RenVault#readme"
 }

@@ -1,6 +1,6 @@
 {
   "name": "renvault-referral",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Referral system for RenVault protocol",
   "main": "referralAPI.js",
   "scripts": {
@@ -10,7 +10,18 @@
     "express": "^4.18.0",
     "qrcode": "^1.5.0"
   },
-  "keywords": ["referral", "rewards", "incentives", "growth"],
+  "keywords": [
+    "stacks",
+    "bitcoin",
+    "defi",
+    "clarity",
+    "renvault"
+  ],
   "author": "RenVault Team",
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sanmipaul/RenVault.git"
+  },
+  "homepage": "https://github.com/sanmipaul/RenVault#readme"
 }
