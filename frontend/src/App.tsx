@@ -187,9 +187,9 @@ function AppContent() {
 
   const handleDisable2FA = () => {
     localStorage.removeItem(APP_CONFIG.tfaEnabledKey);
-    localStorage.removeItem(APP_CONFIG.tfaSecretKey);
-    localStorage.removeItem(APP_CONFIG.tfaBackupCodesKey);
+    TwoFactorSecureStorage.clearAll();
     setTfaSecret('');
+    setTfaEnabled(false);
     setStatus('✅ Two-factor authentication disabled');
     
     // Send 2FA disabled notification
