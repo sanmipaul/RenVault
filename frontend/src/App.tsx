@@ -171,11 +171,7 @@ function AppContent() {
 
   const handleBackupCodeVerify = async (code: string): Promise<boolean> => {
     try {
-      const walletAddress =
-        userData?.profile?.stxAddress?.mainnet ??
-        userData?.profile?.stxAddress?.testnet ??
-        '';
-      const valid = await TwoFactorSecureStorage.verifyAndConsumeBackupCode(code, walletAddress);
+      const valid = await TwoFactorSecureStorage.verifyAndConsumeBackupCode(code, getWalletAddress());
       if (valid) setShowBackupCodes(false);
       return valid;
     } catch {
