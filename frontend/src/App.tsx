@@ -18,29 +18,7 @@ import { AutoReconnect } from './components/AutoReconnect';
 import NotificationService from './services/notificationService';
 import TransactionHistory from './components/TransactionHistory';
 import NotificationCenter from './components/NotificationCenter';
-import { Analytics } from './components/Analytics';
-import { WalletConnect } from './components/WalletConnect';
-import { WalletManager } from './services/wallet/WalletManager';
-
-import AppHeader from './components/AppHeader';
-import ConnectionOptions from './components/ConnectionOptions';
-import HelpPanel from './components/HelpPanel';
-import NetworkStatus from './components/NetworkStatus';
-import StatsPanel from './components/StatsPanel';
-import SecuritySettings from './components/SecuritySettings';
-import DepositPanel from './components/DepositPanel';
-import WithdrawForm from './components/WithdrawForm';
-import HowItWorks from './components/HowItWorks';
-import AuthModals from './components/AuthModals';
-import WalletActionModals from './components/WalletActionModals';
-
-import { use2FA } from './hooks/use2FA';
-import { useVaultStats } from './hooks/useVaultStats';
-import { useNetworkDetection } from './hooks/useNetworkDetection';
-import { useStatusMessage } from './hooks/useStatusMessage';
-import { trackAnalytics } from './utils/analytics';
-import { APP_CONFIG } from './constants/app';
-import { ConnectionMethod, WalletConnectSession, AppUserProfile } from './types/app';
+import { TwoFactorSecureStorage, TwoFactorMigration } from './services/security';
 
 const appConfig = new AppConfig(['store_write', 'publish_data']);
 const userSession = new UserSession({ appConfig });
@@ -120,6 +98,11 @@ function AppContent() {
   const [showMultiSigSigner, setShowMultiSigSigner] = useState<boolean>(false);
   const [currentTransaction, setCurrentTransaction] = useState<StacksContractCallOptions | null>(null);
   const [showPerformanceMonitor, setShowPerformanceMonitor] = useState<boolean>(false);
+  const [tfaSecret, setTfaSecret] = useState<string>('');
+  const [tfaEnabled, setTfaEnabled] = useState<boolean>(TwoFactorSecureStorage.hasSecret());
+  const [connectionError, setConnectionError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState<number>(0);
+  const [showHelp, setShowHelp] = useState<boolean>(false);
 
   const [walletManager] = useState(() => new WalletManager());
 
@@ -134,11 +117,64 @@ function AppContent() {
     () => (notificationUserId ? NotificationService.getInstance(notificationUserId) : null),
     [notificationUserId]
   );
+  /** Derive the active wallet address from userData, preferring mainnet. */
+  const getWalletAddress = (): string =>
+    userData?.profile?.stxAddress?.mainnet ??
+    userData?.profile?.stxAddress?.testnet ??
+    '';
 
-  // Auto-detect network when user connects
-  useEffect(() => {
-    if (userAddress) {
-      detectFromAddress(userAddress);
+  const handle2FASetupComplete = async (secret: string, backupCodes: string[]) => {
+    setTfaSecret(secret);
+    localStorage.setItem(APP_CONFIG.tfaEnabledKey, 'true');
+    setTfaEnabled(true);
+    // Store secret and backup codes encrypted, not as plain text
+    const walletAddress = getWalletAddress();
+    await TwoFactorSecureStorage.saveSecret(secret, walletAddress);
+    await TwoFactorSecureStorage.saveBackupCodes(backupCodes, walletAddress);
+    setShow2FASetup(false);
+    setStatus('✅ Two-factor authentication enabled successfully!');
+
+    // Send 2FA enabled notification
+    if (notificationService) {
+      notificationService.testTwoFactorEnabledNotification();
+    }
+
+    setTimeout(() => setStatus(''), 5000);
+  };
+
+  const handle2FAVerify = async (code: string): Promise<boolean> => {
+    try {
+      const response = await fetch('/api/2fa/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: 'current-user', code })
+      });
+      return response.ok;
+    } catch (error) {
+      return false;
+    }
+  };
+
+  const handleBackupCodeVerify = async (code: string): Promise<boolean> => {
+    try {
+      const valid = await TwoFactorSecureStorage.verifyAndConsumeBackupCode(code, getWalletAddress());
+      if (valid) setShowBackupCodes(false);
+      return valid;
+    } catch {
+      return false;
+    }
+  };
+
+  const handleDisable2FA = () => {
+    localStorage.removeItem(APP_CONFIG.tfaEnabledKey);
+    TwoFactorSecureStorage.clearAll();
+    setTfaSecret('');
+    setTfaEnabled(false);
+    setStatus('✅ Two-factor authentication disabled');
+    
+    // Send 2FA disabled notification
+    if (notificationService) {
+      notificationService.testTwoFactorDisabledNotification();
     }
   }, [userAddress, detectFromAddress]);
 
@@ -175,11 +211,29 @@ function AppContent() {
       setConnectionMethod(null);
       setStatus('✅ Disconnected from WalletConnect');
     }
-  }, [userAddress, detectedNetwork, fetchStats, networkMismatch]);
+    // Clear all 2FA session data on disconnect so no secrets linger in storage
+    localStorage.removeItem(APP_CONFIG.tfaEnabledKey);
+    TwoFactorSecureStorage.clearAll();
+    setTfaEnabled(false);
+    console.info('[RenVault] 2FA encrypted storage cleared on wallet disconnect');
+    // Clear all connection-related state
+    setBalance('0');
+    setPoints('0');
+    setDepositAmount('');
+    setWithdrawAmount('');
+    setDetectedNetwork(null);
+    setNetworkMismatch(false);
+  };
 
   // Show 2FA verify on load if enabled — intentionally runs once on mount
   useEffect(() => {
-    if (is2FAEnabled && !userData) {
+    // Check for 2FA requirement on app load — use encrypted storage as source of truth,
+    // fall back to the plain-text enabled flag for backwards compatibility.
+    const has2FA =
+      TwoFactorSecureStorage.hasSecret() ||
+      localStorage.getItem(APP_CONFIG.tfaEnabledKey) === 'true';
+    setTfaEnabled(has2FA);
+    if (has2FA && !userData) {
       setShow2FAVerify(true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -187,13 +241,29 @@ function AppContent() {
 
   // Handle pending Stacks sign-in on mount
   useEffect(() => {
-    if (userSession.isSignInPending()) {
-      userSession.handlePendingSignIn().then((ud) => {
-        setUserData(ud as unknown as AppUserProfile);
-      });
-    } else if (userSession.isUserSignedIn()) {
-      setUserData(userSession.loadUserData() as unknown as AppUserProfile);
-    }
+    const initSession = async () => {
+      let loadedData = null;
+      if (userSession.isSignInPending()) {
+        loadedData = await userSession.handlePendingSignIn();
+        setUserData(loadedData);
+      } else if (userSession.isUserSignedIn()) {
+        loadedData = userSession.loadUserData();
+        setUserData(loadedData);
+      }
+
+      // Run 2FA data migration once wallet address is available
+      if (loadedData && TwoFactorMigration.needsMigration()) {
+        const walletAddress =
+          loadedData.profile?.stxAddress?.mainnet ??
+          loadedData.profile?.stxAddress?.testnet ??
+          '';
+        if (walletAddress) {
+          await TwoFactorMigration.migrate(walletAddress);
+        }
+      }
+    };
+
+    initSession();
   }, []);
 
   const connectWithStacks = () => {
@@ -573,13 +643,51 @@ function AppContent() {
         onPromptSwitch={() => setStatus(promptSwitch())}
       />
 
-      <SecuritySettings
-        is2FAEnabled={is2FAEnabled}
-        onEnable2FA={() => setShow2FASetup(true)}
-        onDisable2FA={handleDisable2FA}
-        onSignOutAllSessions={disconnectWallet}
-        notificationUserId={notificationUserId}
-      />
+      <div className="card">
+        <h3>🔒 Security Settings</h3>
+        <div className="security-options">
+          <div className="security-item">
+            <h4>Two-Factor Authentication</h4>
+            <p>Add an extra layer of security to your account</p>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button
+                className="btn btn-primary"
+                onClick={() => setShow2FASetup(true)}
+                disabled={tfaEnabled}
+              >
+                {tfaEnabled ? '2FA Enabled' : 'Enable 2FA'}
+              </button>
+              {tfaEnabled && (
+                <button
+                  className="btn btn-outline"
+                  onClick={handleDisable2FA}
+                >
+                  Disable 2FA
+                </button>
+              )}
+            </div>
+          </div>
+          <div className="security-item">
+            <h4>Session Management</h4>
+            <p>Manage your active sessions</p>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              <button className="btn btn-secondary" onClick={disconnectWallet}>
+                Sign Out All Sessions
+              </button>
+              <button
+                className="btn btn-outline"
+                onClick={() => {
+                  if (notificationService) {
+                    notificationService.testFailedLoginNotification('192.168.1.100', 'Chrome/91.0');
+                  }
+                }}
+              >
+                Test Security Alert
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <StatsPanel balance={balance} points={points} detectedNetwork={detectedNetwork} />
 
