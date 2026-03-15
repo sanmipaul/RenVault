@@ -700,32 +700,53 @@ function AppContent() {
 
         {show2FASetup && (
           <div className="modal-overlay">
-            <TwoFactorAuthSetup
-              onSetupComplete={handle2FASetupComplete}
-              onCancel={() => setShow2FASetup(false)}
-            />
+            <ErrorBoundary
+              sectionName="2FA Setup"
+              fallback={(error, reset) => (
+                <ErrorFallback error={error} sectionName="2FA Setup" onReset={reset} />
+              )}
+            >
+              <TwoFactorAuthSetup
+                onSetupComplete={handle2FASetupComplete}
+                onCancel={() => setShow2FASetup(false)}
+              />
+            </ErrorBoundary>
           </div>
         )}
 
         {show2FAVerify && (
           <div className="modal-overlay">
-            <TwoFactorAuthVerify
-              onVerify={handle2FAVerify}
-              onUseBackup={() => {
-                setShow2FAVerify(false);
-                setShowBackupCodes(true);
-              }}
-              onCancel={() => setShow2FAVerify(false)}
-            />
+            <ErrorBoundary
+              sectionName="2FA Verify"
+              fallback={(error, reset) => (
+                <ErrorFallback error={error} sectionName="2FA Verify" onReset={reset} />
+              )}
+            >
+              <TwoFactorAuthVerify
+                onVerify={handle2FAVerify}
+                onUseBackup={() => {
+                  setShow2FAVerify(false);
+                  setShowBackupCodes(true);
+                }}
+                onCancel={() => setShow2FAVerify(false)}
+              />
+            </ErrorBoundary>
           </div>
         )}
 
         {showBackupCodes && (
           <div className="modal-overlay">
-            <BackupCodes
-              onVerify={handleBackupCodeVerify}
-              onCancel={() => setShowBackupCodes(false)}
-            />
+            <ErrorBoundary
+              sectionName="Backup Codes"
+              fallback={(error, reset) => (
+                <ErrorFallback error={error} sectionName="Backup Codes" onReset={reset} />
+              )}
+            >
+              <BackupCodes
+                onVerify={handleBackupCodeVerify}
+                onCancel={() => setShowBackupCodes(false)}
+              />
+            </ErrorBoundary>
           </div>
         )}
 
