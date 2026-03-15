@@ -635,8 +635,11 @@ function AppContent() {
       setWithdrawTxDetails(txDetails);
       setShowWithdrawDetails(true);
       setLoading(false);
-    } catch (error: any) {
-      setStatus(`Error preparing transaction: ${error.message}`);
+    } catch (error: unknown) {
+      const friendlyMsg = ContractErrorMapper.isContractError(error)
+        ? ContractErrorMapper.toStatusMessage(error, CONTRACT_NAME)
+        : error instanceof Error ? error.message : 'Unknown error';
+      setStatus(`❌ Error preparing transaction: ${friendlyMsg}`);
       setLoading(false);
     }
   };
