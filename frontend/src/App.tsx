@@ -1043,11 +1043,18 @@ function AppContent() {
 
       {showWalletBackup && (
         <div className="modal-overlay">
-          <WalletBackup
-            walletManager={walletManager}
-            onBackupComplete={handleWalletBackupComplete}
-            onCancel={() => setShowWalletBackup(false)}
-          />
+          <ErrorBoundary
+            sectionName="Wallet Backup"
+            fallback={(error, reset) => (
+              <ErrorFallback error={error} sectionName="Wallet Backup" onReset={reset} />
+            )}
+          >
+            <WalletBackup
+              walletManager={walletManager}
+              onBackupComplete={handleWalletBackupComplete}
+              onCancel={() => setShowWalletBackup(false)}
+            />
+          </ErrorBoundary>
         </div>
       )}
 
