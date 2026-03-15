@@ -130,7 +130,7 @@ export class SessionStorageService {
   }
 
   // Simple encryption for sensitive session data (in production, use proper encryption)
-  private encryptSession(session: WalletSession): any {
+  private encryptSession(session: WalletSession): { data: string; checksum: string } {
     // In a real implementation, you would use proper encryption
     // For now, we'll use base64 encoding as a basic obfuscation
     const sessionString = JSON.stringify(session);
@@ -143,7 +143,7 @@ export class SessionStorageService {
   }
 
   // Decrypt session data
-  private decryptSession(encrypted: any): WalletSession {
+  private decryptSession(encrypted: { data: string; checksum: string }): WalletSession {
     try {
       const decoded = atob(encrypted.data);
       const session: WalletSession = JSON.parse(decoded);
