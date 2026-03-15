@@ -1,15 +1,15 @@
-export class WalletCacheManager {
-  private cache = new Map<string, {data: any; expiry: number}>();
+export class WalletCacheManager<T = unknown> {
+  private cache = new Map<string, { data: T; expiry: number }>();
   private defaultTTL = 5 * 60 * 1000; // 5 minutes
 
-  set(key: string, data: any, ttl?: number) {
+  set(key: string, data: T, ttl?: number) {
     this.cache.set(key, {
       data,
       expiry: Date.now() + (ttl || this.defaultTTL)
     });
   }
 
-  get(key: string): any | null {
+  get(key: string): T | null {
     const item = this.cache.get(key);
     if (!item) return null;
 
