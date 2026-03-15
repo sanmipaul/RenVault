@@ -131,15 +131,18 @@ function AppContent() {
         : null,
     [notificationUserId]
   );
+  /** Derive the active wallet address from userData, preferring mainnet. */
+  const getWalletAddress = (): string =>
+    userData?.profile?.stxAddress?.mainnet ??
+    userData?.profile?.stxAddress?.testnet ??
+    '';
+
   const handle2FASetupComplete = async (secret: string, backupCodes: string[]) => {
     setTfaSecret(secret);
     localStorage.setItem(APP_CONFIG.tfaEnabledKey, 'true');
     setTfaEnabled(true);
     // Store secret and backup codes encrypted, not as plain text
-    const walletAddress =
-      userData?.profile?.stxAddress?.mainnet ??
-      userData?.profile?.stxAddress?.testnet ??
-      '';
+    const walletAddress = getWalletAddress();
     await TwoFactorSecureStorage.saveSecret(secret, walletAddress);
     await TwoFactorSecureStorage.saveBackupCodes(backupCodes, walletAddress);
     setShow2FASetup(false);
