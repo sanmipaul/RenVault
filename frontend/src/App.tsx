@@ -417,7 +417,13 @@ function AppContent() {
   };
 
   const handleDeposit = async () => {
-    if (!depositAmount || !userData) return;
+    if (!userData) return;
+    const preSubmitCheck = validateDepositAmount(depositAmount);
+    if (!preSubmitCheck.valid) {
+      depositValidation.validate(depositAmount); // surface the error in the field
+      setStatus(`❌ ${preSubmitCheck.error}`);
+      return;
+    }
     if (!validateNetwork()) return;
     
     setLoading(true);
