@@ -454,6 +454,7 @@ function AppContent() {
         
         setStatus(`Deposit transaction submitted: ${broadcastResponse.txid}`);
         setDepositAmount('');
+        depositValidation.reset();
         
         trackAnalytics('deposit', { user: userData.profile.stxAddress.mainnet, amount });
         
