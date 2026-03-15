@@ -514,8 +514,11 @@ function AppContent() {
           },
         });
       }
-    } catch (error: any) {
-      setStatus(`Error signing transaction: ${error.message}`);
+    } catch (error: unknown) {
+      const friendlyMsg = ContractErrorMapper.isContractError(error)
+        ? ContractErrorMapper.toStatusMessage(error, CONTRACT_NAME)
+        : error instanceof Error ? error.message : 'Unknown error';
+      setStatus(`❌ Withdrawal failed: ${friendlyMsg}`);
       setWithdrawTxDetails(null);
     } finally {
       setLoading(false);
