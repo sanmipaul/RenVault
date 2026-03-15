@@ -1129,10 +1129,17 @@ function AppContent() {
 
       {showPerformanceMonitor && (
         <div className="modal-overlay">
-          <PerformanceMonitor
-            walletManager={walletManager}
-            isVisible={showPerformanceMonitor}
-          />
+          <ErrorBoundary
+            sectionName="Performance Monitor"
+            fallback={(error, reset) => (
+              <ErrorFallback error={error} sectionName="Performance Monitor" onReset={reset} />
+            )}
+          >
+            <PerformanceMonitor
+              walletManager={walletManager}
+              isVisible={showPerformanceMonitor}
+            />
+          </ErrorBoundary>
           <button
             className="modal-close"
             onClick={() => setShowPerformanceMonitor(false)}
