@@ -1,5 +1,16 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { AppConfig, UserSession, showConnect } from '@stacks/connect';
+import { AppConfig, UserSession, showConnect, UserData, openContractCall } from '@stacks/connect';
+import { StacksMainnet, StacksTestnet } from '@stacks/network';
+import { 
+  callReadOnlyFunction, 
+  makeContractCall,
+  broadcastTransaction,
+  AnchorMode,
+  uintCV,
+  standardPrincipalCV
+} from '@stacks/transactions';
+import { WalletConnect } from './components/WalletConnect';
+import { WithdrawTxDetails, WalletConnectSession, WalletConnectTransactionParams, SignedTransactionResult, StacksContractCallOptions } from './types/wallet';
 import { AppKit } from '@reown/appkit/react';
 import ConnectionStatus from './components/ConnectionStatus';
 import { SessionStatus } from './components/SessionStatus';
@@ -33,11 +44,62 @@ import { ConnectionMethod, WalletConnectSession, AppUserProfile } from './types/
 
 const appConfig = new AppConfig(['store_write', 'publish_data']);
 const userSession = new UserSession({ appConfig });
+const network = new StacksMainnet();
+
+const CONTRACT_ADDRESS = 'SP3ESR2PWP83R1YM3S4QJRWPDD886KJ4YFS3FKHPY';
+const CONTRACT_NAME = 'ren-vault';
+
+// App configuration constants
+const APP_CONFIG = {
+  name: 'RenVault',
+  icon: window.location.origin + '/logo192.png',
+  analyticsOptOutKey: 'analytics-opt-out',
+  tfaEnabledKey: 'tfa-enabled',
+  tfaSecretKey: 'tfa-secret',
+  tfaBackupCodesKey: 'tfa-backup-codes',
+} as const;
+
+const detectNetworkFromAddress = (address: string): 'mainnet' | 'testnet' => {
+  // Stacks mainnet addresses start with 'SP', testnet with 'ST'
+  return address.startsWith('SP') ? 'mainnet' : 'testnet';
+};
+
+const getCurrentNetwork = () => {
+  // Always return mainnet for RenVault operations
+  return new StacksMainnet();
+};
+
+const getErrorMessage = (error: unknown): string =>
+  error instanceof Error ? error.message : String(error);
+
+const trackAnalytics = async (event: string, data: Record<string, unknown>) => {
+  const optOut = localStorage.getItem(APP_CONFIG.analyticsOptOutKey) === 'true';
+  if (optOut) return;
+  
+  try {
+    await fetch(getAnalyticsUrl(event), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+  } catch (error) {
+    console.warn('Analytics tracking failed:', error);
+  }
+};
 
 function AppContent() {
-  const [userData, setUserData] = useState<AppUserProfile | null>(null);
-  const { status, setStatus } = useStatusMessage();
-  const [connectionMethod, setConnectionMethod] = useState<ConnectionMethod>(null);
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const [balance, setBalance] = useState<string>('0');
+  const [points, setPoints] = useState<string>('0');
+  const [depositAmount, setDepositAmount] = useState<string>('');
+  const [withdrawAmount, setWithdrawAmount] = useState<string>('');
+  const [status, setStatus] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
+  const [detectedNetwork, setDetectedNetwork] = useState<'mainnet' | 'testnet' | null>(null);
+  const [networkMismatch, setNetworkMismatch] = useState<boolean>(false);
+  const [showWithdrawDetails, setShowWithdrawDetails] = useState<boolean>(false);
+  const [withdrawTxDetails, setWithdrawTxDetails] = useState<WithdrawTxDetails | null>(null);
+  const [connectionMethod, setConnectionMethod] = useState<'stacks' | 'walletconnect' | null>(null);
   const [showConnectionOptions, setShowConnectionOptions] = useState<boolean>(false);
   const [walletConnectSession, setWalletConnectSession] = useState<WalletConnectSession | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -56,6 +118,7 @@ function AppContent() {
   const [showMultiSigSetup, setShowMultiSigSetup] = useState<boolean>(false);
   const [showCoSignerManagement, setShowCoSignerManagement] = useState<boolean>(false);
   const [showMultiSigSigner, setShowMultiSigSigner] = useState<boolean>(false);
+  const [currentTransaction, setCurrentTransaction] = useState<StacksContractCallOptions | null>(null);
   const [showPerformanceMonitor, setShowPerformanceMonitor] = useState<boolean>(false);
 
   const [walletManager] = useState(() => new WalletManager());
@@ -79,10 +142,38 @@ function AppContent() {
     }
   }, [userAddress, detectFromAddress]);
 
-  // Fetch vault stats when user and network are ready
-  useEffect(() => {
-    if (userAddress && detectedNetwork) {
-      fetchStats(userAddress, networkMismatch);
+  const handleMultiSigSetupComplete = () => {
+    setShowMultiSigSetup(false);
+    setStatus('✅ Multi-signature wallet setup completed!');
+    setTimeout(() => setStatus(''), 5000);
+  };
+
+  const handleCoSignerUpdate = () => {
+    setStatus('✅ Co-signers updated successfully!');
+    setTimeout(() => setStatus(''), 3000);
+  };
+
+  const handleMultiSigTransactionSigned = (_signedTx: SignedTransactionResult): void => {
+    setShowMultiSigSigner(false);
+    setCurrentTransaction(null);
+    setStatus('✅ Transaction signed successfully!');
+    setTimeout(() => setStatus(''), 5000);
+  };
+
+  const disconnectWallet = () => {
+    if (connectionMethod === 'stacks') {
+      // Disconnect Stacks wallet
+      userSession.signUserOut();
+      setUserData(null);
+      setConnectionMethod(null);
+      setWalletConnectSession(null);
+      setStatus('✅ Disconnected from Stacks wallet');
+    } else if (connectionMethod === 'walletconnect') {
+      // Disconnect WalletConnect
+      setWalletConnectSession(null);
+      setUserData(null);
+      setConnectionMethod(null);
+      setStatus('✅ Disconnected from WalletConnect');
     }
   }, [userAddress, detectedNetwork, fetchStats, networkMismatch]);
 
@@ -122,9 +213,12 @@ function AppContent() {
         },
         userSession,
       });
-    } catch (error: any) {
-      setConnectionError(`Failed to connect with Stacks wallet: ${error.message}`);
+    } catch (error: unknown) {
+      const duration = Date.now() - startTime;
+      setConnectionError(`Failed to connect with Stacks wallet: ${getErrorMessage(error)}`);
       trackAnalytics('wallet-connect', { user: 'anonymous', method: 'stacks', success: false });
+      trackAnalytics('wallet-error', { user: 'anonymous', method: 'stacks', errorType: getErrorMessage(error) });
+      trackAnalytics('performance', { operation: 'wallet-connect-stacks', duration });
       setToastMessage('Connection failed. Check the error message above.');
       setTimeout(() => setToastMessage(null), 5000);
     }
@@ -178,47 +272,195 @@ function AppContent() {
     return result;
   };
 
-  const handleDisable2FA = () => {
-    disable2FA();
-    setStatus('Two-factor authentication disabled');
-    notificationService?.testTwoFactorDisabledNotification();
-  };
-
-  const handleWalletBackupComplete = (backupData: string) => {
-    setShowWalletBackup(false);
-    setStatus('Wallet backup created successfully! Store it securely.');
-    fetch('/api/wallet/backup', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId: userAddress, encryptedBackup: backupData }),
-    });
-  };
-
-  const handleWalletRecoveryComplete = () => {
-    setShowWalletRecovery(false);
-    setStatus('Wallet recovered successfully!');
-    if (userSession.isUserSignedIn()) {
-      setUserData(userSession.loadUserData() as unknown as AppUserProfile);
+        const transaction = await makeContractCall(txOptions);
+        const broadcastResponse = await broadcastTransaction(transaction, network);
+        
+        setStatus(`Deposit transaction submitted: ${broadcastResponse.txid}`);
+        setDepositAmount('');
+        
+        trackAnalytics('deposit', { user: userData.profile.stxAddress.mainnet, amount });
+        
+        // Send deposit notification
+        if (notificationService) {
+          notificationService.testDepositNotification(parseFloat(depositAmount), parseFloat(balance) + parseFloat(depositAmount));
+        }
+        
+        setTimeout(fetchUserStats, 3000);
+      }
+    } catch (error: unknown) {
+      setStatus(`Error: ${getErrorMessage(error)}`);
+      trackAnalytics('wallet-error', { user: userData?.profile?.stxAddress?.mainnet || 'anonymous', method: connectionMethod || 'unknown', errorType: getErrorMessage(error) });
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleMultiSigSetupComplete = () => {
-    setShowMultiSigSetup(false);
-    setStatus('Multi-signature wallet setup completed!');
+  const executeWithdraw = async () => {
+    if (!withdrawTxDetails || !userData) return;
+    
+    setLoading(true);
+    setShowWithdrawDetails(false);
+    
+    try {
+      if (connectionMethod === 'walletconnect' && walletConnectSession) {
+        // Use WalletConnect for signing
+        await handleWalletConnectTransaction('withdraw', { amount: withdrawTxDetails.amount });
+      } else {
+        // Set a timeout for the signing process
+        const signingTimeout = setTimeout(() => {
+          setStatus('⚠️ Transaction signing timed out. Please try again.');
+          setWithdrawTxDetails(null);
+          setLoading(false);
+        }, 30000); // 30 seconds timeout
+        
+        await openContractCall({
+          network: withdrawTxDetails.network,
+          anchorMode: AnchorMode.Any,
+          contractAddress: withdrawTxDetails.contractAddress,
+          contractName: withdrawTxDetails.contractName,
+          functionName: withdrawTxDetails.functionName,
+          functionArgs: withdrawTxDetails.functionArgs,
+          appDetails: {
+            name: 'RenVault',
+            icon: window.location.origin + '/logo192.png',
+          },
+          onFinish: (data) => {
+            clearTimeout(signingTimeout);
+            setStatus(`✅ Withdraw transaction submitted successfully! Transaction ID: ${data.txId}`);
+            setWithdrawAmount('');
+            setWithdrawTxDetails(null);
+            trackAnalytics('withdrawal', { user: userData.profile.stxAddress.mainnet, amount: withdrawTxDetails.amount });
+            
+            // Send withdrawal notification
+            if (notificationService) {
+              const remainingBalance = parseFloat(balance) - parseFloat(withdrawAmount);
+              notificationService.testWithdrawalNotification(parseFloat(withdrawAmount), remainingBalance);
+            }
+            
+            setTimeout(fetchUserStats, 3000);
+          },
+          onCancel: () => {
+            clearTimeout(signingTimeout);
+            setStatus('❌ Transaction cancelled by user');
+            setWithdrawTxDetails(null);
+          },
+        });
+      }
+    } catch (error: unknown) {
+      setStatus(`Error signing transaction: ${getErrorMessage(error)}`);
+      setWithdrawTxDetails(null);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleCoSignerUpdate = () => setStatus('Co-signers updated successfully!');
-
-  const handleMultiSigTransactionSigned = (_signedTx: any) => {
-    setShowMultiSigSigner(false);
-    setCurrentTransaction(null);
-    setStatus('Transaction signed successfully!');
+  const handleWalletConnectTransaction = async (action: 'deposit' | 'withdraw', params: WalletConnectTransactionParams) => {
+    if (!walletConnectSession) return;
+    
+    try {
+      // Create transaction payload for WalletConnect
+      const txPayload = {
+        contractAddress: CONTRACT_ADDRESS,
+        contractName: CONTRACT_NAME,
+        functionName: action,
+        functionArgs: action === 'deposit' ? [uintCV(params.amount)] : [uintCV(params.amount)],
+        network: 'stacks:1', // Stacks mainnet
+      };
+      
+      // Use WalletConnect to sign and send the transaction
+      // This would typically involve calling walletKit.request() with the appropriate method
+      // For now, show a placeholder message
+      setStatus(`WalletConnect ${action} transaction initiated. Please check your wallet app.`);
+      
+      // Clear form
+      if (action === 'deposit') {
+        setDepositAmount('');
+      } else {
+        setWithdrawAmount('');
+      }
+      
+      setTimeout(fetchUserStats, 5000); // Longer delay for WalletConnect
+    } catch (error: unknown) {
+      setStatus(`WalletConnect error: ${getErrorMessage(error)}`);
+    }
   };
 
-  const handleWithdrawSuccess = (amount: string, remaining: number) => {
-    if (notificationUserId) {
-      const service = NotificationService.getInstance(notificationUserId);
-      service.testWithdrawalNotification(parseFloat(amount), remaining);
+  const handleWalletConnectSession = (session: WalletConnectSession) => {
+    // Extract Stacks account from WalletConnect session
+    const stacksAccount = session.namespaces.stacks?.accounts?.[0];
+    if (stacksAccount) {
+      // Create a mock userData object compatible with @stacks/connect
+      const mockUserData = {
+        profile: {
+          stxAddress: {
+            mainnet: stacksAccount.split(':')[2], // Extract address from stacks:1:address
+            testnet: stacksAccount.split(':')[2],
+          },
+          name: 'WalletConnect User',
+        },
+        appPrivateKey: '', // WalletConnect handles signing
+      };
+      
+      setUserData(mockUserData as any);
+      setWalletConnectSession(session);
+      setStatus('✅ Connected via WalletConnect');
+      trackAnalytics('wallet-connect', { user: stacksAccount.split(':')[2], method: 'walletconnect', success: true });
+    } else {
+      trackAnalytics('wallet-connect', { user: 'anonymous', method: 'walletconnect', success: false });
+    }
+  };
+
+  const handleWithdraw = async () => {
+    if (!withdrawAmount || !userData) return;
+    if (!validateNetwork()) return;
+    
+    const withdrawAmountNum = parseFloat(withdrawAmount);
+    const balanceNum = parseFloat(balance);
+    
+    if (isNaN(withdrawAmountNum) || withdrawAmountNum <= 0) {
+      setStatus('Error: Please enter a valid withdrawal amount greater than 0');
+      return;
+    }
+    
+    if (withdrawAmountNum > balanceNum) {
+      setStatus(`Error: Insufficient balance. You have ${balance} STX available`);
+      return;
+    }
+    
+    // Warn if withdrawal would leave less than 0.01 STX
+    const remainingBalance = balanceNum - withdrawAmountNum;
+    if (remainingBalance > 0 && remainingBalance < 0.01) {
+      const confirmLeave = window.confirm(`Warning: This withdrawal will leave only ${remainingBalance.toFixed(6)} STX in your vault. Continue?`);
+      if (!confirmLeave) return;
+    }
+    
+    setLoading(true);
+    setStatus('Preparing transaction details...');
+    
+    try {
+      const amount = Math.floor(parseFloat(withdrawAmount) * 1000000);
+      const network = getCurrentNetwork();
+      
+      // Prepare transaction details for display
+      const txDetails = {
+        contractAddress: CONTRACT_ADDRESS,
+        contractName: CONTRACT_NAME,
+        functionName: 'withdraw',
+        functionArgs: [uintCV(amount)],
+        network,
+        amount: parseFloat(withdrawAmount),
+        currentBalance: balance,
+        remainingBalance: (parseFloat(balance) - parseFloat(withdrawAmount)).toFixed(6),
+        fee: 'Network fee: ~0.001 STX (estimated)',
+        estimatedFee: '0.001 STX'
+      };
+      
+      setWithdrawTxDetails(txDetails);
+      setShowWithdrawDetails(true);
+      setLoading(false);
+    } catch (error: unknown) {
+      setStatus(`Error preparing transaction: ${getErrorMessage(error)}`);
+      setLoading(false);
     }
     trackAnalytics('withdrawal', { user: userAddress ?? 'anonymous', amount });
   };

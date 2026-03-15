@@ -5,11 +5,18 @@ export interface WalletProvider {
   disconnect: () => Promise<void>;
 }
 
-export const validateWalletProvider = (provider: any): provider is WalletProvider => {
-  return !!(provider && typeof provider.id === 'string' && typeof provider.name === 'string' && typeof provider.connect === 'function' && typeof provider.disconnect === 'function');
+export const validateWalletProvider = (provider: unknown): provider is WalletProvider => {
+  return !!(
+    provider &&
+    typeof provider === 'object' &&
+    typeof (provider as Record<string, unknown>).id === 'string' &&
+    typeof (provider as Record<string, unknown>).name === 'string' &&
+    typeof (provider as Record<string, unknown>).connect === 'function' &&
+    typeof (provider as Record<string, unknown>).disconnect === 'function'
+  );
 };
 
-export const safeConnectWallet = async (provider: any): Promise<boolean> => {
+export const safeConnectWallet = async (provider: unknown): Promise<boolean> => {
   if (!validateWalletProvider(provider)) {
     console.error('Invalid wallet provider');
     return false;

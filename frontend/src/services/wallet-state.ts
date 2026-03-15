@@ -3,9 +3,9 @@ export type WalletState = 'disconnected' | 'connecting' | 'connected' | 'error';
 export class WalletStateManager {
   private state: WalletState = 'disconnected';
   private listeners: Set<(state: WalletState) => void> = new Set();
-  private metadata: any = {};
+  private metadata: Record<string, unknown> = {};
 
-  setState(newState: WalletState, metadata?: any) {
+  setState(newState: WalletState, metadata?: Record<string, unknown>) {
     if (this.state !== newState) {
       this.state = newState;
       this.metadata = metadata || {};

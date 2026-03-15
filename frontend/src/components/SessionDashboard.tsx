@@ -1,6 +1,8 @@
 // components/SessionDashboard.tsx
 import React, { useState, useEffect } from 'react';
 import { SessionMonitor, SessionMetrics, SessionEvent } from '../services/session/SessionMonitor';
+
+type SessionHealthReport = ReturnType<SessionMonitor['getHealthReport']>;
 import { getSessionSecurityRecommendations } from '../utils/sessionValidation';
 import './SessionDashboard.css';
 
@@ -15,7 +17,7 @@ export const SessionDashboard: React.FC<SessionDashboardProps> = ({
 }) => {
   const [metrics, setMetrics] = useState<SessionMetrics | null>(null);
   const [recentEvents, setRecentEvents] = useState<SessionEvent[]>([]);
-  const [healthReport, setHealthReport] = useState<any>(null);
+  const [healthReport, setHealthReport] = useState<SessionHealthReport | null>(null);
   const [selectedTimeframe, setSelectedTimeframe] = useState<number>(7); // days
 
   const sessionMonitor = SessionMonitor.getInstance();

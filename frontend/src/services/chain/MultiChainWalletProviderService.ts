@@ -6,6 +6,10 @@
 import { ChainSwitchService } from './ChainSwitchService';
 import type { ChainType } from '../../config/multi-chain-config';
 
+interface EvmProvider {
+  request(args: { method: string; params?: unknown[] }): Promise<unknown[]>;
+}
+
 export interface WalletProvider {
   name: string;
   chainType: ChainType;
@@ -119,7 +123,7 @@ export class MultiChainWalletProviderService {
   /**
    * Connect to EVM chain
    */
-  private static async connectEvm(chainType: ChainType, provider: any): Promise<void> {
+  private static async connectEvm(chainType: ChainType, provider: EvmProvider): Promise<void> {
     try {
       if (!provider) {
         throw new Error('Ethereum provider not available');
@@ -139,9 +143,9 @@ export class MultiChainWalletProviderService {
             method: 'wallet_switchEthereumChain',
             params: [{ chainId: chainId }],
           });
-        } catch (switchError: any) {
+        } catch (switchError: unknown) {
           // Chain not added, try to add it
-          if (switchError.code === 4902) {
+          if (switchError instanceof Object && 'code' in switchError && (switchError as { code: number }).code === 4902) {
             await this.addChainToWallet(provider, chainType);
           }
         }
@@ -247,8 +251,8 @@ export class MultiChainWalletProviderService {
   /**
    * Add chain to wallet
    */
-  private static async addChainToWallet(provider: any, chainType: ChainType): Promise<void> {
-    const chainConfigs: Record<string, any> = {
+  private static async addChainToWallet(provider: EvmProvider, chainType: ChainType): Promise<void> {
+    const chainConfigs: Record<string, Record<string, unknown>> = {
       polygon: {
         chainId: '0x89',
         chainName: 'Polygon Mainnet',

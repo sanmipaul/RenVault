@@ -1,11 +1,11 @@
 export class ConnectionFallback {
-  private fallbacks: Array<() => Promise<any>> = [];
+  private fallbacks: Array<() => Promise<unknown>> = [];
 
-  add(fallbackFn: () => Promise<any>): void {
+  add(fallbackFn: () => Promise<unknown>): void {
     this.fallbacks.push(fallbackFn);
   }
 
-  async execute(): Promise<any> {
+  async execute(): Promise<unknown> {
     for (const fallback of this.fallbacks) {
       try {
         return await fallback();
