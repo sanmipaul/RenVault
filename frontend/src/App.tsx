@@ -1060,11 +1060,18 @@ function AppContent() {
 
       {showWalletRecovery && (
         <div className="modal-overlay">
-          <WalletRecovery
-            walletManager={walletManager}
-            onRecoveryComplete={handleWalletRecoveryComplete}
-            onCancel={() => setShowWalletRecovery(false)}
-          />
+          <ErrorBoundary
+            sectionName="Wallet Recovery"
+            fallback={(error, reset) => (
+              <ErrorFallback error={error} sectionName="Wallet Recovery" onReset={reset} />
+            )}
+          >
+            <WalletRecovery
+              walletManager={walletManager}
+              onRecoveryComplete={handleWalletRecoveryComplete}
+              onCancel={() => setShowWalletRecovery(false)}
+            />
+          </ErrorBoundary>
         </div>
       )}
 
