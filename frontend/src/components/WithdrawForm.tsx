@@ -1,5 +1,6 @@
 // components/WithdrawForm.tsx
 import React, { useState } from 'react';
+import './WithdrawForm.css';
 import { openContractCall, AnchorMode } from '@stacks/connect';
 import { uintCV } from '@stacks/transactions';
 import { StacksMainnet } from '@stacks/network';
