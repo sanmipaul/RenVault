@@ -86,11 +86,11 @@ function AppContent() {
   }, [userAddress, detectedNetwork, fetchStats, networkMismatch]);
 
   // Show 2FA verify on load if enabled — intentionally runs once on mount
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (is2FAEnabled && !userData) {
       setShow2FAVerify(true);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Handle pending Stacks sign-in on mount
