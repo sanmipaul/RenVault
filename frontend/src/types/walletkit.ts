@@ -34,7 +34,7 @@ export interface SessionRequest {
   params: {
     request: {
       method: string;
-      params: any[];
+      params: unknown[];
     };
   };
 }

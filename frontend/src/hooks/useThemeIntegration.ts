@@ -209,13 +209,13 @@ export function injectThemeStyles() {
  */
 export function setupThemeListeners() {
   // Listen for AppKit theme changes
-  window.addEventListener('appkit-theme-change', (event: any) => {
-    console.log('AppKit theme changed:', event.detail);
+  window.addEventListener('appkit-theme-change', (event: Event) => {
+    console.log('AppKit theme changed:', (event as CustomEvent).detail);
   });
 
   // Listen for custom theme changes
-  window.addEventListener('themechange', (event: any) => {
-    console.log('Theme changed to:', event.detail.mode);
+  window.addEventListener('themechange', (event: Event) => {
+    console.log('Theme changed to:', (event as CustomEvent<{ mode: string }>).detail.mode);
   });
 
   // Listen for media query changes

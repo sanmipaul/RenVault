@@ -1,8 +1,8 @@
 export class ConnectionQueue {
-  private queue: Array<() => Promise<any>> = [];
+  private queue: Array<() => Promise<unknown>> = [];
   private processing = false;
 
-  async add(connectionFn: () => Promise<any>): Promise<any> {
+  async add(connectionFn: () => Promise<unknown>): Promise<unknown> {
     return new Promise((resolve, reject) => {
       this.queue.push(async () => {
         try {

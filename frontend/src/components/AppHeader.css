@@ -1,0 +1,48 @@
+/* AppHeader.css */
+.header {
+  padding: 24px 0 16px;
+}
+
+.header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0 0 4px 0;
+}
+
+.header p {
+  margin: 0 0 16px 0;
+  color: var(--text-secondary, #6b7280);
+}
+
+.header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.network-indicator {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+}
+
+.network-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.network-badge.mainnet {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.network-badge.testnet {
+  background: #fef9c3;
+  color: #854d0e;
+}

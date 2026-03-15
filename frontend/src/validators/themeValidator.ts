@@ -201,21 +201,22 @@ export class ThemeValidator {
   /**
    * Validate theme mode
    */
-  static validateMode(mode: any): mode is ThemeMode {
+  static validateMode(mode: unknown): mode is ThemeMode {
     return mode === 'light' || mode === 'dark';
   }
 
   /**
    * Validate typography configuration
    */
-  static validateTypography(typography: any): boolean {
-    if (!typography) return false;
+  static validateTypography(typography: unknown): boolean {
+    if (!typography || typeof typography !== 'object') return false;
+    const t = typography as Record<string, unknown>;
 
     const hasRequiredFields =
-      typography.fontFamily &&
-      typography.fontSize &&
-      typography.fontWeight &&
-      typography.lineHeight;
+      t.fontFamily &&
+      t.fontSize &&
+      t.fontWeight &&
+      t.lineHeight;
 
     return hasRequiredFields;
   }

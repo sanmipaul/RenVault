@@ -28,7 +28,7 @@ export class WalletSecurityValidator {
     return this.suspiciousPatterns.some(pattern => lower.includes(pattern));
   }
 
-  validateTransaction(tx: any): {valid: boolean; warnings: string[]} {
+  validateTransaction(tx: { amount?: number; recipient?: string }): {valid: boolean; warnings: string[]} {
     const warnings: string[] = [];
 
     if (!tx.amount || tx.amount <= 0) {

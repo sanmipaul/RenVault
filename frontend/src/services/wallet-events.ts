@@ -24,7 +24,7 @@ export class WalletEventEmitter {
     }
   }
 
-  emit(event: WalletEvent, ...args: any[]) {
+  emit(event: WalletEvent, ...args: unknown[]) {
     const callbacks = this.listeners.get(event);
     if (callbacks) {
       callbacks.forEach(callback => {
@@ -38,7 +38,7 @@ export class WalletEventEmitter {
   }
 
   once(event: WalletEvent, callback: Function) {
-    const wrapper = (...args: any[]) => {
+    const wrapper = (...args: unknown[]) => {
       callback(...args);
       this.off(event, wrapper);
     };
