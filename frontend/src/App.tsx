@@ -551,8 +551,11 @@ function AppContent() {
       }
       
       setTimeout(fetchUserStats, 5000); // Longer delay for WalletConnect
-    } catch (error: any) {
-      setStatus(`WalletConnect error: ${error.message}`);
+    } catch (error: unknown) {
+      const friendlyMsg = ContractErrorMapper.isContractError(error)
+        ? ContractErrorMapper.toStatusMessage(error, CONTRACT_NAME)
+        : error instanceof Error ? error.message : 'Unknown error';
+      setStatus(`❌ WalletConnect error: ${friendlyMsg}`);
     }
   };
 
