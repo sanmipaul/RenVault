@@ -506,6 +506,7 @@ function AppContent() {
             clearTimeout(signingTimeout);
             setStatus(`✅ Withdraw transaction submitted successfully! Transaction ID: ${data.txId}`);
             setWithdrawAmount('');
+            withdrawValidation.reset();
             setWithdrawTxDetails(null);
             trackAnalytics('withdrawal', { user: userData.profile.stxAddress.mainnet, amount: withdrawTxDetails.amount });
             
