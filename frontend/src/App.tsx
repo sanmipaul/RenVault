@@ -953,6 +953,12 @@ function AppContent() {
         <TransactionHistory address={userData?.profile?.stxAddress?.mainnet} />
       </ErrorBoundary>
 
+      <ErrorBoundary
+        sectionName="Vault Actions"
+        fallback={(error, reset) => (
+          <ErrorFallback error={error} sectionName="Vault Actions" onReset={reset} />
+        )}
+      >
       <div className="actions">
         <div className="card">
           <h3>Deposit STX</h3>
@@ -997,6 +1003,7 @@ function AppContent() {
           </button>
         </div>
       </div>
+      </ErrorBoundary>
 
       {showWithdrawDetails && withdrawTxDetails && (
         <div className="card confirmation">
