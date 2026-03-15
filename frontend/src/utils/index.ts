@@ -1,6 +1,10 @@
 export { hexToUtf8, getWalletConnectUri, getRequestParams, isNativeApp, handleRedirect } from './walletkit-helpers';
-export { ContractErrorMapper, ContractError } from './contractErrorMapper';
-export type { ContractErrorDescriptor, ContractErrorMap, AllContractErrors } from './contractErrorCodes';
+export { ContractErrorMapper, ContractError, parseStacksBroadcastError } from './contractErrorMapper';
+export type {
+  ContractErrorDescriptor,
+  ContractErrorMap,
+  AllContractErrors,
+} from './contractErrorCodes';
 export { ALL_CONTRACT_ERRORS } from './contractErrorCodes';
 export { validateEnvironmentVariables, logEnvironmentValidation } from './env-validator';
 export { logger } from './logger';
