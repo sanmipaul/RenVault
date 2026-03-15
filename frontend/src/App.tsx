@@ -31,6 +31,7 @@ import { BackupCodes } from './components/BackupCodes';
 import { Analytics } from './components/Analytics';
 import NotificationCenter from './components/NotificationCenter';
 import { TwoFactorSecureStorage } from './services/security/TwoFactorSecureStorage';
+import { TwoFactorMigration } from './services/security/TwoFactorMigration';
 
 const appConfig = new AppConfig(['store_write', 'publish_data']);
 const userSession = new UserSession({ appConfig });
