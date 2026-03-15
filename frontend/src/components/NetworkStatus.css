@@ -1,0 +1,16 @@
+/* NetworkStatus.css */
+.card.success h3 {
+  color: #16a34a;
+}
+
+.card.warning h3 {
+  color: #b45309;
+}
+
+.card.warning {
+  border-left: 4px solid #f59e0b;
+}
+
+.card.success {
+  border-left: 4px solid #22c55e;
+}
