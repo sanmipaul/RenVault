@@ -30,7 +30,7 @@ class Logger {
     console.log(msg);
   }
 
-  debug(message: string, data?: any) {
+  debug(message: string, data?: unknown) {
     if (this.isDev) {
       const msg = this.formatMessage(LOG_LEVELS.DEBUG, message);
       console.debug(msg, data);
