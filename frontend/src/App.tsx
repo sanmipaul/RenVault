@@ -249,10 +249,11 @@ function AppContent() {
       setConnectionMethod(null);
       setStatus('✅ Disconnected from WalletConnect');
     }
-    // Clear all session data
+    // Clear all 2FA session data on disconnect so no secrets linger in storage
     localStorage.removeItem(APP_CONFIG.tfaEnabledKey);
     TwoFactorSecureStorage.clearAll();
     setTfaEnabled(false);
+    console.info('[RenVault] 2FA encrypted storage cleared on wallet disconnect');
     // Clear all connection-related state
     setBalance('0');
     setPoints('0');
