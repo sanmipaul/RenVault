@@ -934,20 +934,22 @@ function AppContent() {
       <div className="actions">
         <div className="card">
           <h3>Deposit STX</h3>
-          <div className="input-group">
-            <label>Amount (STX)</label>
-            <input
-              type="number"
-              value={depositAmount}
-              onChange={(e) => setDepositAmount(e.target.value)}
-              placeholder="Enter amount to deposit"
-              step="0.000001"
-            />
-          </div>
-          <button 
-            className="btn btn-primary" 
+          <AmountInput
+            value={depositAmount}
+            onChange={(val) => {
+              setDepositAmount(val);
+              depositValidation.validate(val);
+            }}
+            validation={depositValidation.result}
+            label="Amount (STX)"
+            placeholder="Enter amount to deposit"
+            disabled={loading}
+            onEnter={handleDeposit}
+          />
+          <button
+            className="btn btn-primary"
             onClick={handleDeposit}
-            disabled={loading || !depositAmount}
+            disabled={loading || !depositValidation.result.valid || !depositAmount}
           >
             {loading ? 'Processing...' : 'Deposit'}
           </button>
