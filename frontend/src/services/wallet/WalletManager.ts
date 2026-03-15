@@ -1,5 +1,5 @@
 // services/wallet/WalletManager.ts
-import { WalletProvider, WalletProviderType } from '../../types/wallet';
+import { WalletProvider, WalletProviderType, StacksContractCallOptions, SignedTransactionResult, CoSigner, MultiSigConfig, MultiSigTransaction } from '../../types/wallet';
 import { WalletProviderLoader } from './WalletProviderLoader';
 import { MultiSigWalletProvider } from './MultiSigWalletProvider';
 import { getRandomBytes } from '../../utils/crypto';
@@ -9,7 +9,7 @@ export class WalletManager {
   private providers: Map<WalletProviderType, WalletProvider> = new Map();
   private currentProvider: WalletProvider | null = null;
   private connectionState: { address: string; publicKey: string } | null = null;
-  private connectionCache: Map<string, { data: any; timestamp: number }> = new Map();
+  private connectionCache: Map<string, { data: WalletProvider; timestamp: number }> = new Map();
   private lazyLoadedProviders: Set<WalletProviderType> = new Set();
   private connectionTimeouts: Map<string, NodeJS.Timeout> = new Map();
   private readonly CACHE_TTL = 5 * 60 * 1000; // 5 minutes
@@ -145,7 +145,7 @@ export class WalletManager {
     keysToRemove.forEach(key => localStorage.removeItem(key));
   }
 
-  async signTransaction(tx: any): Promise<any> {
+  async signTransaction(tx: StacksContractCallOptions): Promise<SignedTransactionResult> {
     if (!this.currentProvider) {
       throw new Error('No provider selected');
     }
@@ -186,7 +186,7 @@ export class WalletManager {
       throw new Error('Password is required for recovery');
     }
 
-    let data: any;
+    let data: { encryptedMnemonic: string; address: string; publicKey: string };
     try {
       data = JSON.parse(backupData);
     } catch {
@@ -241,7 +241,7 @@ export class WalletManager {
   }
 
   // Multi-Signature Methods
-  setupMultiSigWallet(threshold: number, coSigners: any[]): void {
+  setupMultiSigWallet(threshold: number, coSigners: CoSigner[]): void {
     const multiSigProvider = this.providers.get('multisig') as MultiSigWalletProvider;
     if (!multiSigProvider) {
       throw new Error('Multi-sig provider not available');
@@ -257,12 +257,12 @@ export class WalletManager {
     multiSigProvider.setupMultiSig(config);
   }
 
-  getMultiSigConfig(): any {
+  getMultiSigConfig(): MultiSigConfig | undefined {
     const multiSigProvider = this.providers.get('multisig') as MultiSigWalletProvider;
     return multiSigProvider?.getConfig();
   }
 
-  addCoSigner(coSigner: any): void {
+  addCoSigner(coSigner: CoSigner): void {
     const multiSigProvider = this.providers.get('multisig') as MultiSigWalletProvider;
     if (!multiSigProvider) {
       throw new Error('Multi-sig provider not available');
@@ -283,7 +283,7 @@ export class WalletManager {
     return multiSigProvider?.getPendingTransactions() || [];
   }
 
-  getMultiSigTransactionStatus(txId: string): any {
+  getMultiSigTransactionStatus(txId: string): MultiSigTransaction | undefined {
     const multiSigProvider = this.providers.get('multisig') as MultiSigWalletProvider;
     return multiSigProvider?.getTransactionStatus(txId);
   }
