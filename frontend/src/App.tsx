@@ -10,7 +10,7 @@ import {
   standardPrincipalCV
 } from '@stacks/transactions';
 import { WalletConnect } from './components/WalletConnect';
-import { WithdrawTxDetails, WalletConnectSession, WalletConnectTransactionParams, SignedTransactionResult } from './types/wallet';
+import { WithdrawTxDetails, WalletConnectSession, WalletConnectTransactionParams, SignedTransactionResult, StacksContractCallOptions } from './types/wallet';
 import { AppKit } from '@reown/appkit/react';
 import ConnectionStatus from './components/ConnectionStatus';
 import { TwoFactorAuthSetup } from './components/TwoFactorAuthSetup';
@@ -103,7 +103,7 @@ function AppContent() {
   const [showMultiSigSetup, setShowMultiSigSetup] = useState<boolean>(false);
   const [showCoSignerManagement, setShowCoSignerManagement] = useState<boolean>(false);
   const [showMultiSigSigner, setShowMultiSigSigner] = useState<boolean>(false);
-  const [currentTransaction, setCurrentTransaction] = useState<SignedTransactionResult | null>(null);
+  const [currentTransaction, setCurrentTransaction] = useState<StacksContractCallOptions | null>(null);
   const [showPerformanceMonitor, setShowPerformanceMonitor] = useState<boolean>(false);
   const [tfaSecret, setTfaSecret] = useState<string>('');
   const [connectionError, setConnectionError] = useState<string | null>(null);
@@ -225,7 +225,7 @@ function AppContent() {
     setTimeout(() => setStatus(''), 3000);
   };
 
-  const handleMultiSigTransactionSigned = (_signedTx: SignedTransactionResult) => {
+  const handleMultiSigTransactionSigned = (_signedTx: SignedTransactionResult): void => {
     setShowMultiSigSigner(false);
     setCurrentTransaction(null);
     setStatus('✅ Transaction signed successfully!');

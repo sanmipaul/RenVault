@@ -1,11 +1,12 @@
 // MultiSigTransactionSigner Component
 import React, { useState, useEffect } from 'react';
 import { WalletManager } from '../services/wallet/WalletManager';
+import { StacksContractCallOptions, SignedTransactionResult, MultiSigTransaction } from '../types/wallet';
 
 interface MultiSigTransactionSignerProps {
   walletManager: WalletManager;
-  transaction: any;
-  onSigned: (signedTx: any) => void;
+  transaction: StacksContractCallOptions | null;
+  onSigned: (signedTx: SignedTransactionResult) => void;
   onCancel: () => void;
 }
 
@@ -17,7 +18,7 @@ export const MultiSigTransactionSigner: React.FC<MultiSigTransactionSignerProps>
 }) => {
   const [pendingTxs, setPendingTxs] = useState<string[]>([]);
   const [selectedTx, setSelectedTx] = useState<string | null>(null);
-  const [txStatus, setTxStatus] = useState<any>(null);
+  const [txStatus, setTxStatus] = useState<MultiSigTransaction | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
