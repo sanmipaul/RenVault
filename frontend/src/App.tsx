@@ -877,11 +877,11 @@ function AppContent() {
               <button
                 className="btn btn-primary"
                 onClick={() => setShow2FASetup(true)}
-                disabled={localStorage.getItem('tfa-enabled') === 'true'}
+                disabled={tfaEnabled}
               >
-                {localStorage.getItem('tfa-enabled') === 'true' ? '2FA Enabled' : 'Enable 2FA'}
+                {tfaEnabled ? '2FA Enabled' : 'Enable 2FA'}
               </button>
-              {localStorage.getItem('tfa-enabled') === 'true' && (
+              {tfaEnabled && (
                 <button
                   className="btn btn-outline"
                   onClick={handleDisable2FA}
