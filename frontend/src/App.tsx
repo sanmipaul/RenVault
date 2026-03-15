@@ -277,13 +277,29 @@ function AppContent() {
   }, []);
 
   useEffect(() => {
-    if (userSession.isSignInPending()) {
-      userSession.handlePendingSignIn().then((userData) => {
-        setUserData(userData);
-      });
-    } else if (userSession.isUserSignedIn()) {
-      setUserData(userSession.loadUserData());
-    }
+    const initSession = async () => {
+      let loadedData = null;
+      if (userSession.isSignInPending()) {
+        loadedData = await userSession.handlePendingSignIn();
+        setUserData(loadedData);
+      } else if (userSession.isUserSignedIn()) {
+        loadedData = userSession.loadUserData();
+        setUserData(loadedData);
+      }
+
+      // Run 2FA data migration once wallet address is available
+      if (loadedData && TwoFactorMigration.needsMigration()) {
+        const walletAddress =
+          loadedData.profile?.stxAddress?.mainnet ??
+          loadedData.profile?.stxAddress?.testnet ??
+          '';
+        if (walletAddress) {
+          await TwoFactorMigration.migrate(walletAddress);
+        }
+      }
+    };
+
+    initSession();
   }, []);
 
   useEffect(() => {
