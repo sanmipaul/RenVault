@@ -1,4 +1,4 @@
-interface WalletSessionData {
+export interface WalletSessionData {
   [key: string]: unknown;
   timestamp: number;
   lastActive: number;
