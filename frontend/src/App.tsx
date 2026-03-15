@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useDebounce } from './hooks/useDebounce';
 import { AppConfig, UserSession, showConnect, UserData, openContractCall } from '@stacks/connect';
 import { StacksMainnet, StacksTestnet } from '@stacks/network';
 import { 
@@ -73,6 +74,8 @@ function AppContent() {
   const [points, setPoints] = useState<string>('0');
   const [depositAmount, setDepositAmount] = useState<string>('');
   const [withdrawAmount, setWithdrawAmount] = useState<string>('');
+  const debouncedDepositAmount = useDebounce(depositAmount, 300);
+  const debouncedWithdrawAmount = useDebounce(withdrawAmount, 300);
   const [status, setStatus] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const [detectedNetwork, setDetectedNetwork] = useState<'mainnet' | 'testnet' | null>(null);
