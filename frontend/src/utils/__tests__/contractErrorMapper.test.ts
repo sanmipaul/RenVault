@@ -141,6 +141,27 @@ describe('ContractErrorMapper.mapToError', () => {
   });
 });
 
+describe('parseStacksBroadcastError', () => {
+  // Import inline since we added it after the main import
+  const { parseStacksBroadcastError } = require('../contractErrorMapper');
+
+  it('extracts descriptor from reason_data.error field', () => {
+    const body = {
+      error: 'transaction rejected',
+      reason: 'AbortedByResponse',
+      reason_data: { type: 'AbortedByResponse', error: '(err u102)' },
+    };
+    const d = parseStacksBroadcastError(body, 'ren-vault');
+    expect(d).not.toBeNull();
+    expect(d!.name).toBe('err-insufficient-balance');
+  });
+
+  it('returns null when no error code is present', () => {
+    const body = { error: 'bad request', reason: 'NoSuchContract' };
+    expect(parseStacksBroadcastError(body, 'ren-vault')).toBeNull();
+  });
+});
+
 describe('Per-contract spot checks', () => {
   const cases: [string, number, string][] = [
     ['multi-asset-vault', 106, 'err-contract-paused'],
