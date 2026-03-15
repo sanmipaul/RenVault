@@ -1,5 +1,6 @@
 // components/NetworkStatus.tsx
 import React from 'react';
+import './NetworkStatus.css';
 import { NetworkType } from '../types/app';
 
 interface NetworkStatusProps {
