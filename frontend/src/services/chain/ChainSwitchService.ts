@@ -232,7 +232,7 @@ export class ChainSwitchService {
   /**
    * Validate chain type
    */
-  private static isValidChain(chain: any): boolean {
+  private static isValidChain(chain: unknown): boolean {
     const validChains = ['stacks', 'stacks-testnet', 'ethereum', 'polygon', 'arbitrum', 'sepolia'];
     return validChains.includes(chain);
   }
