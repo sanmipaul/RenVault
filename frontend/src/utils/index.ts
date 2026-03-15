@@ -12,3 +12,5 @@ export {
   STACKS_PRINCIPAL_RE,
   STACKS_CONTRACT_ID_RE,
 } from './stacksAddress';
+export { logBoundaryError } from './errorBoundaryLogger';
+export type { BoundaryErrorReport } from './errorBoundaryLogger';
