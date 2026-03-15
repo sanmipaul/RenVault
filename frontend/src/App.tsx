@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { AppConfig, UserSession, showConnect, UserData } from '@stacks/connect';
+import { AppConfig, UserSession, showConnect } from '@stacks/connect';
 import { AppKit } from '@reown/appkit/react';
 import ConnectionStatus from './components/ConnectionStatus';
 import { SessionStatus } from './components/SessionStatus';
@@ -41,7 +41,7 @@ function AppContent() {
   const [walletConnectSession, setWalletConnectSession] = useState<WalletConnectSession | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [connectionError, setConnectionError] = useState<string | null>(null);
-  const [retryCount, setRetryCount] = useState<number>(0);
+  const [, setRetryCount] = useState<number>(0);
   const [showHelp, setShowHelp] = useState<boolean>(false);
   const [currentTransaction, setCurrentTransaction] = useState<any>(null);
 
@@ -85,7 +85,8 @@ function AppContent() {
     }
   }, [userAddress, detectedNetwork, fetchStats, networkMismatch]);
 
-  // Show 2FA verify on load if enabled
+  // Show 2FA verify on load if enabled — intentionally runs once on mount
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (is2FAEnabled && !userData) {
       setShow2FAVerify(true);
@@ -109,8 +110,6 @@ function AppContent() {
     const timer = setTimeout(() => setStatus(''), 10000);
     return () => clearTimeout(timer);
   }, [status]);
-
-  const connectWallet = () => setShowConnectionOptions(true);
 
   const connectWithStacks = () => {
     setConnectionError(null);
@@ -348,9 +347,9 @@ function AppContent() {
 
       <StatsPanel balance={balance} points={points} detectedNetwork={detectedNetwork} />
 
-      <Analytics userId={userAddress ?? undefined} />
+      <Analytics userId={userAddress ?? ''} />
 
-      <TransactionHistory address={userAddress ?? undefined} />
+      <TransactionHistory address={userAddress ?? ''} />
 
       <div className="actions">
         <DepositPanel
