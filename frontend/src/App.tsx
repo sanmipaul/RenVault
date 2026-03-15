@@ -256,9 +256,9 @@ function AppContent() {
       setStatus('✅ Disconnected from WalletConnect');
     }
     // Clear all session data
-    localStorage.removeItem('tfa-enabled');
-    localStorage.removeItem('tfa-secret');
-    localStorage.removeItem('tfa-backup-codes');
+    localStorage.removeItem(APP_CONFIG.tfaEnabledKey);
+    TwoFactorSecureStorage.clearAll();
+    setTfaEnabled(false);
     // Clear all connection-related state
     setBalance('0');
     setPoints('0');
