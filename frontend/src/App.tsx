@@ -914,9 +914,23 @@ function AppContent() {
         </div>
       </div>
 
-      <Analytics userId={userData?.profile?.stxAddress?.mainnet} />
+      <ErrorBoundary
+        sectionName="Analytics"
+        fallback={(error, reset) => (
+          <ErrorFallback error={error} sectionName="Analytics" onReset={reset} compact />
+        )}
+      >
+        <Analytics userId={userData?.profile?.stxAddress?.mainnet} />
+      </ErrorBoundary>
 
-      <TransactionHistory address={userData?.profile?.stxAddress?.mainnet} />
+      <ErrorBoundary
+        sectionName="Transaction History"
+        fallback={(error, reset) => (
+          <ErrorFallback error={error} sectionName="Transaction History" onReset={reset} />
+        )}
+      >
+        <TransactionHistory address={userData?.profile?.stxAddress?.mainnet} />
+      </ErrorBoundary>
 
       <div className="actions">
         <div className="card">
