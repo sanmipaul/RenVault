@@ -109,6 +109,11 @@ function AppContent() {
   const [retryCount, setRetryCount] = useState<number>(0);
   const [showHelp, setShowHelp] = useState<boolean>(false);
 
+  // ── Real-time amount validation ─────────────────────────────────────────
+  const balanceNum = parseFloat(balance) || 0;
+  const depositValidation = useAmountValidation('deposit');
+  const withdrawValidation = useAmountValidation('withdraw', balanceNum);
+
   // Cleanup effect for component unmount
   useEffect(() => {
     return () => {
