@@ -1094,11 +1094,18 @@ function AppContent() {
 
       {showCoSignerManagement && (
         <div className="modal-overlay">
-          <CoSignerManagement
-            walletManager={walletManager}
-            onUpdate={handleCoSignerUpdate}
-            onCancel={() => setShowCoSignerManagement(false)}
-          />
+          <ErrorBoundary
+            sectionName="Co-Signer Management"
+            fallback={(error, reset) => (
+              <ErrorFallback error={error} sectionName="Co-Signer Management" onReset={reset} />
+            )}
+          >
+            <CoSignerManagement
+              walletManager={walletManager}
+              onUpdate={handleCoSignerUpdate}
+              onCancel={() => setShowCoSignerManagement(false)}
+            />
+          </ErrorBoundary>
         </div>
       )}
 
