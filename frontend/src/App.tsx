@@ -399,10 +399,13 @@ function AppContent() {
       
       const duration = Date.now() - startTime;
       trackAnalytics('performance', { operation: 'fetch-user-stats', duration });
-    } catch (error) {
-      console.error('Error fetching stats:', error);
+    } catch (error: unknown) {
       if (networkMismatch) {
         setStatus('Unable to fetch data: Please switch to mainnet');
+      } else if (ContractErrorMapper.isContractError(error)) {
+        console.warn('Contract error fetching stats:', ContractErrorMapper.toStatusMessage(error, CONTRACT_NAME));
+      } else {
+        console.error('Error fetching stats:', error);
       }
       const duration = Date.now() - startTime;
       trackAnalytics('performance', { operation: 'fetch-user-stats', duration });
