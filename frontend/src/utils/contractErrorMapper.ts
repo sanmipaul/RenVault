@@ -208,4 +208,12 @@ export class ContractErrorMapper {
   static isContractError(raw: unknown): boolean {
     return this.parseErrorCode(raw) !== null;
   }
+
+  /**
+   * Return only the recovery hint for a raw error, or an empty string when
+   * no hint is defined.  Useful for tooltip / aria-description attributes.
+   */
+  static getErrorSuggestion(raw: unknown, contractName: string): string {
+    return this.map(raw, contractName).hint ?? '';
+  }
 }
