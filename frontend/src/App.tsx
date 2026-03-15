@@ -950,20 +950,22 @@ function AppContent() {
 
         <div className="card">
           <h3>Withdraw STX</h3>
-          <div className="input-group">
-            <label>Amount (STX)</label>
-            <input
-              type="number"
-              value={withdrawAmount}
-              onChange={(e) => setWithdrawAmount(e.target.value)}
-              placeholder="Enter amount to withdraw"
-              step="0.000001"
-            />
-          </div>
-          <button 
-            className="btn btn-secondary" 
+          <AmountInput
+            value={withdrawAmount}
+            onChange={(val) => {
+              setWithdrawAmount(val);
+              withdrawValidation.validate(val);
+            }}
+            validation={withdrawValidation.result}
+            label="Amount (STX)"
+            placeholder="Enter amount to withdraw"
+            disabled={loading || showWithdrawDetails}
+            onEnter={handleWithdraw}
+          />
+          <button
+            className="btn btn-secondary"
             onClick={handleWithdraw}
-            disabled={loading || !withdrawAmount || showWithdrawDetails}
+            disabled={loading || !withdrawValidation.result.valid || !withdrawAmount || showWithdrawDetails}
           >
             {loading ? 'Preparing...' : showWithdrawDetails ? 'Review Transaction' : 'Withdraw'}
           </button>
