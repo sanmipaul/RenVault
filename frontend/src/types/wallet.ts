@@ -75,3 +75,30 @@ export interface MultiSigTransaction {
   status: 'pending' | 'signed' | 'executed';
   createdAt: string;
 }
+
+export interface WithdrawTxDetails {
+  contractAddress: string;
+  contractName: string;
+  functionName: string;
+  functionArgs: import('@stacks/transactions').ClarityValue[];
+  network: import('@stacks/network').StacksNetwork;
+  amount: number;
+  currentBalance: string;
+  remainingBalance: string;
+  fee: string;
+  estimatedFee: string;
+}
+
+export interface WalletConnectSession {
+  topic: string;
+  expiry: number;
+  namespaces: {
+    stacks?: {
+      accounts: string[];
+    };
+  };
+}
+
+export interface WalletConnectTransactionParams {
+  amount: number;
+}
