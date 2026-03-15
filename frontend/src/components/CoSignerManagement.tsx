@@ -1,6 +1,7 @@
 // CoSignerManagement Component
 import React, { useState, useEffect } from 'react';
 import { WalletManager } from '../services/wallet/WalletManager';
+import type { CoSigner } from '../services/wallet/MultiSigWalletProvider';
 
 interface CoSignerManagementProps {
   walletManager: WalletManager;
@@ -9,7 +10,7 @@ interface CoSignerManagementProps {
 }
 
 export const CoSignerManagement: React.FC<CoSignerManagementProps> = ({ walletManager, onUpdate, onCancel }) => {
-  const [coSigners, setCoSigners] = useState<any[]>([]);
+  const [coSigners, setCoSigners] = useState<CoSigner[]>([]);
   const [newCoSigner, setNewCoSigner] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
