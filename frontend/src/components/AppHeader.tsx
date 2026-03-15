@@ -1,6 +1,7 @@
 // components/AppHeader.tsx
 import React from 'react';
 import { NetworkType } from '../types/app';
+import './AppHeader.css';
 
 interface AppHeaderProps {
   userName?: string;
