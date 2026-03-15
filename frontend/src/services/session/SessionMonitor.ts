@@ -7,7 +7,7 @@ export interface SessionEvent {
   timestamp: number;
   sessionId?: string;
   providerType?: string;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
 }
 
 export interface SessionMetrics {

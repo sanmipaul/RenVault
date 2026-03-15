@@ -9,7 +9,7 @@ export class TransactionRecovery {
     localStorage.setItem(this.STORAGE_KEY, JSON.stringify(pending));
   }
 
-  static getPendingTransactions(): any[] {
+  static getPendingTransactions(): (SignedTransaction & { savedAt: number })[] {
     const stored = localStorage.getItem(this.STORAGE_KEY);
     return stored ? JSON.parse(stored) : [];
   }

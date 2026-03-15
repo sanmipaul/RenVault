@@ -8,8 +8,8 @@ interface AnalyticsProps {
 }
 
 export const Analytics: React.FC<AnalyticsProps> = ({ userId }) => {
-  const [stats, setStats] = useState<any>(null);
-  const [walletStats, setWalletStats] = useState<any>(null);
+  const [stats, setStats] = useState<Record<string, unknown> | null>(null);
+  const [walletStats, setWalletStats] = useState<Record<string, unknown> | null>(null);
   const [loading, setLoading] = useState(true);
   const [optOut, setOptOut] = useState(() => localStorage.getItem('analytics-opt-out') === 'true');
 

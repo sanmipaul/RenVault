@@ -6,18 +6,20 @@ export class TransactionErrorHandler {
     return retryableErrors.some(msg => error.message.toLowerCase().includes(msg));
   }
 
-  static handleError(error: any, context: string): WalletError {
+  static handleError(error: unknown, context: string): WalletError {
     if (error instanceof WalletError) return error;
-    
-    if (this.isRetryable(error)) {
-      return new WalletError(WalletErrorCode.NETWORK_ERROR, `${context}: ${error.message}`);
+    const msg = error instanceof Error ? error.message : String(error);
+
+    if (error instanceof Error && this.isRetryable(error)) {
+      return new WalletError(WalletErrorCode.NETWORK_ERROR, `${context}: ${msg}`);
     }
-    
-    return new WalletError(WalletErrorCode.TRANSACTION_FAILED, `${context}: ${error.message}`);
+
+    return new WalletError(WalletErrorCode.TRANSACTION_FAILED, `${context}: ${msg}`);
   }
 
-  static getErrorMessage(error: any): string {
+  static getErrorMessage(error: unknown): string {
     if (error instanceof WalletError) return error.message;
-    return error?.message || 'Unknown error occurred';
+    if (error instanceof Error) return error.message;
+    return 'Unknown error occurred';
   }
 }

@@ -224,11 +224,11 @@ export class WalletFallbackManager {
    * Create a retry strategy with exponential backoff
    */
   static createRetryStrategy(
-    operation: () => Promise<any>,
+    operation: () => Promise<unknown>,
     maxRetries: number = 3,
     baseDelayMs: number = 1000
   ): {
-    execute: () => Promise<any>;
+    execute: () => Promise<unknown>;
     getCurrentRetry: () => number;
   } {
     let retryCount = 0;

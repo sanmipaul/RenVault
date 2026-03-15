@@ -3,6 +3,8 @@
  * Comprehensive test suite for wallet error handling and recovery
  */
 
+import { StacksContractCallOptions, SignedTransactionResult } from '../../../types/wallet';
+
 // Test Suite for WalletErrorHandler
 export const walletErrorHandlerTests = {
   // Test error categorization
@@ -414,7 +416,7 @@ export const testUtils = {
       publicKey: 'pub_key',
     }),
     disconnect: async () => {},
-    signTransaction: async (tx: any) => tx,
+    signTransaction: async (tx: StacksContractCallOptions) => tx as SignedTransactionResult,
     ...overrides,
   }),
 

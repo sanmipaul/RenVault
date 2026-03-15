@@ -1,0 +1,18 @@
+/* WithdrawForm.css */
+.card.confirmation {
+  border-left: 4px solid #6366f1;
+}
+
+.card.confirmation h3 {
+  color: #4338ca;
+  margin-bottom: 12px;
+}
+
+.card.confirmation p {
+  margin: 4px 0;
+  font-size: 0.9rem;
+}
+
+.card.confirmation strong {
+  font-weight: 600;
+}
