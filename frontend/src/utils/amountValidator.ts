@@ -43,6 +43,35 @@ export interface ValidationResult {
 
 const OK: ValidationResult = { valid: true, error: '' };
 
+// ─── Formatting helpers ───────────────────────────────────────────────────────
+
+/**
+ * Format a numeric STX value to at most 6 decimal places, stripping
+ * insignificant trailing zeros.
+ *
+ * Examples:
+ *   formatSTXAmount(1.5)       → "1.5"
+ *   formatSTXAmount(1.000001)  → "1.000001"
+ *   formatSTXAmount(1.000000)  → "1"
+ */
+export function formatSTXAmount(value: number): string {
+  return value.toFixed(STX_DECIMALS).replace(/\.?0+$/, '');
+}
+
+/**
+ * Convert a raw input string to a normalised number of micro-STX (µSTX).
+ * Returns null when the string is not a valid positive number.
+ *
+ * This is the value that should be passed to `uintCV()` when building a
+ * Clarity contract call.
+ */
+export function parseSTXInput(raw: string): number | null {
+  const n = parseFloat(raw);
+  if (!Number.isFinite(n) || n <= 0) return null;
+  // Round to avoid floating-point drift (e.g. 0.1 + 0.2 → 300000 µSTX)
+  return Math.round(n * 10 ** STX_DECIMALS);
+}
+
 // ─── Core validators ─────────────────────────────────────────────────────────
 
 /**
