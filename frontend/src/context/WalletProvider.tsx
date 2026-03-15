@@ -1,6 +1,7 @@
 import React, { createContext, useContext, ReactNode, useEffect, useState } from 'react';
 import { useAppKitAccount } from '@reown/appkit/react';
 import { WalletProvider as WalletProviderBase, WalletProviderType, StacksContractCallOptions, SignedTransactionResult, WalletConnection } from '../types/wallet';
+import { AppKitWalletConfig } from '../services/wallet/WalletProviderLoader';
 import { WalletKitService } from '../services/walletkit-service';
 import NotificationService from '../services/notificationService';
 import SponsorshipService, { SponsorshipQuota } from '../services/SponsorshipService';
@@ -58,9 +59,9 @@ export const WalletProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   const userId = address ?? fallbackId;
   const [sponsorshipQuota, setSponsorshipQuota] = useState<SponsorshipQuota | null>(null);
   const [currentStacksAdapter, setCurrentStacksAdapter] = useState<StacksConnectorAdapter | null>(null);
-  const [appKitWallets, setAppKitWallets] = useState<any[]>([]);
-  const [installedWallets, setInstalledWallets] = useState<any[]>([]);
-  const [walletError, setWalletError] = useState<any>(null);
+  const [appKitWallets, setAppKitWallets] = useState<AppKitWalletConfig[]>([]);
+  const [installedWallets, setInstalledWallets] = useState<AppKitWalletConfig[]>([]);
+  const [walletError, setWalletError] = useState<Error | null>(null);
   const [isLoadingWallets, setIsLoadingWallets] = useState(false);
 
   // Initialize AppKit wallets

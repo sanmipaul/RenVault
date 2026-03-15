@@ -24,7 +24,7 @@ export class MultiSigWalletProvider implements WalletProvider {
     return 'multisig';
   }
 
-  async connect(): Promise<any> {
+  async connect(): Promise<{ address: string; publicKey: string }> {
     // Multi-sig doesn't connect like regular wallets
     // It manages multiple signers
     return {
