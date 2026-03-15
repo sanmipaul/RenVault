@@ -804,6 +804,7 @@ function AppContent() {
           </button>
         </div>
       </div>
+      </ErrorBoundary>
 
       {status && (
         <div className={`status ${status.toLowerCase().includes('error') ? 'error' : 'success'}`}>
@@ -910,11 +911,21 @@ function App() {
   }
 
   return (
-    <>
+    <ErrorBoundary
+      sectionName="RenVault"
+      fallback={(error, reset) => (
+        <div className="container">
+          <div className="header">
+            <h1>RenVault 🏦</h1>
+          </div>
+          <ErrorFallback error={error} sectionName="RenVault" onReset={reset} />
+        </div>
+      )}
+    >
       <AppContent />
       {/* @ts-ignore */}
       <AppKit />
-    </>
+    </ErrorBoundary>
   );
 }
 
