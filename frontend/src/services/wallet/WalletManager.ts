@@ -1,5 +1,5 @@
 // services/wallet/WalletManager.ts
-import { WalletProvider, WalletProviderType, StacksContractCallOptions, SignedTransactionResult, CoSigner, MultiSigConfig, MultiSigTransaction } from '../../types/wallet';
+import { WalletProvider, WalletProviderType, StacksContractCallOptions, SignedTransactionResult, CoSigner, MultiSigConfig, MultiSigTransaction, WalletConnection } from '../../types/wallet';
 import { WalletProviderLoader } from './WalletProviderLoader';
 import { MultiSigWalletProvider } from './MultiSigWalletProvider';
 import { getRandomBytes } from '../../utils/crypto';
@@ -72,7 +72,7 @@ export class WalletManager {
     return this.connectionState !== null;
   }
 
-  async connect(): Promise<any> {
+  async connect(): Promise<WalletConnection> {
     if (!this.currentProvider) {
       throw new Error('No provider selected');
     }
