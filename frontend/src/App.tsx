@@ -1111,12 +1111,19 @@ function AppContent() {
 
       {showMultiSigSigner && (
         <div className="modal-overlay">
-          <MultiSigTransactionSigner
-            walletManager={walletManager}
-            transaction={currentTransaction}
-            onSigned={handleMultiSigTransactionSigned}
-            onCancel={() => setShowMultiSigSigner(false)}
-          />
+          <ErrorBoundary
+            sectionName="MultiSig Transaction Signer"
+            fallback={(error, reset) => (
+              <ErrorFallback error={error} sectionName="MultiSig Transaction Signer" onReset={reset} />
+            )}
+          >
+            <MultiSigTransactionSigner
+              walletManager={walletManager}
+              transaction={currentTransaction}
+              onSigned={handleMultiSigTransactionSigned}
+              onCancel={() => setShowMultiSigSigner(false)}
+            />
+          </ErrorBoundary>
         </div>
       )}
 
