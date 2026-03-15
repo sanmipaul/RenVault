@@ -141,6 +141,23 @@ describe('ContractErrorMapper.mapToError', () => {
   });
 });
 
+describe('ContractErrorMapper.getErrorSuggestion', () => {
+  it('returns the hint when one exists', () => {
+    const hint = ContractErrorMapper.getErrorSuggestion('(err u102)', 'ren-vault');
+    expect(hint).toContain('vault balance');
+  });
+
+  it('returns empty string when no hint is defined', () => {
+    const hint = ContractErrorMapper.getErrorSuggestion('(err u401)', 'staking');
+    expect(hint).toBe('');
+  });
+
+  it('returns empty string for unknown code', () => {
+    const hint = ContractErrorMapper.getErrorSuggestion('(err u9999)', 'ren-vault');
+    expect(hint).toBe('');
+  });
+});
+
 describe('parseStacksBroadcastError', () => {
   // Import inline since we added it after the main import
   const { parseStacksBroadcastError } = require('../contractErrorMapper');
