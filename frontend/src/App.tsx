@@ -18,7 +18,9 @@ import { AutoReconnect } from './components/AutoReconnect';
 import NotificationService from './services/notificationService';
 import TransactionHistory from './components/TransactionHistory';
 import NotificationCenter from './components/NotificationCenter';
-import { ContractErrorMapper } from './utils/contractErrorMapper';
+import AmountInput from './components/AmountInput';
+import { useAmountValidation } from './hooks/useAmountValidation';
+import { validateDepositAmount, validateWithdrawAmount, parseSTXInput } from './utils/amountValidator';
 
 const appConfig = new AppConfig(['store_write', 'publish_data']);
 const userSession = new UserSession({ appConfig });
@@ -104,11 +106,20 @@ function AppContent() {
   const [retryCount, setRetryCount] = useState<number>(0);
   const [showHelp, setShowHelp] = useState<boolean>(false);
 
-  const [walletManager] = useState(() => new WalletManager());
+  // ── Real-time amount validation ─────────────────────────────────────────
+  const balanceNum = parseFloat(balance) || 0;
+  const depositValidation = useAmountValidation('deposit');
+  const withdrawValidation = useAmountValidation('withdraw', balanceNum);
 
-  const { isEnabled: is2FAEnabled, enable: enable2FA, disable: disable2FA, verifyBackupCode } = use2FA();
-  const { balance, points, fetchStats, resetStats } = useVaultStats();
-  const { detectedNetwork, networkMismatch, detectFromAddress, reset: resetNetwork, promptSwitch } = useNetworkDetection();
+  // Cleanup effect for component unmount
+  useEffect(() => {
+    return () => {
+      // Cleanup any pending operations
+      if (withdrawTxDetails) {
+        setWithdrawTxDetails(null);
+      }
+    };
+  }, []);
 
   const userAddress = userData?.profile.stxAddress.mainnet ?? null;
   const notificationUserId = userAddress;
@@ -352,17 +363,45 @@ function AppContent() {
     }
   };
 
-  const handleBackupCodeVerify = async (code: string): Promise<boolean> => {
-    const result = verifyBackupCode(code);
-    if (result) setShowBackupCodes(false);
-    return result;
-  };
+  const handleDeposit = async () => {
+    if (!userData) return;
+    const preSubmitCheck = validateDepositAmount(depositAmount);
+    if (!preSubmitCheck.valid) {
+      depositValidation.validate(depositAmount); // surface the error in the field
+      setStatus(`❌ ${preSubmitCheck.error}`);
+      return;
+    }
+    if (!validateNetwork()) return;
+    
+    setLoading(true);
+    setStatus('');
+    
+    try {
+      const amount = parseSTXInput(depositAmount) ?? 0;
+      
+      if (connectionMethod === 'walletconnect' && walletConnectSession) {
+        // Use WalletConnect for signing
+        await handleWalletConnectTransaction('deposit', { amount });
+      } else {
+        // Use traditional Stacks signing
+        const network = getCurrentNetwork();
+        
+        const txOptions = {
+          contractAddress: CONTRACT_ADDRESS,
+          contractName: CONTRACT_NAME,
+          functionName: 'deposit',
+          functionArgs: [uintCV(amount)],
+          senderKey: userData.appPrivateKey,
+          network,
+          anchorMode: AnchorMode.Any,
+        };
 
         const transaction = await makeContractCall(txOptions);
         const broadcastResponse = await broadcastTransaction(transaction, network);
         
         setStatus(`Deposit transaction submitted: ${broadcastResponse.txid}`);
         setDepositAmount('');
+        depositValidation.reset();
         
         trackAnalytics('deposit', { user: userData.profile.stxAddress.mainnet, amount });
         
@@ -418,6 +457,7 @@ function AppContent() {
             clearTimeout(signingTimeout);
             setStatus(`✅ Withdraw transaction submitted successfully! Transaction ID: ${data.txId}`);
             setWithdrawAmount('');
+            withdrawValidation.reset();
             setWithdrawTxDetails(null);
             trackAnalytics('withdrawal', { user: userData.profile.stxAddress.mainnet, amount: withdrawTxDetails.amount });
             
@@ -507,34 +547,26 @@ function AppContent() {
   };
 
   const handleWithdraw = async () => {
-    if (!withdrawAmount || !userData) return;
+    if (!userData) return;
+    const preSubmitCheck = validateWithdrawAmount(withdrawAmount, balanceNum);
+    if (!preSubmitCheck.valid) {
+      withdrawValidation.validate(withdrawAmount); // surface error in the field
+      setStatus(`❌ ${preSubmitCheck.error}`);
+      return;
+    }
     if (!validateNetwork()) return;
-    
-    const withdrawAmountNum = parseFloat(withdrawAmount);
-    const balanceNum = parseFloat(balance);
-    
-    if (isNaN(withdrawAmountNum) || withdrawAmountNum <= 0) {
-      setStatus('Error: Please enter a valid withdrawal amount greater than 0');
-      return;
-    }
-    
-    if (withdrawAmountNum > balanceNum) {
-      setStatus(`Error: Insufficient balance. You have ${balance} STX available`);
-      return;
-    }
-    
-    // Warn if withdrawal would leave less than 0.01 STX
-    const remainingBalance = balanceNum - withdrawAmountNum;
-    if (remainingBalance > 0 && remainingBalance < 0.01) {
-      const confirmLeave = window.confirm(`Warning: This withdrawal will leave only ${remainingBalance.toFixed(6)} STX in your vault. Continue?`);
-      if (!confirmLeave) return;
+
+    // Dust-threshold advisory — confirm before proceeding
+    if (preSubmitCheck.warning) {
+      const ok = window.confirm(`⚠ ${preSubmitCheck.warning}\n\nContinue?`);
+      if (!ok) return;
     }
     
     setLoading(true);
     setStatus('Preparing transaction details...');
     
     try {
-      const amount = Math.floor(parseFloat(withdrawAmount) * 1000000);
+      const amount = parseSTXInput(withdrawAmount) ?? 0;
       const network = getCurrentNetwork();
       
       // Prepare transaction details for display
@@ -725,26 +757,52 @@ function AppContent() {
       <TransactionHistory address={userAddress ?? ''} />
 
       <div className="actions">
-        <DepositPanel
-          balance={balance}
-          connectionMethod={connectionMethod}
-          walletConnectSession={walletConnectSession}
-          userAddress={userAddress ?? ''}
-          appPrivateKey={userData.appPrivateKey}
-          notificationUserId={notificationUserId}
-          onStatusChange={setStatus}
-          onRefreshStats={handleRefreshStats}
-        />
+        <div className="card">
+          <h3>Deposit STX</h3>
+          <AmountInput
+            value={depositAmount}
+            onChange={(val) => {
+              setDepositAmount(val);
+              depositValidation.validate(val);
+            }}
+            validation={depositValidation.result}
+            label="Amount (STX)"
+            placeholder="Enter amount to deposit"
+            disabled={loading}
+            onEnter={handleDeposit}
+          />
+          <button
+            className="btn btn-primary"
+            onClick={handleDeposit}
+            disabled={loading || !depositValidation.result.valid || !depositAmount}
+          >
+            {loading ? 'Processing...' : 'Deposit'}
+          </button>
+          <p><small>1% protocol fee applies</small></p>
+        </div>
 
-        <WithdrawForm
-          balance={balance}
-          connectionMethod={connectionMethod}
-          walletConnectSession={walletConnectSession}
-          userAddress={userAddress ?? ''}
-          onStatusChange={setStatus}
-          onWithdrawSuccess={handleWithdrawSuccess}
-          onRefreshStats={handleRefreshStats}
-        />
+        <div className="card">
+          <h3>Withdraw STX</h3>
+          <AmountInput
+            value={withdrawAmount}
+            onChange={(val) => {
+              setWithdrawAmount(val);
+              withdrawValidation.validate(val);
+            }}
+            validation={withdrawValidation.result}
+            label="Amount (STX)"
+            placeholder="Enter amount to withdraw"
+            disabled={loading || showWithdrawDetails}
+            onEnter={handleWithdraw}
+          />
+          <button
+            className="btn btn-secondary"
+            onClick={handleWithdraw}
+            disabled={loading || !withdrawValidation.result.valid || !withdrawAmount || showWithdrawDetails}
+          >
+            {loading ? 'Preparing...' : showWithdrawDetails ? 'Review Transaction' : 'Withdraw'}
+          </button>
+        </div>
       </div>
 
       {status && (
