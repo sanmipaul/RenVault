@@ -134,6 +134,7 @@ function AppContent() {
   const handle2FASetupComplete = async (secret: string, backupCodes: string[]) => {
     setTfaSecret(secret);
     localStorage.setItem(APP_CONFIG.tfaEnabledKey, 'true');
+    setTfaEnabled(true);
     // Store secret and backup codes encrypted, not as plain text
     const walletAddress =
       userData?.profile?.stxAddress?.mainnet ??
