@@ -451,9 +451,13 @@ function AppContent() {
         
         setTimeout(fetchUserStats, 3000);
       }
-    } catch (error: any) {
-      setStatus(`Error: ${error.message}`);
-      trackAnalytics('wallet-error', { user: userData?.profile?.stxAddress?.mainnet || 'anonymous', method: connectionMethod || 'unknown', errorType: error.message });
+    } catch (error: unknown) {
+      const friendlyMsg = ContractErrorMapper.isContractError(error)
+        ? ContractErrorMapper.toStatusMessage(error, CONTRACT_NAME)
+        : error instanceof Error ? error.message : 'Unknown error';
+      setStatus(`❌ Deposit failed: ${friendlyMsg}`);
+      const errMsg = error instanceof Error ? error.message : String(error);
+      trackAnalytics('wallet-error', { user: userData?.profile?.stxAddress?.mainnet || 'anonymous', method: connectionMethod || 'unknown', errorType: errMsg });
     } finally {
       setLoading(false);
     }
