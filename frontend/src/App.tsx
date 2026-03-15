@@ -430,7 +430,7 @@ function AppContent() {
     setStatus('');
     
     try {
-      const amount = Math.floor(parseFloat(depositAmount) * 1000000);
+      const amount = parseSTXInput(depositAmount) ?? 0;
       
       if (connectionMethod === 'walletconnect' && walletConnectSession) {
         // Use WalletConnect for signing
@@ -609,7 +609,7 @@ function AppContent() {
     setStatus('Preparing transaction details...');
     
     try {
-      const amount = Math.floor(parseFloat(withdrawAmount) * 1000000);
+      const amount = parseSTXInput(withdrawAmount) ?? 0;
       const network = getCurrentNetwork();
       
       // Prepare transaction details for display
