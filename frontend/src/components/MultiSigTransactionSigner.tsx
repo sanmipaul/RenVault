@@ -54,8 +54,8 @@ export const MultiSigTransactionSigner: React.FC<MultiSigTransactionSignerProps>
         loadPendingTransactions();
         setError(`Transaction pending: ${result.currentSignatures}/${result.requiredSignatures} signatures`);
       }
-    } catch (error: any) {
-      setError(error.message);
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : String(error));
     } finally {
       setLoading(false);
     }

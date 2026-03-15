@@ -40,8 +40,8 @@ export const CoSignerManagement: React.FC<CoSignerManagementProps> = ({ walletMa
       setCoSigners(walletManager.getMultiSigConfig()?.coSigners || []);
       setNewCoSigner('');
       onUpdate();
-    } catch (error: any) {
-      setError(error.message);
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : String(error));
     } finally {
       setLoading(false);
     }
@@ -55,8 +55,8 @@ export const CoSignerManagement: React.FC<CoSignerManagementProps> = ({ walletMa
       walletManager.removeCoSigner(address);
       setCoSigners(walletManager.getMultiSigConfig()?.coSigners || []);
       onUpdate();
-    } catch (error: any) {
-      setError(error.message);
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : String(error));
     } finally {
       setLoading(false);
     }
