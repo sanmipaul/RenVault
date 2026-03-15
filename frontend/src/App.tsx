@@ -103,6 +103,7 @@ function AppContent() {
   const [currentTransaction, setCurrentTransaction] = useState<any>(null);
   const [showPerformanceMonitor, setShowPerformanceMonitor] = useState<boolean>(false);
   const [tfaSecret, setTfaSecret] = useState<string>('');
+  const [tfaEnabled, setTfaEnabled] = useState<boolean>(TwoFactorSecureStorage.hasSecret());
   const [connectionError, setConnectionError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState<number>(0);
   const [showHelp, setShowHelp] = useState<boolean>(false);
@@ -130,19 +131,24 @@ function AppContent() {
         : null,
     [notificationUserId]
   );
-  const handle2FASetupComplete = (secret: string, backupCodes: string[]) => {
+  const handle2FASetupComplete = async (secret: string, backupCodes: string[]) => {
     setTfaSecret(secret);
     localStorage.setItem(APP_CONFIG.tfaEnabledKey, 'true');
-    localStorage.setItem(APP_CONFIG.tfaSecretKey, secret);
-    localStorage.setItem(APP_CONFIG.tfaBackupCodesKey, JSON.stringify(backupCodes));
+    // Store secret and backup codes encrypted, not as plain text
+    const walletAddress =
+      userData?.profile?.stxAddress?.mainnet ??
+      userData?.profile?.stxAddress?.testnet ??
+      '';
+    await TwoFactorSecureStorage.saveSecret(secret, walletAddress);
+    await TwoFactorSecureStorage.saveBackupCodes(backupCodes, walletAddress);
     setShow2FASetup(false);
     setStatus('✅ Two-factor authentication enabled successfully!');
-    
+
     // Send 2FA enabled notification
     if (notificationService) {
       notificationService.testTwoFactorEnabledNotification();
     }
-    
+
     setTimeout(() => setStatus(''), 5000);
   };
 
