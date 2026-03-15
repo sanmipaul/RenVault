@@ -18,7 +18,7 @@ import { AutoReconnect } from './components/AutoReconnect';
 import NotificationService from './services/notificationService';
 import TransactionHistory from './components/TransactionHistory';
 import NotificationCenter from './components/NotificationCenter';
-import { TwoFactorSecureStorage, TwoFactorMigration } from './services/security';
+import { ContractErrorMapper } from './utils/contractErrorMapper';
 
 const appConfig = new AppConfig(['store_write', 'publish_data']);
 const userSession = new UserSession({ appConfig });
@@ -330,9 +330,25 @@ function AppContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: 'current-user', code }),
       });
-      return response.ok;
-    } catch {
-      return false;
+
+      // Assuming result is a UIntCV
+      // @ts-ignore
+      setBalance((parseInt(balanceResult.value) / 1000000).toFixed(6));
+      // @ts-ignore
+      setPoints(pointsResult.value);
+      
+      const duration = Date.now() - startTime;
+      trackAnalytics('performance', { operation: 'fetch-user-stats', duration });
+    } catch (error: unknown) {
+      if (networkMismatch) {
+        setStatus('Unable to fetch data: Please switch to mainnet');
+      } else if (ContractErrorMapper.isContractError(error)) {
+        console.warn('Contract error fetching stats:', ContractErrorMapper.toStatusMessage(error, CONTRACT_NAME));
+      } else {
+        console.error('Error fetching stats:', error);
+      }
+      const duration = Date.now() - startTime;
+      trackAnalytics('performance', { operation: 'fetch-user-stats', duration });
     }
   };
 
@@ -358,8 +374,12 @@ function AppContent() {
         setTimeout(fetchUserStats, 3000);
       }
     } catch (error: unknown) {
-      setStatus(`Error: ${getErrorMessage(error)}`);
-      trackAnalytics('wallet-error', { user: userData?.profile?.stxAddress?.mainnet || 'anonymous', method: connectionMethod || 'unknown', errorType: getErrorMessage(error) });
+      const friendlyMsg = ContractErrorMapper.isContractError(error)
+        ? ContractErrorMapper.toStatusMessage(error, CONTRACT_NAME)
+        : error instanceof Error ? error.message : 'Unknown error';
+      setStatus(`❌ Deposit failed: ${friendlyMsg}`);
+      const errMsg = error instanceof Error ? error.message : String(error);
+      trackAnalytics('wallet-error', { user: userData?.profile?.stxAddress?.mainnet || 'anonymous', method: connectionMethod || 'unknown', errorType: errMsg });
     } finally {
       setLoading(false);
     }
@@ -417,7 +437,10 @@ function AppContent() {
         });
       }
     } catch (error: unknown) {
-      setStatus(`Error signing transaction: ${getErrorMessage(error)}`);
+      const friendlyMsg = ContractErrorMapper.isContractError(error)
+        ? ContractErrorMapper.toStatusMessage(error, CONTRACT_NAME)
+        : error instanceof Error ? error.message : 'Unknown error';
+      setStatus(`❌ Withdrawal failed: ${friendlyMsg}`);
       setWithdrawTxDetails(null);
     } finally {
       setLoading(false);
@@ -451,7 +474,10 @@ function AppContent() {
       
       setTimeout(fetchUserStats, 5000); // Longer delay for WalletConnect
     } catch (error: unknown) {
-      setStatus(`WalletConnect error: ${getErrorMessage(error)}`);
+      const friendlyMsg = ContractErrorMapper.isContractError(error)
+        ? ContractErrorMapper.toStatusMessage(error, CONTRACT_NAME)
+        : error instanceof Error ? error.message : 'Unknown error';
+      setStatus(`❌ WalletConnect error: ${friendlyMsg}`);
     }
   };
 
@@ -529,7 +555,10 @@ function AppContent() {
       setShowWithdrawDetails(true);
       setLoading(false);
     } catch (error: unknown) {
-      setStatus(`Error preparing transaction: ${getErrorMessage(error)}`);
+      const friendlyMsg = ContractErrorMapper.isContractError(error)
+        ? ContractErrorMapper.toStatusMessage(error, CONTRACT_NAME)
+        : error instanceof Error ? error.message : 'Unknown error';
+      setStatus(`❌ Error preparing transaction: ${friendlyMsg}`);
       setLoading(false);
     }
     trackAnalytics('withdrawal', { user: userAddress ?? 'anonymous', amount });
