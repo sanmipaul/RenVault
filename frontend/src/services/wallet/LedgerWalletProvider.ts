@@ -1,7 +1,7 @@
 // services/wallet/LedgerWalletProvider.ts
 // Ledger hardware wallet support - requires @ledgerhq packages
 import { BaseWalletProvider } from './BaseWalletProvider';
-import { WalletConnection } from '../../types/wallet';
+import { WalletConnection, StacksContractCallOptions, SignedTransactionResult } from '../../types/wallet';
 import { WalletError, WalletErrorCode } from '../../utils/wallet-errors';
 
 export class LedgerWalletProvider extends BaseWalletProvider {
@@ -9,8 +9,8 @@ export class LedgerWalletProvider extends BaseWalletProvider {
   name = 'Ledger';
   icon = 'ledger-icon.png';
 
-  private transport: any;
-  private app: any;
+  private transport: unknown;
+  private app: unknown;
 
   async connect(): Promise<WalletConnection> {
     try {
@@ -32,11 +32,12 @@ export class LedgerWalletProvider extends BaseWalletProvider {
       const publicKey = addressResponse.publicKey.toString('hex');
 
       return { address, publicKey };
-    } catch (error: any) {
-      if (error.message?.includes('No device selected')) {
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : String(error);
+      if (msg.includes('No device selected')) {
         throw new WalletError(WalletErrorCode.HARDWARE_WALLET_NOT_FOUND, 'Ledger device not found. Please connect your Ledger and open the Stacks app.');
       }
-      throw new WalletError(WalletErrorCode.HARDWARE_WALLET_CONNECTION_FAILED, 'Failed to connect to Ledger: ' + error.message);
+      throw new WalletError(WalletErrorCode.HARDWARE_WALLET_CONNECTION_FAILED, 'Failed to connect to Ledger: ' + msg);
     }
   }
 
@@ -46,7 +47,7 @@ export class LedgerWalletProvider extends BaseWalletProvider {
     }
   }
 
-  async signTransaction(tx: any): Promise<any> {
+  async signTransaction(tx: StacksContractCallOptions): Promise<SignedTransactionResult> {
     if (!this.app) {
       throw new Error('Ledger not connected');
     }

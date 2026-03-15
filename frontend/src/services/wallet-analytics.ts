@@ -1,5 +1,10 @@
+type WalletAnalyticsEvent =
+  | { type: 'CONNECTION'; walletType: string; success: boolean; duration: number; timestamp: number }
+  | { type: 'DISCONNECTION'; walletType: string; reason: string; timestamp: number }
+  | { type: 'TRANSACTION'; txType: string; amount: number; success: boolean; timestamp: number };
+
 export class WalletAnalytics {
-  private events: any[] = [];
+  private events: WalletAnalyticsEvent[] = [];
 
   trackConnection(walletType: string, success: boolean, duration: number) {
     this.events.push({

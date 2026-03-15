@@ -4,6 +4,7 @@
  */
 
 import { CustomWalletConfig, getWalletConfig } from '../../config/customWallets';
+import { StacksContractCallOptions, SignedTransactionResult } from '../../types/wallet';
 
 export interface StacksConnectorOptions {
   projectId: string;
@@ -183,7 +184,7 @@ export class StacksConnectorAdapter {
   /**
    * Sign a transaction using the wallet
    */
-  async signTransaction(transaction: any): Promise<any> {
+  async signTransaction(transaction: StacksContractCallOptions): Promise<SignedTransactionResult> {
     if (!this.connectionState.isConnected) {
       throw new Error('Wallet is not connected');
     }
@@ -238,7 +239,7 @@ export class StacksConnectorAdapter {
   /**
    * Emit an event
    */
-  private emit(event: string, data?: any): void {
+  private emit(event: string, data?: Record<string, unknown>): void {
     if (this.eventListeners.has(event)) {
       this.eventListeners.get(event)!.forEach(listener => listener(data));
     }
@@ -282,7 +283,7 @@ export class StacksConnectorAdapter {
   /**
    * Attempt transaction signing based on wallet type
    */
-  private async attemptTransactionSigning(transaction: any): Promise<any> {
+  private async attemptTransactionSigning(transaction: StacksContractCallOptions): Promise<SignedTransactionResult> {
     switch (this.walletId) {
       case 'hiro':
         return await this.signWithHiro(transaction);
@@ -328,7 +329,7 @@ export class StacksConnectorAdapter {
           icon: appMetadata?.icons?.[0] || '/favicon.ico',
         },
       })
-        .then((result: any) => {
+        .then((result: SignedTransactionResult) => {
           resolve({
             isConnected: true,
             address: result.address,
@@ -348,7 +349,7 @@ export class StacksConnectorAdapter {
     localStorage.removeItem('hiro-session');
   }
 
-  private async signWithHiro(transaction: any): Promise<any> {
+  private async signWithHiro(transaction: StacksContractCallOptions): Promise<SignedTransactionResult> {
     const hiro = (window as any).HiroWallet;
     if (!hiro) throw new Error('Hiro Wallet is not available');
     return await hiro.signTransaction(transaction);
@@ -391,7 +392,7 @@ export class StacksConnectorAdapter {
     localStorage.removeItem('leather-session');
   }
 
-  private async signWithLeather(transaction: any): Promise<any> {
+  private async signWithLeather(transaction: StacksContractCallOptions): Promise<SignedTransactionResult> {
     const leatherProvider = (window as any).LeatherProvider || (window as any).leather;
     if (!leatherProvider) throw new Error('Leather Wallet is not available');
     return transaction; // Placeholder
@@ -420,7 +421,7 @@ export class StacksConnectorAdapter {
           icon: appMetadata?.icons?.[0] || '/favicon.ico',
         },
       })
-        .then((result: any) => {
+        .then((result: SignedTransactionResult) => {
           resolve({
             isConnected: true,
             address: result.address,
@@ -440,7 +441,7 @@ export class StacksConnectorAdapter {
     localStorage.removeItem('xverse-session');
   }
 
-  private async signWithXverse(transaction: any): Promise<any> {
+  private async signWithXverse(transaction: StacksContractCallOptions): Promise<SignedTransactionResult> {
     const xverse = (window as any).XverseProvider || (window as any).xverse;
     if (!xverse) throw new Error('Xverse Wallet is not available');
     return await xverse.signTransaction(transaction);

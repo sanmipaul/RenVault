@@ -52,8 +52,8 @@ export const MultiSigSetup: React.FC<MultiSigSetupProps> = ({ walletManager, onS
 
       walletManager.setupMultiSigWallet(threshold, coSignerObjects);
       onSetupComplete();
-    } catch (error: any) {
-      setError(error.message);
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : String(error));
     } finally {
       setLoading(false);
     }
