@@ -1,6 +1,7 @@
 // components/SecuritySettings.tsx
 import React from 'react';
 import NotificationService from '../services/notificationService';
+import './SecuritySettings.css';
 
 interface SecuritySettingsProps {
   is2FAEnabled: boolean;
