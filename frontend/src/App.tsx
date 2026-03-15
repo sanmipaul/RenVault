@@ -1028,11 +1028,18 @@ function AppContent() {
         </ul>
       </div>
 
-      <NotificationCenter
-        userId={userData.profile.stxAddress.mainnet}
-        isOpen={showNotificationCenter}
-        onClose={() => setShowNotificationCenter(false)}
-      />
+      <ErrorBoundary
+        sectionName="Notification Center"
+        fallback={(error, reset) => (
+          <ErrorFallback error={error} sectionName="Notification Center" onReset={reset} compact />
+        )}
+      >
+        <NotificationCenter
+          userId={userData.profile.stxAddress.mainnet}
+          isOpen={showNotificationCenter}
+          onClose={() => setShowNotificationCenter(false)}
+        />
+      </ErrorBoundary>
 
       {showWalletBackup && (
         <div className="modal-overlay">
