@@ -142,6 +142,21 @@ export class TwoFactorSecureStorage {
   }
 
   /**
+   * Verify a backup code and, if valid, consume it so it cannot be reused.
+   * Returns true when the code matched; false otherwise.
+   */
+  static async verifyAndConsumeBackupCode(
+    code: string,
+    walletAddress: string
+  ): Promise<boolean> {
+    const storedCodes = await this.loadBackupCodes(walletAddress);
+    if (!storedCodes.includes(code)) return false;
+    const remaining = storedCodes.filter(c => c !== code);
+    await this.saveBackupCodes(remaining, walletAddress);
+    return true;
+  }
+
+  /**
    * Check whether a 2FA secret is currently stored (encrypted or legacy).
    */
   static hasSecret(): boolean {
