@@ -1,6 +1,6 @@
 import React, { createContext, useContext, ReactNode, useEffect, useState } from 'react';
 import { useAppKitAccount } from '@reown/appkit/react';
-import { WalletProvider as WalletProviderBase, WalletProviderType } from '../types/wallet';
+import { WalletProvider as WalletProviderBase, WalletProviderType, StacksContractCallOptions, SignedTransactionResult, WalletConnection } from '../types/wallet';
 import { WalletKitService } from '../services/walletkit-service';
 import NotificationService from '../services/notificationService';
 import SponsorshipService, { SponsorshipQuota } from '../services/SponsorshipService';
@@ -14,9 +14,9 @@ interface WalletContextType {
   currentProvider: WalletProviderBase | null;
   selectedProviderType: WalletProviderType | null;
   setSelectedProvider: (type: WalletProviderType) => void;
-  connect: (walletId?: string) => Promise<any>;
+  connect: (walletId?: string) => Promise<WalletConnection>;
   disconnect: () => Promise<void>;
-  signTransaction: (tx: any) => Promise<any>;
+  signTransaction: (tx: StacksContractCallOptions) => Promise<SignedTransactionResult>;
   signMessage: (message: string) => Promise<string>;
   isLoading: boolean;
   error: Error | null;
@@ -32,16 +32,16 @@ interface WalletContextType {
   sponsorshipQuota: SponsorshipQuota | null;
   isEligibleForSponsorship: (operation: string, value?: number) => Promise<boolean>;
   // AppKit Custom Wallet Support
-  appKitWallets: any[];
-  availableWallets: any[];
-  installedWallets: any[];
+  appKitWallets: WalletProviderBase[];
+  availableWallets: WalletProviderBase[];
+  installedWallets: WalletProviderBase[];
   isWalletInstalled: (walletId: string) => boolean;
-  connectWithFallback: (walletId: string) => Promise<any>;
+  connectWithFallback: (walletId: string) => Promise<WalletConnection>;
   // Wallet installation
   getInstallationLink: (walletId: string) => string;
   openWalletInstallation: (walletId: string) => Promise<void>;
   // Error handling
-  walletError: any;
+  walletError: Error | null;
   clearError: () => void;
   // Deep linking
   handleDeepLinkReturn: () => void;
@@ -242,7 +242,7 @@ export const WalletProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     });
   };
 
-  const signTransaction = async (tx: any) => {
+  const signTransaction = async (tx: StacksContractCallOptions): Promise<SignedTransactionResult> => {
     const middleware = WalletErrorHandler.createMiddleware({
       walletId: currentStacksAdapter?.getWalletId() || 'unknown',
       operation: 'sign',
