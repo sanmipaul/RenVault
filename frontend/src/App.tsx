@@ -168,10 +168,14 @@ function AppContent() {
 
   const handleBackupCodeVerify = async (code: string): Promise<boolean> => {
     try {
-      const storedCodes: string[] = JSON.parse(localStorage.getItem(APP_CONFIG.tfaBackupCodesKey) || '[]');
+      const walletAddress =
+        userData?.profile?.stxAddress?.mainnet ??
+        userData?.profile?.stxAddress?.testnet ??
+        '';
+      const storedCodes = await TwoFactorSecureStorage.loadBackupCodes(walletAddress);
       if (storedCodes.includes(code)) {
         const remaining = storedCodes.filter(c => c !== code);
-        localStorage.setItem(APP_CONFIG.tfaBackupCodesKey, JSON.stringify(remaining));
+        await TwoFactorSecureStorage.saveBackupCodes(remaining, walletAddress);
         setShowBackupCodes(false);
         return true;
       }
