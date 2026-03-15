@@ -30,6 +30,9 @@ import { getAnalyticsUrl } from './config/api';
 import { BackupCodes } from './components/BackupCodes';
 import { Analytics } from './components/Analytics';
 import NotificationCenter from './components/NotificationCenter';
+import AmountInput from './components/AmountInput';
+import { useAmountValidation } from './hooks/useAmountValidation';
+import { validateDepositAmount, validateWithdrawAmount } from './utils/amountValidator';
 
 const appConfig = new AppConfig(['store_write', 'publish_data']);
 const userSession = new UserSession({ appConfig });
