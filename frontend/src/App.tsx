@@ -26,6 +26,7 @@ import WalletActionModals from './components/WalletActionModals';
 import { use2FA } from './hooks/use2FA';
 import { useVaultStats } from './hooks/useVaultStats';
 import { useNetworkDetection } from './hooks/useNetworkDetection';
+import { useStatusMessage } from './hooks/useStatusMessage';
 import { trackAnalytics } from './utils/analytics';
 import { APP_CONFIG } from './constants/app';
 import { ConnectionMethod, WalletConnectSession, AppUserProfile } from './types/app';
@@ -35,7 +36,7 @@ const userSession = new UserSession({ appConfig });
 
 function AppContent() {
   const [userData, setUserData] = useState<AppUserProfile | null>(null);
-  const [status, setStatus] = useState<string>('');
+  const { status, setStatus } = useStatusMessage();
   const [connectionMethod, setConnectionMethod] = useState<ConnectionMethod>(null);
   const [showConnectionOptions, setShowConnectionOptions] = useState<boolean>(false);
   const [walletConnectSession, setWalletConnectSession] = useState<WalletConnectSession | null>(null);
@@ -103,13 +104,6 @@ function AppContent() {
       setUserData(userSession.loadUserData() as unknown as AppUserProfile);
     }
   }, []);
-
-  // Auto-clear status after 10 seconds
-  useEffect(() => {
-    if (!status) return;
-    const timer = setTimeout(() => setStatus(''), 10000);
-    return () => clearTimeout(timer);
-  }, [status]);
 
   const connectWithStacks = () => {
     setConnectionError(null);
