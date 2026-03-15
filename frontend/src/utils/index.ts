@@ -13,6 +13,8 @@ export {
   STX_MIN_AMOUNT,
   STX_MAX_SINGLE_TX,
   STX_DUST_THRESHOLD,
+  formatSTXAmount,
+  parseSTXInput,
 } from './amountValidator';
 export type { ValidationResult } from './amountValidator';
 export { validateEnvironmentVariables, logEnvironmentValidation } from './env-validator';
