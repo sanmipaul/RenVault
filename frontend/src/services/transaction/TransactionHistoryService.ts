@@ -96,7 +96,7 @@ export class TransactionHistoryService {
     return 'received';
   }
 
-  async getTransactionDetails(txId: string): Promise<any> {
+  async getTransactionDetails(txId: string): Promise<unknown> {
     try {
       const response = await this.transactionsApi.getTransactionById({
         txId,
