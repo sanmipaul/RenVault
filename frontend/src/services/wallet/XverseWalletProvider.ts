@@ -17,7 +17,7 @@ export class XverseWalletProvider extends BaseWalletProvider {
             name: 'RenVault',
             icon: window.location.origin + '/favicon.ico',
           },
-        }).then((result: any) => {
+        }).then((result: { address: string; publicKey: string }) => {
           resolve({
             address: result.address,
             publicKey: result.publicKey,

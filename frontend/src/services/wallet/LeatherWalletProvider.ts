@@ -15,7 +15,7 @@ export class LeatherWalletProvider extends BaseWalletProvider {
           name: 'RenVault',
           icon: window.location.origin + '/favicon.ico',
         },
-        onFinish: (payload: any) => {
+        onFinish: (payload: { addresses?: { mainnet?: string }; profile?: { stxAddress?: { mainnet?: string } }; publicKey?: string }) => {
           resolve({
             address: payload.addresses?.mainnet ?? payload.profile?.stxAddress?.mainnet ?? '',
             publicKey: payload.publicKey ?? '',
