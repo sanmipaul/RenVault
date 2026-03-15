@@ -10,6 +10,7 @@ import {
   standardPrincipalCV
 } from '@stacks/transactions';
 import { WalletConnect } from './components/WalletConnect';
+import { WithdrawTxDetails, WalletConnectSession, WalletConnectTransactionParams, SignedTransactionResult } from './types/wallet';
 import { AppKit } from '@reown/appkit/react';
 import ConnectionStatus from './components/ConnectionStatus';
 import { TwoFactorAuthSetup } from './components/TwoFactorAuthSetup';
@@ -58,7 +59,10 @@ const getCurrentNetwork = () => {
   return new StacksMainnet();
 };
 
-const trackAnalytics = async (event: string, data: any) => {
+const getErrorMessage = (error: unknown): string =>
+  error instanceof Error ? error.message : String(error);
+
+const trackAnalytics = async (event: string, data: Record<string, unknown>) => {
   const optOut = localStorage.getItem(APP_CONFIG.analyticsOptOutKey) === 'true';
   if (optOut) return;
   
@@ -84,10 +88,10 @@ function AppContent() {
   const [detectedNetwork, setDetectedNetwork] = useState<'mainnet' | 'testnet' | null>(null);
   const [networkMismatch, setNetworkMismatch] = useState<boolean>(false);
   const [showWithdrawDetails, setShowWithdrawDetails] = useState<boolean>(false);
-  const [withdrawTxDetails, setWithdrawTxDetails] = useState<any>(null);
+  const [withdrawTxDetails, setWithdrawTxDetails] = useState<WithdrawTxDetails | null>(null);
   const [connectionMethod, setConnectionMethod] = useState<'stacks' | 'walletconnect' | null>(null);
   const [showConnectionOptions, setShowConnectionOptions] = useState<boolean>(false);
-  const [walletConnectSession, setWalletConnectSession] = useState<any>(null);
+  const [walletConnectSession, setWalletConnectSession] = useState<WalletConnectSession | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [show2FASetup, setShow2FASetup] = useState<boolean>(false);
   const [show2FAVerify, setShow2FAVerify] = useState<boolean>(false);
@@ -99,7 +103,7 @@ function AppContent() {
   const [showMultiSigSetup, setShowMultiSigSetup] = useState<boolean>(false);
   const [showCoSignerManagement, setShowCoSignerManagement] = useState<boolean>(false);
   const [showMultiSigSigner, setShowMultiSigSigner] = useState<boolean>(false);
-  const [currentTransaction, setCurrentTransaction] = useState<any>(null);
+  const [currentTransaction, setCurrentTransaction] = useState<SignedTransactionResult | null>(null);
   const [showPerformanceMonitor, setShowPerformanceMonitor] = useState<boolean>(false);
   const [tfaSecret, setTfaSecret] = useState<string>('');
   const [connectionError, setConnectionError] = useState<string | null>(null);
@@ -221,7 +225,7 @@ function AppContent() {
     setTimeout(() => setStatus(''), 3000);
   };
 
-  const handleMultiSigTransactionSigned = (signedTx: any) => {
+  const handleMultiSigTransactionSigned = (_signedTx: SignedTransactionResult) => {
     setShowMultiSigSigner(false);
     setCurrentTransaction(null);
     setStatus('✅ Transaction signed successfully!');
@@ -345,11 +349,11 @@ function AppContent() {
         },
         userSession,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       const duration = Date.now() - startTime;
-      setConnectionError(`Failed to connect with Stacks wallet: ${error.message}`);
+      setConnectionError(`Failed to connect with Stacks wallet: ${getErrorMessage(error)}`);
       trackAnalytics('wallet-connect', { user: 'anonymous', method: 'stacks', success: false });
-      trackAnalytics('wallet-error', { user: 'anonymous', method: 'stacks', errorType: error.message });
+      trackAnalytics('wallet-error', { user: 'anonymous', method: 'stacks', errorType: getErrorMessage(error) });
       trackAnalytics('performance', { operation: 'wallet-connect-stacks', duration });
       setToastMessage('Connection failed. Check the error message above.');
       setTimeout(() => setToastMessage(null), 5000);
@@ -450,9 +454,9 @@ function AppContent() {
         
         setTimeout(fetchUserStats, 3000);
       }
-    } catch (error: any) {
-      setStatus(`Error: ${error.message}`);
-      trackAnalytics('wallet-error', { user: userData?.profile?.stxAddress?.mainnet || 'anonymous', method: connectionMethod || 'unknown', errorType: error.message });
+    } catch (error: unknown) {
+      setStatus(`Error: ${getErrorMessage(error)}`);
+      trackAnalytics('wallet-error', { user: userData?.profile?.stxAddress?.mainnet || 'anonymous', method: connectionMethod || 'unknown', errorType: getErrorMessage(error) });
     } finally {
       setLoading(false);
     }
@@ -509,15 +513,15 @@ function AppContent() {
           },
         });
       }
-    } catch (error: any) {
-      setStatus(`Error signing transaction: ${error.message}`);
+    } catch (error: unknown) {
+      setStatus(`Error signing transaction: ${getErrorMessage(error)}`);
       setWithdrawTxDetails(null);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleWalletConnectTransaction = async (action: 'deposit' | 'withdraw', params: any) => {
+  const handleWalletConnectTransaction = async (action: 'deposit' | 'withdraw', params: WalletConnectTransactionParams) => {
     if (!walletConnectSession) return;
     
     try {
@@ -543,12 +547,12 @@ function AppContent() {
       }
       
       setTimeout(fetchUserStats, 5000); // Longer delay for WalletConnect
-    } catch (error: any) {
-      setStatus(`WalletConnect error: ${error.message}`);
+    } catch (error: unknown) {
+      setStatus(`WalletConnect error: ${getErrorMessage(error)}`);
     }
   };
 
-  const handleWalletConnectSession = (session: any) => {
+  const handleWalletConnectSession = (session: WalletConnectSession) => {
     // Extract Stacks account from WalletConnect session
     const stacksAccount = session.namespaces.stacks?.accounts?.[0];
     if (stacksAccount) {
@@ -621,8 +625,8 @@ function AppContent() {
       setWithdrawTxDetails(txDetails);
       setShowWithdrawDetails(true);
       setLoading(false);
-    } catch (error: any) {
-      setStatus(`Error preparing transaction: ${error.message}`);
+    } catch (error: unknown) {
+      setStatus(`Error preparing transaction: ${getErrorMessage(error)}`);
       setLoading(false);
     }
   };
