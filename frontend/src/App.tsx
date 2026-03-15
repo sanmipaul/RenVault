@@ -269,9 +269,13 @@ function AppContent() {
   };
 
   useEffect(() => {
-    // Check for 2FA requirement on app load
-    const tfaEnabled = localStorage.getItem('tfa-enabled') === 'true';
-    if (tfaEnabled && !userData) {
+    // Check for 2FA requirement on app load — use encrypted storage as source of truth,
+    // fall back to the plain-text enabled flag for backwards compatibility.
+    const has2FA =
+      TwoFactorSecureStorage.hasSecret() ||
+      localStorage.getItem(APP_CONFIG.tfaEnabledKey) === 'true';
+    setTfaEnabled(has2FA);
+    if (has2FA && !userData) {
       setShow2FAVerify(true);
     }
   }, []);
