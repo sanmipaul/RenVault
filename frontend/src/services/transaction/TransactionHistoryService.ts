@@ -1,6 +1,21 @@
 // services/transaction/TransactionHistoryService.ts
 import { AccountsApi, TransactionsApi, Configuration } from '@stacks/blockchain-api-client';
 
+interface StacksApiTransaction {
+  tx_id: string;
+  tx_type: string;
+  tx_status: string;
+  sender_address: string;
+  fee_rate: string;
+  burn_block_time: number;
+  sponsor_address?: string;
+  token_transfer?: {
+    amount: string;
+    recipient_address: string;
+    memo?: string;
+  };
+}
+
 export interface TransactionHistoryItem {
   txId: string;
   type: 'sent' | 'received' | 'contract_call';
@@ -48,7 +63,7 @@ export class TransactionHistoryService {
         offset,
       });
 
-      const transactions = response.results.map((tx: any) => ({
+      const transactions = response.results.map((tx: StacksApiTransaction) => ({
         txId: tx.tx_id,
         type: this.getTransactionType(tx, address),
         amount: tx.tx_type === 'token_transfer' ? parseInt(tx.token_transfer.amount) : undefined,
@@ -70,7 +85,7 @@ export class TransactionHistoryService {
     }
   }
 
-  private getTransactionType(tx: any, currentAddress: string): 'sent' | 'received' | 'contract_call' {
+  private getTransactionType(tx: StacksApiTransaction, currentAddress: string): 'sent' | 'received' | 'contract_call' {
     if (tx.tx_type === 'token_transfer') {
       const recipient = tx.token_transfer?.recipient_address;
       return recipient === currentAddress ? 'received' : 'sent';
