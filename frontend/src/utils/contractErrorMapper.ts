@@ -1,4 +1,31 @@
 /**
+ * Shape of a Stacks broadcast API error response body.
+ * See: https://docs.stacks.co/reference/stacks-node-rpc-api
+ */
+export interface StacksBroadcastErrorBody {
+  error?: string;
+  reason?: string;
+  reason_data?: {
+    type?: string;
+    error?: string;
+    message?: string;
+  };
+}
+
+/**
+ * Parse a Stacks broadcast API error body into a ContractErrorDescriptor.
+ * Returns null when the body does not contain a contract error code.
+ */
+export function parseStacksBroadcastError(
+  body: StacksBroadcastErrorBody,
+  contractName: string
+): import('./contractErrorCodes').ContractErrorDescriptor | null {
+  const code = ContractErrorMapper.parseErrorCode(body);
+  if (code === null) return null;
+  return ContractErrorMapper.lookup(code, contractName);
+}
+
+/**
  * ContractErrorMapper
  *
  * Parses raw Clarity / Stacks broadcast error payloads and returns
