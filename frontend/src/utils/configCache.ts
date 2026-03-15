@@ -5,7 +5,7 @@ export interface CachedConfig<T> {
 }
 
 export class ConfigCache {
-  private cache: Map<string, CachedConfig<any>> = new Map();
+  private cache: Map<string, CachedConfig<unknown>> = new Map();
 
   set<T>(key: string, data: T, ttl: number = 300000): void {
     this.cache.set(key, { data, timestamp: Date.now(), ttl });

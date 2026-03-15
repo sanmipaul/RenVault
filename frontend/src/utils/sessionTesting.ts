@@ -11,7 +11,7 @@ export interface TestSession {
   createdAt: number;
   lastActivity: number;
   isActive: boolean;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
 }
 
 export interface SessionTestResult {
@@ -19,7 +19,7 @@ export interface SessionTestResult {
   passed: boolean;
   duration: number;
   error?: string;
-  details?: any;
+  details?: Record<string, unknown>;
 }
 
 export interface SessionTestSuite {
