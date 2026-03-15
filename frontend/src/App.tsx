@@ -1077,11 +1077,18 @@ function AppContent() {
 
       {showMultiSigSetup && (
         <div className="modal-overlay">
-          <MultiSigSetup
-            walletManager={walletManager}
-            onSetupComplete={handleMultiSigSetupComplete}
-            onCancel={() => setShowMultiSigSetup(false)}
-          />
+          <ErrorBoundary
+            sectionName="MultiSig Setup"
+            fallback={(error, reset) => (
+              <ErrorFallback error={error} sectionName="MultiSig Setup" onReset={reset} />
+            )}
+          >
+            <MultiSigSetup
+              walletManager={walletManager}
+              onSetupComplete={handleMultiSigSetupComplete}
+              onCancel={() => setShowMultiSigSetup(false)}
+            />
+          </ErrorBoundary>
         </div>
       )}
 
