@@ -172,14 +172,9 @@ function AppContent() {
         userData?.profile?.stxAddress?.mainnet ??
         userData?.profile?.stxAddress?.testnet ??
         '';
-      const storedCodes = await TwoFactorSecureStorage.loadBackupCodes(walletAddress);
-      if (storedCodes.includes(code)) {
-        const remaining = storedCodes.filter(c => c !== code);
-        await TwoFactorSecureStorage.saveBackupCodes(remaining, walletAddress);
-        setShowBackupCodes(false);
-        return true;
-      }
-      return false;
+      const valid = await TwoFactorSecureStorage.verifyAndConsumeBackupCode(code, walletAddress);
+      if (valid) setShowBackupCodes(false);
+      return valid;
     } catch {
       return false;
     }
