@@ -23,6 +23,19 @@ const BACKUP_CODES_STORAGE_KEY = 'renvault_2fa_backup_enc';
 const LEGACY_SECRET_KEY = 'tfa-secret';
 const LEGACY_BACKUP_KEY = 'tfa-backup-codes';
 
+/**
+ * Exported storage key constants — useful for testing and diagnostics.
+ * Never write sensitive data directly to these keys; always go through
+ * the TwoFactorSecureStorage methods.
+ */
+export const STORAGE_KEYS = {
+  deviceSalt: DEVICE_SALT_KEY,
+  encryptedSecret: SECRET_STORAGE_KEY,
+  encryptedBackupCodes: BACKUP_CODES_STORAGE_KEY,
+  legacySecret: LEGACY_SECRET_KEY,
+  legacyBackupCodes: LEGACY_BACKUP_KEY,
+} as const;
+
 // App-specific key material – changing this invalidates all stored secrets
 const APP_KEY_MATERIAL = 'renvault-2fa-v1';
 
