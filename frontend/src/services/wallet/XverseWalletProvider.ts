@@ -1,6 +1,6 @@
 // services/wallet/XverseWalletProvider.ts
 import { BaseWalletProvider } from './BaseWalletProvider';
-import { WalletConnection } from '../../types/wallet';
+import { WalletConnection, StacksContractCallOptions, SignedTransactionResult } from '../../types/wallet';
 
 export class XverseWalletProvider extends BaseWalletProvider {
   id = 'xverse';
@@ -39,7 +39,7 @@ export class XverseWalletProvider extends BaseWalletProvider {
     localStorage.removeItem('xverse-session');
   }
 
-  async signTransaction(tx: any): Promise<any> {
+  async signTransaction(tx: StacksContractCallOptions): Promise<SignedTransactionResult> {
     // Implement signing
     return tx;
   }

@@ -1,6 +1,6 @@
 // services/wallet/LeatherWalletProvider.ts
 import { BaseWalletProvider } from './BaseWalletProvider';
-import { WalletConnection } from '../../types/wallet';
+import { WalletConnection, StacksContractCallOptions, SignedTransactionResult } from '../../types/wallet';
 import { showConnect as stacksConnect, disconnect as stacksDisconnect } from '@stacks/connect';
 
 export class LeatherWalletProvider extends BaseWalletProvider {
@@ -30,7 +30,7 @@ export class LeatherWalletProvider extends BaseWalletProvider {
     await stacksDisconnect();
   }
 
-  async signTransaction(tx: any): Promise<any> {
+  async signTransaction(tx: StacksContractCallOptions): Promise<SignedTransactionResult> {
     // Implement signing logic
     return tx; // placeholder
   }

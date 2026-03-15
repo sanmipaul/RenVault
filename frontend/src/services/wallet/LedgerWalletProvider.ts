@@ -1,7 +1,7 @@
 // services/wallet/LedgerWalletProvider.ts
 // Ledger hardware wallet support - requires @ledgerhq packages
 import { BaseWalletProvider } from './BaseWalletProvider';
-import { WalletConnection } from '../../types/wallet';
+import { WalletConnection, StacksContractCallOptions, SignedTransactionResult } from '../../types/wallet';
 import { WalletError, WalletErrorCode } from '../../utils/wallet-errors';
 
 export class LedgerWalletProvider extends BaseWalletProvider {
@@ -46,7 +46,7 @@ export class LedgerWalletProvider extends BaseWalletProvider {
     }
   }
 
-  async signTransaction(tx: any): Promise<any> {
+  async signTransaction(tx: StacksContractCallOptions): Promise<SignedTransactionResult> {
     if (!this.app) {
       throw new Error('Ledger not connected');
     }
