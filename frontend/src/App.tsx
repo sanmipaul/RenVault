@@ -30,6 +30,8 @@ import { getAnalyticsUrl } from './config/api';
 import { BackupCodes } from './components/BackupCodes';
 import { Analytics } from './components/Analytics';
 import NotificationCenter from './components/NotificationCenter';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import { ErrorFallback } from './components/ErrorFallback';
 
 const appConfig = new AppConfig(['store_write', 'publish_data']);
 const userSession = new UserSession({ appConfig });
