@@ -589,27 +589,19 @@ function AppContent() {
   };
 
   const handleWithdraw = async () => {
-    if (!withdrawAmount || !userData) return;
+    if (!userData) return;
+    const preSubmitCheck = validateWithdrawAmount(withdrawAmount, balanceNum);
+    if (!preSubmitCheck.valid) {
+      withdrawValidation.validate(withdrawAmount); // surface error in the field
+      setStatus(`❌ ${preSubmitCheck.error}`);
+      return;
+    }
     if (!validateNetwork()) return;
-    
-    const withdrawAmountNum = parseFloat(withdrawAmount);
-    const balanceNum = parseFloat(balance);
-    
-    if (isNaN(withdrawAmountNum) || withdrawAmountNum <= 0) {
-      setStatus('Error: Please enter a valid withdrawal amount greater than 0');
-      return;
-    }
-    
-    if (withdrawAmountNum > balanceNum) {
-      setStatus(`Error: Insufficient balance. You have ${balance} STX available`);
-      return;
-    }
-    
-    // Warn if withdrawal would leave less than 0.01 STX
-    const remainingBalance = balanceNum - withdrawAmountNum;
-    if (remainingBalance > 0 && remainingBalance < 0.01) {
-      const confirmLeave = window.confirm(`Warning: This withdrawal will leave only ${remainingBalance.toFixed(6)} STX in your vault. Continue?`);
-      if (!confirmLeave) return;
+
+    // Dust-threshold advisory — confirm before proceeding
+    if (preSubmitCheck.warning) {
+      const ok = window.confirm(`⚠ ${preSubmitCheck.warning}\n\nContinue?`);
+      if (!ok) return;
     }
     
     setLoading(true);
