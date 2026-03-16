@@ -1,6 +1,6 @@
 {
   "name": "renvault-staking",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Staking rewards system for RenVault protocol",
   "main": "stakingAPI.js",
   "scripts": {

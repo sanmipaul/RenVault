@@ -1,6 +1,6 @@
 {
   "name": "renvault-monitoring",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "RenVault protocol monitoring and analytics",
   "main": "monitor.js",
   "scripts": {

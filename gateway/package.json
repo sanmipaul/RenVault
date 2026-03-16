@@ -1,6 +1,6 @@
 {
   "name": "renvault-gateway",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "RenVault API Gateway and Service Orchestration",
   "main": "server.js",
   "scripts": {

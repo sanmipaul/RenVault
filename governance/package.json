@@ -1,6 +1,6 @@
 {
   "name": "renvault-governance",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Governance system for RenVault DAO",
   "main": "governanceAPI.js",
   "scripts": {

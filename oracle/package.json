@@ -1,6 +1,6 @@
 {
   "name": "renvault-oracle",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Oracle price feeds for RenVault protocol",
   "main": "oracleAPI.js",
   "scripts": {

@@ -1,6 +1,6 @@
 {
   "name": "renvault-referral",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Referral system for RenVault protocol",
   "main": "referralAPI.js",
   "scripts": {
