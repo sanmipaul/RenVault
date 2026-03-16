@@ -1,6 +1,6 @@
 {
   "name": "renvault-liquidity",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Liquidity pool management with AMM functionality",
   "main": "liquidityAPI.js",
   "scripts": {

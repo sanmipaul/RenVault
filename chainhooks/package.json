@@ -1,6 +1,6 @@
 {
   "name": "renvault-chainhooks-realtime",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "RenVault Real-time Chainhooks Processing",
   "main": "integrationServer.js",
   "scripts": {

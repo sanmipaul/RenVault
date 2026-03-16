@@ -1,6 +1,6 @@
 {
   "name": "renvault-admin",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "RenVault admin dashboard",
   "main": "server.js",
   "scripts": {

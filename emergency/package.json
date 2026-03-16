@@ -1,6 +1,6 @@
 {
   "name": "renvault-emergency",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Emergency pause system for RenVault protocol",
   "main": "emergencyAPI.js",
   "scripts": {

@@ -1,6 +1,6 @@
 {
   "name": "ren-vault",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Clarity 4 DeFi protocol with micro-savings and governance",
   "author": "RenVault Team",
   "repository": {
@@ -8,7 +8,13 @@
     "url": "https://github.com/sanmipaul/RenVault.git"
   },
   "homepage": "https://github.com/sanmipaul/RenVault#readme",
-  "keywords": ["stacks", "bitcoin", "defi", "clarity", "renvault"],
+  "keywords": [
+    "stacks",
+    "bitcoin",
+    "defi",
+    "clarity",
+    "renvault"
+  ],
   "scripts": {
     "test": "clarinet test",
     "test:coverage": "clarinet test --coverage",
@@ -23,25 +29,25 @@
   "dependencies": {
     "@stacks/transactions": "^6.5.4",
     "@stacks/network": "^6.5.4",
-    "renvault-admin": "^1.0.1",
-    "renvault-analytics": "^1.0.1",
-    "renvault-backup": "^1.0.1",
-    "renvault-bridge": "^1.0.1",
-    "renvault-chainhooks-realtime": "^1.0.1",
-    "renvault-emergency": "^1.0.1",
-    "renvault-gateway": "^1.0.1",
-    "renvault-governance": "^1.0.1",
-    "renvault-leaderboard": "^1.0.1",
-    "renvault-liquidity": "^1.0.1",
-    "renvault-mobile": "^1.0.1",
-    "renvault-monitoring": "^1.0.1",
-    "renvault-multi-asset": "^1.0.1",
-    "renvault-nft-rewards": "^1.0.1",
-    "renvault-notifications": "^1.0.1",
-    "renvault-oracle": "^1.0.1",
-    "renvault-referral": "^1.0.1",
-    "renvault-security-audit": "^1.0.1",
-    "renvault-staking": "^1.0.1"
+    "renvault-admin": "^1.0.2",
+    "renvault-analytics": "^1.0.2",
+    "renvault-backup": "^1.0.2",
+    "renvault-bridge": "^1.0.2",
+    "renvault-chainhooks-realtime": "^1.0.2",
+    "renvault-emergency": "^1.0.2",
+    "renvault-gateway": "^1.0.2",
+    "renvault-governance": "^1.0.2",
+    "renvault-leaderboard": "^1.0.2",
+    "renvault-liquidity": "^1.0.2",
+    "renvault-mobile": "^1.0.2",
+    "renvault-monitoring": "^1.0.2",
+    "renvault-multi-asset": "^1.0.2",
+    "renvault-nft-rewards": "^1.0.2",
+    "renvault-notifications": "^1.0.2",
+    "renvault-oracle": "^1.0.2",
+    "renvault-referral": "^1.0.2",
+    "renvault-security-audit": "^1.0.2",
+    "renvault-staking": "^1.0.2"
   },
   "devDependencies": {
     "@hirosystems/clarinet": "^1.7.1",

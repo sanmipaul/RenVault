@@ -1,6 +1,6 @@
 {
   "name": "renvault-backup",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "RenVault backup and recovery system",
   "main": "api.js",
   "scripts": {
