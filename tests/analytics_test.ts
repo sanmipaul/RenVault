@@ -24,12 +24,17 @@ Clarinet.test({
     const deployer = accounts.get('deployer')!;
     const user = accounts.get('wallet_1')!;
     
-    chain.mineBlock([
+    // Capture the setup block
+    let setupBlock = chain.mineBlock([
       Tx.contractCall('analytics', 'record-deposit', [
         types.principal(user.address),
         types.uint(500000)
       ], deployer.address)
     ]);
+    
+    // Actively assert the setup transaction actually succeeded
+    // If this fails, the test stops here, preventing confusing errors below
+    setupBlock.receipts[0].result.expectOk();
     
     let activity = chain.callReadOnlyFn('analytics', 'get-user-activity', [
       types.principal(user.address)
