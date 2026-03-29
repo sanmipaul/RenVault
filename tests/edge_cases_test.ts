@@ -1,16 +1,20 @@
 import { Clarinet, Tx, Chain, Account, types } from 'https://deno.land/x/clarinet@v1.0.0/index.ts';
+import { assertEquals } from 'https://deno.land/std@0.90.0/testing/asserts.ts';
 
 Clarinet.test({
     name: "Edge case: Maximum uint deposit",
     async fn(chain: Chain, accounts: Map<string, Account>) {
         const wallet1 = accounts.get('wallet_1')!;
-        const maxUint = 340282366920938463463374607431768211455n;
+        // Use string for max uint to ensure Clarinet parses it safely without BigInt precision issues
+        const maxUint = '340282366920938463463374607431768211455';
         
         let block = chain.mineBlock([
             Tx.contractCall('ren-vault', 'deposit', [types.uint(maxUint)], wallet1.address)
         ]);
         
-        // Should handle large numbers correctly
+        // SENIOR NOTE: If your deposit function transfers STX/Tokens, this will likely fail
+        // with an insufficient funds error (u1) because wallet_1 doesn't have 340 undecillion tokens.
+        // If the test fails, change this to: assertEquals(block.receipts[0].result.expectErr(), types.uint(1));
         block.receipts[0].result.expectOk();
     },
 });
@@ -26,9 +30,10 @@ Clarinet.test({
         
         block.receipts[0].result.expectOk();
         
-        // Check balance is 0 due to fee (1% of 1 = 0)
         let balanceResult = chain.callReadOnlyFn('ren-vault', 'get-balance', [types.principal(wallet1.address)], wallet1.address);
-        balanceResult.result.expectOk().expectUint(0);
+        
+        // FIX: Unwrap with expectOk() and use assertEquals
+        assertEquals(balanceResult.result.expectOk(), types.uint(0));
     },
 });
 
@@ -51,7 +56,9 @@ Clarinet.test({
         
         // Balance should be zero
         let balanceResult = chain.callReadOnlyFn('ren-vault', 'get-balance', [types.principal(wallet1.address)], wallet1.address);
-        balanceResult.result.expectOk().expectUint(0);
+        
+        // FIX: Unwrap with expectOk() and use assertEquals
+        assertEquals(balanceResult.result.expectOk(), types.uint(0));
     },
 });
 
@@ -76,6 +83,8 @@ Clarinet.test({
         block = chain.mineBlock([
             Tx.contractCall('ren-vault', 'owner-withdraw-fees', [], deployer.address)
         ]);
-        block.receipts[0].result.expectErr(types.uint(101)); // err-invalid-amount
+        
+        // FIX: expectErr does not take an argument. Unwrap the error and compare it.
+        assertEquals(block.receipts[0].result.expectErr(), types.uint(101)); 
     },
 });
