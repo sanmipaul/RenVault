@@ -103,22 +103,32 @@ class MultiSigTest {
   }
 
   async testThresholdValidation() {
-    // Test invalid threshold
+    // Test invalid threshold: Catch the error correctly using a boolean flag
+    let threwZeroThreshold = false;
     try {
       this.walletManager.setupMultiSigWallet(0, []);
-      throw new Error('Should not allow threshold of 0');
     } catch (error) {
-      // Expected
+      threwZeroThreshold = true;
+    }
+    
+    // Evaluate the flag outside the catch block
+    if (!threwZeroThreshold) {
+      throw new Error('Should not allow threshold of 0');
     }
 
-    // Test threshold > signers
+    // Test threshold > signers: Catch the error correctly using a boolean flag
+    let threwExceedsSigners = false;
     try {
       this.walletManager.setupMultiSigWallet(3, [
         { address: 'ST1', publicKey: '03abc', name: 'Co-signer 1' }
       ]);
-      throw new Error('Should not allow threshold > total signers');
     } catch (error) {
-      // Expected
+      threwExceedsSigners = true;
+    }
+    
+    // Evaluate the flag outside the catch block
+    if (!threwExceedsSigners) {
+      throw new Error('Should not allow threshold > total signers');
     }
   }
 }
