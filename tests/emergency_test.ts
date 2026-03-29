@@ -21,11 +21,15 @@ Clarinet.test({
   async fn(chain: Chain, accounts: Map<string, Account>) {
     const deployer = accounts.get('deployer')!;
     
-    chain.mineBlock([
+    // Capture the setup block
+    let setupBlock = chain.mineBlock([
       Tx.contractCall('emergency', 'emergency-pause', [
         types.ascii('Test pause')
       ], deployer.address)
     ]);
+    
+    // Actively assert the setup succeeded before querying state
+    setupBlock.receipts[0].result.expectOk();
     
     let status = chain.callReadOnlyFn('emergency', 'is-paused', [], deployer.address);
     assertEquals(status.result.expectOk(), types.bool(true));
@@ -37,11 +41,15 @@ Clarinet.test({
   async fn(chain: Chain, accounts: Map<string, Account>) {
     const deployer = accounts.get('deployer')!;
     
-    chain.mineBlock([
+    // Capture the setup block
+    let setupBlock = chain.mineBlock([
       Tx.contractCall('emergency', 'emergency-pause', [
         types.ascii('Test pause')
       ], deployer.address)
     ]);
+    
+    // Actively assert the setup succeeded before trying to resume
+    setupBlock.receipts[0].result.expectOk();
     
     let block = chain.mineBlock([
       Tx.contractCall('emergency', 'resume-operations', [], deployer.address)
