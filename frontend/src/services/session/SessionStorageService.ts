@@ -100,8 +100,15 @@ export class SessionStorageService {
     const session = this.getStoredSession();
     if (!session) return;
 
-    session.metadata = { ...session.metadata, ...metadata };
-    this.storeSession(session);
+    // Write directly so the existing expiresAt and sessionId are preserved.
+    // Calling storeSession() here would regenerate both, silently resetting
+    // the session expiry and issuing a new session ID on every metadata update.
+    const updated: WalletSession = {
+      ...session,
+      metadata: { ...session.metadata, ...metadata }
+    };
+    const encryptedSession = this.encryptSession(updated);
+    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(encryptedSession));
   }
 
   // Extend session expiration
@@ -124,9 +131,12 @@ export class SessionStorageService {
     return Date.now() > session.expiresAt;
   }
 
-  // Generate unique session ID
+  // Generate cryptographically secure unique session ID
   private generateSessionId(): string {
-    return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    const randomPart = Array.from(crypto.getRandomValues(new Uint8Array(16)))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
+    return 'session_' + Date.now() + '_' + randomPart;
   }
 
   // Simple encryption for sensitive session data (in production, use proper encryption)

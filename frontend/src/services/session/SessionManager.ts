@@ -167,6 +167,7 @@ export class SessionManager {
       clearTimeout(this.reconnectTimer);
     }
 
+    const delay = this.config.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1);
     this.reconnectTimer = setTimeout(async () => {
       try {
         const success = await this.attemptSessionRestore();
@@ -203,7 +204,7 @@ export class SessionManager {
           });
         }
       }
-    }, this.config.reconnectDelay * this.reconnectAttempts); // Exponential backoff
+    }, delay);
   }
 
   // Reset reconnection attempts
