@@ -21,6 +21,13 @@ Clarinet.test({
     const user = accounts.get('wallet_1')!;
     const txId = new Uint8Array(32).fill(1);
     
+    // Setup: Initialize the bridge first in this fresh chain state
+    let setupBlock = chain.mineBlock([
+      Tx.contractCall('bridge', 'init-bridge', [], deployer.address)
+    ]);
+    // Actively assert the setup succeeded
+    setupBlock.receipts[0].result.expectOk();
+    
     let block = chain.mineBlock([
       Tx.contractCall('bridge', 'lock-for-bridge', [
         types.uint(1000000),
@@ -37,6 +44,13 @@ Clarinet.test({
   name: "Bridge can be paused by owner",
   async fn(chain: Chain, accounts: Map<string, Account>) {
     const deployer = accounts.get('deployer')!;
+    
+    // Setup: Initialize the bridge first
+    let setupBlock = chain.mineBlock([
+      Tx.contractCall('bridge', 'init-bridge', [], deployer.address)
+    ]);
+    // Actively assert the setup succeeded
+    setupBlock.receipts[0].result.expectOk();
     
     let block = chain.mineBlock([
       Tx.contractCall('bridge', 'pause-bridge', [], deployer.address)
