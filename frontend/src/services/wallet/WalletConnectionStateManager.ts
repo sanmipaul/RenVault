@@ -3,6 +3,7 @@
  * Manages wallet connection state with persistence and recovery
  */
 
+import * as React from 'react';
 import { StacksConnectorAdapter } from './StacksConnectorAdapter';
 
 export type ConnectionStatus = 'connected' | 'connecting' | 'disconnected' | 'error' | 'unknown';
@@ -505,6 +506,3 @@ export const useWalletConnectionState = () => {
 
   return state;
 };
-
-// Import React for hook
-import * as React from 'react';
