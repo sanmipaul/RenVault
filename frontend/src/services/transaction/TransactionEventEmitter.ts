@@ -3,11 +3,12 @@ export type TransactionEvent = 'prepared' | 'signed' | 'broadcasting' | 'confirm
 export class TransactionEventEmitter {
   private listeners: Map<TransactionEvent, Set<(data: any) => void>> = new Map();
 
-  on(event: TransactionEvent, callback: (data: any) => void): void {
+  on(event: TransactionEvent, callback: (data: any) => void): () => void {
     if (!this.listeners.has(event)) {
       this.listeners.set(event, new Set());
     }
     this.listeners.get(event)!.add(callback);
+    return () => this.off(event, callback);
   }
 
   off(event: TransactionEvent, callback: (data: any) => void): void {
