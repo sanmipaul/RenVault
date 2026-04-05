@@ -12,8 +12,8 @@ export const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({
   walletManager,
   isVisible = false
 }) => {
-  const [metrics, setMetrics] = useState<any>(null);
-  const [loaderStats, setLoaderStats] = useState<any>(null);
+  const [metrics, setMetrics] = useState<ReturnType<WalletManager['getPerformanceMetrics']> | null>(null);
+  const [loaderStats, setLoaderStats] = useState<ReturnType<typeof WalletProviderLoader['getCacheStats']> | null>(null);
 
   useEffect(() => {
     if (isVisible) {

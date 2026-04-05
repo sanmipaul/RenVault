@@ -1,6 +1,6 @@
 // services/wallet/XverseWalletProvider.ts
 import { BaseWalletProvider } from './BaseWalletProvider';
-import { WalletConnection } from '../../types/wallet';
+import { WalletConnection, StacksContractCallOptions, SignedTransactionResult } from '../../types/wallet';
 
 export class XverseWalletProvider extends BaseWalletProvider {
   id = 'xverse';
@@ -17,7 +17,7 @@ export class XverseWalletProvider extends BaseWalletProvider {
             name: 'RenVault',
             icon: window.location.origin + '/favicon.ico',
           },
-        }).then((result: any) => {
+        }).then((result: { address: string; publicKey: string }) => {
           resolve({
             address: result.address,
             publicKey: result.publicKey,
@@ -39,7 +39,7 @@ export class XverseWalletProvider extends BaseWalletProvider {
     localStorage.removeItem('xverse-session');
   }
 
-  async signTransaction(tx: any): Promise<any> {
+  async signTransaction(tx: StacksContractCallOptions): Promise<SignedTransactionResult> {
     // Implement signing
     return tx;
   }

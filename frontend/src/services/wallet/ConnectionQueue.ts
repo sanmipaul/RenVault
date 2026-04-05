@@ -1,5 +1,5 @@
 export class ConnectionQueue {
-  private queue: Array<() => Promise<any>> = [];
+  private queue: Array<() => Promise<unknown>> = [];
   private processing: boolean = false;
   private readonly maxSize: number;
 
@@ -7,14 +7,7 @@ export class ConnectionQueue {
     this.maxSize = maxSize;
   }
 
-  async add(fn: () => Promise<any>): Promise<any> {
-    if (this.queue.length >= this.maxSize) {
-      throw new Error(
-        `ConnectionQueue is full (max ${this.maxSize} pending operations). ` +
-        'The consumer may be stalled or requests are arriving too fast.'
-      );
-    }
-
+  async add(fn: () => Promise<unknown>): Promise<unknown> {
     return new Promise((resolve, reject) => {
       this.queue.push(async () => {
         try {

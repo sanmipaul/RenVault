@@ -11,6 +11,7 @@ import { MultiChainWalletProviderService } from '../services/chain/MultiChainWal
 import { NetworkValidationService } from '../services/chain/NetworkValidationService';
 import { MultiChainErrorHandler } from '../services/chain/MultiChainErrorHandler';
 import type { ChainType } from '../config/multi-chain-config';
+import type { Transaction, TransactionStatus } from '../types/multiChain';
 
 /**
  * useAsync Hook - Handle async operations with loading/error states
@@ -196,7 +197,7 @@ export function useAmountValidation(amount: string, chainType: ChainType) {
  * useTransactionTracking Hook - Track transactions
  */
 export function useTransactionTracking(address?: string) {
-  const [transactions, setTransactions] = useState<any[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -213,7 +214,7 @@ export function useTransactionTracking(address?: string) {
   }, [address]);
 
   const addTransaction = useCallback(
-    (tx: any) => {
+    (tx: Omit<Transaction, 'id' | 'timestamp'>) => {
       const newTx = MultiChainTransactionService.createTransaction(tx);
       setTransactions(prev => [newTx, ...prev]);
 
@@ -223,7 +224,7 @@ export function useTransactionTracking(address?: string) {
   );
 
   const updateStatus = useCallback((txId: string, status: string) => {
-    MultiChainTransactionService.updateTransactionStatus(txId, status as any);
+    MultiChainTransactionService.updateTransactionStatus(txId, status as TransactionStatus);
     setTransactions(prev =>
       prev.map(tx => (tx.id === txId ? { ...tx, status } : tx))
     );
@@ -371,9 +372,9 @@ export function useMultiChainState() {
  * useErrorHandler Hook - Handle errors with recovery
  */
 export function useErrorHandler() {
-  const [errors, setErrors] = useState<any[]>([]);
+  const [errors, setErrors] = useState<Error[]>([]);
 
-  const handleError = useCallback((error: any) => {
+  const handleError = useCallback((error: Error) => {
     setErrors(prev => [error, ...prev].slice(0, 10));
   }, []);
 

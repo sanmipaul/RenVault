@@ -47,7 +47,9 @@
     "renvault-oracle": "^1.0.2",
     "renvault-referral": "^1.0.2",
     "renvault-security-audit": "^1.0.2",
-    "renvault-staking": "^1.0.2"
+    "renvault-staking": "^1.0.2",
+    "renvault-timelock": "^1.0.1",
+    "renvault-yield": "^1.0.1"
   },
   "devDependencies": {
     "@hirosystems/clarinet": "^1.7.1",

@@ -49,7 +49,7 @@ export const exportSessionData = (options: ExportOptions): ExportResult => {
 
   switch (options.format) {
     case 'json':
-      const jsonData: any = {};
+      const jsonData: Record<string, unknown> = {};
 
       if (options.includeMetrics) {
         jsonData.metrics = exportData.metrics;
@@ -91,7 +91,7 @@ export const exportSessionData = (options: ExportOptions): ExportResult => {
 /**
  * Generate CSV format from session data
  */
-const generateCSV = (exportData: any, options: ExportOptions): string => {
+const generateCSV = (exportData: Record<string, unknown>, options: ExportOptions): string => {
   const lines: string[] = [];
 
   // Add header
@@ -130,7 +130,7 @@ const generateCSV = (exportData: any, options: ExportOptions): string => {
     lines.push('Session Events');
     lines.push('Timestamp,Type,Session ID,Provider Type,Metadata');
 
-    exportData.events.forEach((event: any) => {
+    (exportData.events as Array<Record<string, unknown>>).forEach((event) => {
       const timestamp = new Date(event.timestamp).toISOString();
       const metadata = event.metadata ? JSON.stringify(event.metadata) : '';
       lines.push(`${timestamp},${event.type},${event.sessionId || ''},${event.providerType || ''},${escapeCSV(metadata)}`);

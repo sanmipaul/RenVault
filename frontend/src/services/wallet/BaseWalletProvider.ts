@@ -1,5 +1,5 @@
 // services/wallet/BaseWalletProvider.ts
-import { WalletProvider, WalletConnection } from '../../types/wallet';
+import { WalletProvider, WalletConnection, StacksContractCallOptions, SignedTransactionResult } from '../../types/wallet';
 import { ConnectionStateManager } from './ConnectionStateManager';
 import { ConnectionHealthMonitor } from './ConnectionHealthMonitor';
 import { ReconnectionStrategy } from './ReconnectionStrategy';
@@ -23,7 +23,7 @@ export abstract class BaseWalletProvider implements WalletProvider {
 
   abstract connect(): Promise<WalletConnection>;
   abstract disconnect(): Promise<void>;
-  abstract signTransaction(tx: any): Promise<any>;
+  abstract signTransaction(tx: StacksContractCallOptions): Promise<SignedTransactionResult>;
 
   async connectWithRetry(): Promise<WalletConnection> {
     const startTime = Date.now();
@@ -72,7 +72,7 @@ export abstract class BaseWalletProvider implements WalletProvider {
     };
   }
 
-  onConnectionEvent(event: 'connected' | 'disconnected' | 'reconnecting' | 'error', callback: (data: any) => void): void {
+  onConnectionEvent(event: 'connected' | 'disconnected' | 'reconnecting' | 'error', callback: (data: Record<string, unknown>) => void): void {
     this.eventEmitter.on(event, callback);
   }
 }

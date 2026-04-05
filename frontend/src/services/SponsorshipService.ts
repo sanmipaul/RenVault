@@ -1,6 +1,17 @@
 import { logger } from '../utils/logger';
 import { API_CONFIG } from '../config/api';
 
+export interface SponsorshipTxData {
+  operation: string;
+  amount?: number;
+}
+
+export interface PaymasterData {
+  paymasterAddress: string;
+  signature: string;
+  validUntil: number;
+}
+
 export interface SponsorshipQuota {
   total: number;
   used: number;
@@ -198,7 +209,7 @@ class SponsorshipService {
     console.log('📊 Sponsorship Analytics:', event);
   }
 
-  async getPaymasterData(txData: any): Promise<any> {
+  async getPaymasterData(txData: SponsorshipTxData): Promise<PaymasterData> {
     // Check eligibility again before requesting paymaster data
     const eligible = await this.isEligible(txData.operation, txData.amount);
     if (!eligible) {
@@ -213,9 +224,9 @@ class SponsorshipService {
     };
   }
 
-  handleSponsorshipError(error: any): string {
+  handleSponsorshipError(error: unknown): string {
     logger.warn('Sponsorship failed, falling back to user-paid gas', error);
-    if (error.message.includes('quota exceeded')) {
+    if (error instanceof Error && error.message.includes('quota exceeded')) {
       return 'Sponsorship quota exceeded. You will need to pay gas for this transaction.';
     }
     return 'Gas sponsorship is currently unavailable. Please ensure you have STX for gas fees.';
