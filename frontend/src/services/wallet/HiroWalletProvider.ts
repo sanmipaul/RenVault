@@ -1,6 +1,6 @@
 // services/wallet/HiroWalletProvider.ts
 import { BaseWalletProvider } from './BaseWalletProvider';
-import { WalletConnection } from '../../types/wallet';
+import { WalletConnection, StacksContractCallOptions, SignedTransactionResult } from '../../types/wallet';
 
 export class HiroWalletProvider extends BaseWalletProvider {
   id = 'hiro';
@@ -16,7 +16,7 @@ export class HiroWalletProvider extends BaseWalletProvider {
             name: 'RenVault',
             icon: window.location.origin + '/favicon.ico',
           },
-        }).then((result: any) => {
+        }).then((result: { address: string; publicKey: string }) => {
           resolve({
             address: result.address,
             publicKey: result.publicKey,
@@ -38,7 +38,7 @@ export class HiroWalletProvider extends BaseWalletProvider {
     localStorage.removeItem('hiro-session');
   }
 
-  async signTransaction(tx: any): Promise<any> {
+  async signTransaction(tx: StacksContractCallOptions): Promise<SignedTransactionResult> {
     // Implement signing
     return tx;
   }

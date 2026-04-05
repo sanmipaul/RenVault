@@ -6,11 +6,18 @@ import { walletConnectConfig } from '../config/walletconnect';
 import { logger } from '../utils/logger';
 import { WalletError, WalletErrorCode, isNetworkError, isUserRejectedError } from '../utils/wallet-errors';
 
+interface AppKitInstance {
+  open(): void;
+  close(): void;
+  disconnect(): Promise<void>;
+  getActiveSessions?(): Record<string, unknown>[];
+}
+
 export class AppKitService {
   private static instance: AppKitService;
-  private appKit: any; // Type from AppKit
+  private appKit: AppKitInstance;
 
-  private constructor(appKit: any) {
+  private constructor(appKit: AppKitInstance) {
     this.appKit = appKit;
   }
 
@@ -84,7 +91,7 @@ export class AppKitService {
     return AppKitService.instance;
   }
 
-  public getAppKit(): any {
+  public getAppKit(): AppKitInstance {
     return this.appKit;
   }
 
@@ -189,9 +196,9 @@ export class WalletKitService {
 
   async approveSession(
     proposal: WalletKitTypes.SessionProposal,
-    supportedNamespaces: Record<string, any>,
+    supportedNamespaces: Record<string, Record<string, unknown>>,
     retryCount = 0
-  ): Promise<any> {
+  ): Promise<Record<string, unknown>> {
     try {
       const approvedNamespaces = buildApprovedNamespaces({
         proposal: proposal.params,
@@ -245,9 +252,9 @@ export class WalletKitService {
   async respondSessionRequest(
     topic: string,
     id: number,
-    result: any,
+    result: unknown,
     retryCount = 0
-  ): Promise<any> {
+  ): Promise<unknown> {
     try {
       const response = {
         id,
@@ -287,7 +294,7 @@ export class WalletKitService {
     id: number,
     error: { code: number; message: string },
     retryCount = 0
-  ): Promise<any> {
+  ): Promise<unknown> {
     try {
       const response = {
         id,

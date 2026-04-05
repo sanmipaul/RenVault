@@ -1,9 +1,10 @@
 export type ConnectionEvent = 'connected' | 'disconnected' | 'reconnecting' | 'error';
+export type ConnectionEventData = Record<string, unknown>;
 
 export class ConnectionEventEmitter {
-  private listeners: Map<ConnectionEvent, Set<(data: any) => void>> = new Map();
+  private listeners: Map<ConnectionEvent, Set<(data: ConnectionEventData) => void>> = new Map();
 
-  on(event: ConnectionEvent, callback: (data: any) => void): () => void {
+  on(event: ConnectionEvent, callback: (data: ConnectionEventData) => void): void {
     if (!this.listeners.has(event)) {
       this.listeners.set(event, new Set());
     }
@@ -11,11 +12,11 @@ export class ConnectionEventEmitter {
     return () => this.off(event, callback);
   }
 
-  off(event: ConnectionEvent, callback: (data: any) => void): void {
+  off(event: ConnectionEvent, callback: (data: ConnectionEventData) => void): void {
     this.listeners.get(event)?.delete(callback);
   }
 
-  emit(event: ConnectionEvent, data: any): void {
+  emit(event: ConnectionEvent, data: ConnectionEventData): void {
     this.listeners.get(event)?.forEach(callback => callback(data));
   }
 }
