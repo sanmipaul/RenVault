@@ -100,8 +100,15 @@ export class SessionStorageService {
     const session = this.getStoredSession();
     if (!session) return;
 
-    session.metadata = { ...session.metadata, ...metadata };
-    this.storeSession(session);
+    // Write directly so the existing expiresAt and sessionId are preserved.
+    // Calling storeSession() here would regenerate both, silently resetting
+    // the session expiry and issuing a new session ID on every metadata update.
+    const updated: WalletSession = {
+      ...session,
+      metadata: { ...session.metadata, ...metadata }
+    };
+    const encryptedSession = this.encryptSession(updated);
+    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(encryptedSession));
   }
 
   // Extend session expiration
