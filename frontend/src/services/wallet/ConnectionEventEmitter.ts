@@ -9,6 +9,7 @@ export class ConnectionEventEmitter {
       this.listeners.set(event, new Set());
     }
     this.listeners.get(event)!.add(callback);
+    return () => this.off(event, callback);
   }
 
   off(event: ConnectionEvent, callback: (data: ConnectionEventData) => void): void {

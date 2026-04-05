@@ -261,8 +261,8 @@ export class WalletFallbackManager {
     onFallback: (result: WalletFallbackResult) => void,
     onSuccess: (walletId: string) => void
   ): () => void {
-    // Listen for wallet connection errors
-    window.addEventListener('error', (event: ErrorEvent) => {
+    // Named handler so it can be removed on cleanup
+    const errorHandler = (event: ErrorEvent) => {
       if (event.message.includes('wallet')) {
         const result: WalletFallbackResult = {
           success: false,
@@ -275,7 +275,9 @@ export class WalletFallbackManager {
         };
         onFallback(result);
       }
-    });
+    };
+
+    window.addEventListener('error', errorHandler);
 
     // Monitor wallet availability changes
     const stopMonitoring = WalletInstallationDetector.startMonitoring(() => {
@@ -284,7 +286,8 @@ export class WalletFallbackManager {
     });
 
     return () => {
-      // Cleanup
+      // Remove the error listener to prevent accumulation across calls
+      window.removeEventListener('error', errorHandler);
       stopMonitoring();
     };
   }

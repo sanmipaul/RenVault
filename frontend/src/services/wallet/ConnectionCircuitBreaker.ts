@@ -4,6 +4,7 @@ export class ConnectionCircuitBreaker {
   private readonly resetTimeout: number;
   private state: 'closed' | 'open' | 'half-open' = 'closed';
   private resetTimer: NodeJS.Timeout | null = null;
+  private probePending: boolean = false;
 
   constructor(threshold: number = 5, resetTimeout: number = 60000) {
     this.threshold = threshold;
@@ -18,11 +19,23 @@ export class ConnectionCircuitBreaker {
       );
     }
 
+    // In half-open state only one probe is allowed at a time.
+    // Additional concurrent calls are rejected to avoid a thundering herd
+    // re-opening the circuit immediately after the reset timeout expires.
+    if (this.state === 'half-open') {
+      if (this.probePending) {
+        throw new Error('Circuit breaker is probing; try again shortly.');
+      }
+      this.probePending = true;
+    }
+
     try {
       const result = await fn();
+      this.probePending = false;
       this.onSuccess();
       return result;
     } catch (error) {
+      this.probePending = false;
       this.onFailure();
       throw error;
     }
@@ -73,6 +86,7 @@ export class ConnectionCircuitBreaker {
     }
     this.state = 'closed';
     this.failures = 0;
+    this.probePending = false;
   }
 
   destroy(): void {
@@ -82,5 +96,6 @@ export class ConnectionCircuitBreaker {
     }
     this.state = 'closed';
     this.failures = 0;
+    this.probePending = false;
   }
 }

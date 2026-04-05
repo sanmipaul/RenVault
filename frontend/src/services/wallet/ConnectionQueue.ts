@@ -1,6 +1,11 @@
 export class ConnectionQueue {
   private queue: Array<() => Promise<unknown>> = [];
   private processing: boolean = false;
+  private readonly maxSize: number;
+
+  constructor(maxSize: number = 100) {
+    this.maxSize = maxSize;
+  }
 
   async add(fn: () => Promise<unknown>): Promise<unknown> {
     return new Promise((resolve, reject) => {
@@ -24,5 +29,9 @@ export class ConnectionQueue {
       if (fn) await fn();
     }
     this.processing = false;
+  }
+
+  get pendingCount(): number {
+    return this.queue.length;
   }
 }
