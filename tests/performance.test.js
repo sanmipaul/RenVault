@@ -31,6 +31,10 @@ class PerformanceTest {
       console.log('✅ Timeout handling test passed\n');
 
       console.log('🎉 All performance tests passed!');
+      
+      // FIX: Explicitly exit to prevent the test script from hanging on open 
+      // wallet provider connections (like WebSockets or background intervals)
+      process.exit(0);
 
     } catch (error) {
       console.error('❌ Test failed:', error.message);
@@ -46,7 +50,9 @@ class PerformanceTest {
     };
 
     const cacheStats = this.walletManager.getConnectionCacheStats();
-    if (cacheStats.size < 0) {
+    
+    // FIX: Verify cacheStats actually exists before checking its properties
+    if (!cacheStats || cacheStats.size < 0) {
       throw new Error('Cache stats should be available');
     }
 
@@ -68,7 +74,9 @@ class PerformanceTest {
     }
 
     const metrics = this.walletManager.getPerformanceMetrics();
-    if (metrics.loadedProviders < 1) {
+    
+    // FIX: Verify metrics actually exists before checking loadedProviders
+    if (!metrics || metrics.loadedProviders < 1) {
       throw new Error('Provider should be loaded');
     }
   }
@@ -85,7 +93,9 @@ class PerformanceTest {
     }
 
     const cacheStats = WalletProviderLoader.getCacheStats();
-    if (cacheStats.cached < 1) {
+    
+    // FIX: Verify cacheStats actually exists before checking cached
+    if (!cacheStats || cacheStats.cached < 1) {
       throw new Error('Critical providers should be cached');
     }
   }
@@ -102,8 +112,10 @@ class PerformanceTest {
     }
 
     const updatedMetrics = this.walletManager.getPerformanceMetrics();
+    
     // Metrics should be available even after operations
-    if (typeof updatedMetrics.activeTimeouts !== 'number') {
+    // FIX: Verify updatedMetrics exists to prevent a TypeError on .activeTimeouts
+    if (!updatedMetrics || typeof updatedMetrics.activeTimeouts !== 'number') {
       throw new Error('Timeout metrics should be available');
     }
   }
@@ -112,7 +124,8 @@ class PerformanceTest {
 // Run tests if called directly
 if (require.main === module) {
   const test = new PerformanceTest();
-  test.runTests();
+  // FIX: Add .catch to capture any top-level unhandled rejections
+  test.runTests().catch(console.error);
 }
 
 module.exports = PerformanceTest;
