@@ -808,6 +808,8 @@ function AppContent() {
             className="btn btn-outline"
             onClick={() => setShowMultiSigSetup(true)}
             title="Setup Multi-Sig"
+            aria-label="Open multi-signature wallet setup"
+            aria-haspopup="dialog"
           >
             🔐 Multi-Sig
           </button>
@@ -815,6 +817,8 @@ function AppContent() {
             className="btn btn-outline"
             onClick={() => setShowCoSignerManagement(true)}
             title="Manage Co-Signers"
+            aria-label="Manage co-signers for multi-signature wallet"
+            aria-haspopup="dialog"
           >
             👥 Co-Signers
           </button>
@@ -822,6 +826,8 @@ function AppContent() {
             className="btn btn-outline"
             onClick={() => setShowMultiSigSigner(true)}
             title="Sign Multi-Sig Transactions"
+            aria-label="Sign pending multi-signature transactions"
+            aria-haspopup="dialog"
           >
             ✍️ Sign Tx
           </button>
@@ -829,6 +835,8 @@ function AppContent() {
             className="btn btn-outline"
             onClick={() => setShowPerformanceMonitor(true)}
             title="Performance Monitor"
+            aria-label="Open performance monitor"
+            aria-haspopup="dialog"
           >
             ⚡ Perf
           </button>
