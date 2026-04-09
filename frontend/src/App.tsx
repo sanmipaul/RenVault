@@ -675,13 +675,13 @@ function AppContent() {
             <h3>❌ Connection Failed</h3>
             <p>{connectionError}</p>
             <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
-              <button className="btn btn-primary" onClick={retryConnectWithStacks}>
+              <button className="btn btn-primary" onClick={retryConnectWithStacks} aria-label="Retry connecting with Stacks wallet extension">
                 Retry Stacks Wallet
               </button>
-              <button className="btn btn-secondary" onClick={connectWithWalletConnect}>
+              <button className="btn btn-secondary" onClick={connectWithWalletConnect} aria-label="Try WalletConnect as an alternative connection method">
                 Try WalletConnect Instead
               </button>
-              <button className="btn btn-outline" onClick={() => setShowHelp(true)}>
+              <button className="btn btn-outline" onClick={() => setShowHelp(true)} aria-label="Open connection help guide" aria-expanded={showHelp}>
                 Help
               </button>
             </div>
