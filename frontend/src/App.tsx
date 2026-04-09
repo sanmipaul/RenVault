@@ -942,16 +942,16 @@ function AppContent() {
         </div>
       </div>
 
-      <div className="stats">
-        <div className="stat-card">
-          <div className="stat-value">{balance} STX</div>
+      <div className="stats" role="region" aria-label="Vault statistics">
+        <div className="stat-card" role="group" aria-label="Vault balance">
+          <div className="stat-value" aria-live="polite" aria-atomic="true">{balance} STX</div>
           <div>Vault Balance</div>
         </div>
-        <div className="stat-card">
-          <div className="stat-value">{points}</div>
+        <div className="stat-card" role="group" aria-label="Commitment points">
+          <div className="stat-value" aria-live="polite" aria-atomic="true">{points}</div>
           <div>Commitment Points</div>
         </div>
-        <div className="stat-card">
+        <div className="stat-card" role="group" aria-label="Connected network">
           <div className="stat-value">{detectedNetwork ? detectedNetwork.toUpperCase() : 'Unknown'}</div>
           <div>Network</div>
         </div>
