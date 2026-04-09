@@ -414,14 +414,14 @@ function AppContent() {
   };
 
   const handleDeposit = async () => {
-    if (!depositAmount || !userData) return;
+    if (!debouncedDepositAmount || !userData) return;
     if (!validateNetwork()) return;
-    
+
     setLoading(true);
     setStatus('');
-    
+
     try {
-      const amount = Math.floor(parseFloat(depositAmount) * 1000000);
+      const amount = Math.floor(parseFloat(debouncedDepositAmount) * 1000000);
       
       if (connectionMethod === 'walletconnect' && walletConnectSession) {
         // Use WalletConnect for signing
@@ -450,7 +450,7 @@ function AppContent() {
         
         // Send deposit notification
         if (notificationService) {
-          notificationService.testDepositNotification(parseFloat(depositAmount), parseFloat(balance) + parseFloat(depositAmount));
+          notificationService.testDepositNotification(parseFloat(debouncedDepositAmount), parseFloat(balance) + parseFloat(debouncedDepositAmount));
         }
         
         setTimeout(fetchUserStats, 3000);
@@ -651,13 +651,13 @@ function AppContent() {
             <h2>Choose Connection Method</h2>
             <p>Select how you'd like to connect your wallet:</p>
             <div style={{ display: 'flex', gap: '12px', flexDirection: 'column' }}>
-              <button className="btn btn-primary" onClick={connectWithStacks}>
+              <button className="btn btn-primary" onClick={connectWithStacks} aria-label="Connect using Stacks browser extension">
                 🌐 Browser Extension (Stacks)
               </button>
-              <button className="btn btn-secondary" onClick={connectWithWalletConnect}>
+              <button className="btn btn-secondary" onClick={connectWithWalletConnect} aria-label="Connect using WalletConnect for mobile or desktop">
                 📱 WalletConnect (Mobile/Desktop)
               </button>
-              <button className="btn btn-outline" onClick={() => setShowConnectionOptions(false)}>
+              <button className="btn btn-outline" onClick={() => setShowConnectionOptions(false)} aria-label="Cancel wallet connection">
                 Cancel
               </button>
             </div>
