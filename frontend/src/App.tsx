@@ -1079,7 +1079,12 @@ function AppContent() {
       )}
 
       {status && (
-        <div className={`status ${status.includes('Error') ? 'error' : 'success'}`}>
+        <div
+          className={`status ${status.includes('Error') ? 'error' : 'success'}`}
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+        >
           {status}
         </div>
       )}
