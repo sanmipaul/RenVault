@@ -761,7 +761,7 @@ function AppContent() {
       </div>
 
       {toastMessage && (
-        <div className="toast">
+        <div className="toast" role="alert" aria-live="assertive" aria-atomic="true">
           {toastMessage}
         </div>
       )}
