@@ -920,14 +920,15 @@ function AppContent() {
             </div>
           </div>
           <div className="security-item">
-            <h4>Session Management</h4>
-            <p>Manage your active sessions</p>
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-              <button className="btn btn-secondary" onClick={disconnectWallet}>
+            <h4 id="session-heading">Session Management</h4>
+            <p id="session-desc">Manage your active sessions</p>
+            <div role="group" aria-labelledby="session-heading" aria-describedby="session-desc" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              <button className="btn btn-secondary" onClick={disconnectWallet} aria-label="Sign out and disconnect all active wallet sessions">
                 Sign Out All Sessions
               </button>
               <button
                 className="btn btn-outline"
+                aria-label="Trigger a test security alert notification"
                 onClick={() => {
                   if (notificationService) {
                     notificationService.testFailedLoginNotification('192.168.1.100', 'Chrome/91.0');
