@@ -895,13 +895,16 @@ function AppContent() {
         <h3>🔒 Security Settings</h3>
         <div className="security-options">
           <div className="security-item">
-            <h4>Two-Factor Authentication</h4>
-            <p>Add an extra layer of security to your account</p>
-            <div style={{ display: 'flex', gap: '8px' }}>
+            <h4 id="tfa-heading">Two-Factor Authentication</h4>
+            <p id="tfa-desc">Add an extra layer of security to your account</p>
+            <div role="group" aria-labelledby="tfa-heading" aria-describedby="tfa-desc" style={{ display: 'flex', gap: '8px' }}>
               <button
                 className="btn btn-primary"
                 onClick={() => setShow2FASetup(true)}
                 disabled={localStorage.getItem('tfa-enabled') === 'true'}
+                aria-label={localStorage.getItem('tfa-enabled') === 'true' ? 'Two-factor authentication is already enabled' : 'Enable two-factor authentication'}
+                aria-pressed={localStorage.getItem('tfa-enabled') === 'true'}
+                aria-haspopup="dialog"
               >
                 {localStorage.getItem('tfa-enabled') === 'true' ? '2FA Enabled' : 'Enable 2FA'}
               </button>
@@ -909,6 +912,7 @@ function AppContent() {
                 <button
                   className="btn btn-outline"
                   onClick={handleDisable2FA}
+                  aria-label="Disable two-factor authentication"
                 >
                   Disable 2FA
                 </button>
