@@ -781,6 +781,8 @@ function AppContent() {
             className="notification-button"
             onClick={() => setShowNotificationCenter(true)}
             title="Notifications"
+            aria-label="Open notification center"
+            aria-haspopup="dialog"
           >
             🔔
           </button>
@@ -788,6 +790,8 @@ function AppContent() {
             className="btn btn-outline"
             onClick={() => setShowWalletBackup(true)}
             title="Backup Wallet"
+            aria-label="Open wallet backup"
+            aria-haspopup="dialog"
           >
             🛡️ Backup
           </button>
@@ -795,6 +799,8 @@ function AppContent() {
             className="btn btn-outline"
             onClick={() => setShowWalletRecovery(true)}
             title="Recover Wallet"
+            aria-label="Open wallet recovery"
+            aria-haspopup="dialog"
           >
             🔄 Recover
           </button>
