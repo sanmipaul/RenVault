@@ -880,11 +880,11 @@ function AppContent() {
           <h3>⚠️ Network Mismatch Detected</h3>
           <p>Your wallet is connected to <strong>{detectedNetwork}</strong>, but RenVault operates on <strong>mainnet</strong>.</p>
           <p>Please switch your wallet to mainnet to use this application.</p>
-          <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
-            <button className="btn btn-primary" onClick={promptNetworkSwitch}>
+          <div role="group" aria-label="Network switch actions" style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
+            <button className="btn btn-primary" onClick={promptNetworkSwitch} aria-label="Show instructions for switching to mainnet">
               How to Switch Network
             </button>
-            <button className="btn btn-secondary" onClick={() => window.location.reload()}>
+            <button className="btn btn-secondary" onClick={() => window.location.reload()} aria-label="Reload page after switching network">
               Refresh After Switching
             </button>
           </div>
