@@ -981,45 +981,58 @@ function AppContent() {
           <ErrorFallback error={error} sectionName="Vault Actions" onReset={reset} />
         )}
       >
-      <div className="actions">
+      <div className="actions" role="region" aria-label="Vault deposit and withdrawal actions">
         <div className="card">
-          <h3>Deposit STX</h3>
+          <h3 id="deposit-heading">Deposit STX</h3>
           <div className="input-group">
-            <label>Amount (STX)</label>
+            <label htmlFor="deposit-amount">Amount (STX)</label>
             <input
+              id="deposit-amount"
               type="number"
               value={depositAmount}
               onChange={(e) => setDepositAmount(e.target.value)}
               placeholder="Enter amount to deposit"
               step="0.000001"
+              aria-labelledby="deposit-heading"
+              aria-describedby="deposit-fee-note"
+              aria-required="true"
+              min="0.000001"
             />
           </div>
-          <button 
-            className="btn btn-primary" 
+          <button
+            className="btn btn-primary"
             onClick={handleDeposit}
             disabled={loading || !depositAmount}
+            aria-label={loading ? 'Processing deposit, please wait' : 'Submit deposit transaction'}
+            aria-busy={loading}
           >
             {loading ? 'Processing...' : 'Deposit'}
           </button>
-          <p><small>1% protocol fee applies</small></p>
+          <p id="deposit-fee-note"><small>1% protocol fee applies</small></p>
         </div>
 
         <div className="card">
-          <h3>Withdraw STX</h3>
+          <h3 id="withdraw-heading">Withdraw STX</h3>
           <div className="input-group">
-            <label>Amount (STX)</label>
+            <label htmlFor="withdraw-amount">Amount (STX)</label>
             <input
+              id="withdraw-amount"
               type="number"
               value={withdrawAmount}
               onChange={(e) => setWithdrawAmount(e.target.value)}
               placeholder="Enter amount to withdraw"
               step="0.000001"
+              aria-labelledby="withdraw-heading"
+              aria-required="true"
+              min="0.000001"
             />
           </div>
-          <button 
-            className="btn btn-secondary" 
+          <button
+            className="btn btn-secondary"
             onClick={handleWithdraw}
             disabled={loading || !withdrawAmount || showWithdrawDetails}
+            aria-label={loading ? 'Preparing withdrawal, please wait' : 'Prepare withdrawal transaction for review'}
+            aria-busy={loading}
           >
             {loading ? 'Preparing...' : showWithdrawDetails ? 'Review Transaction' : 'Withdraw'}
           </button>
