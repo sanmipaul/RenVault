@@ -32,6 +32,10 @@ class NotificationSystemTest {
       console.log('✅ Email service test passed\n');
 
       console.log('🎉 All notification system tests passed!');
+      
+      // FIX: Force process to exit cleanly. Without this, open DB/SMTP connections 
+      // will keep the Node event loop running and the script will hang forever.
+      process.exit(0);
 
     } catch (error) {
       console.error('❌ Test failed:', error.message);
@@ -109,8 +113,10 @@ class NotificationSystemTest {
 
     // Verify preferences were set
     const savedPreferences = await this.notificationManager.getUserPreferences(testUserId);
-    if (!savedPreferences.email.transaction) {
-      throw new Error('User preferences not saved correctly');
+    
+    // FIX: Added optional chaining to prevent TypeErrors if savedPreferences is null/undefined
+    if (!savedPreferences?.email?.transaction) {
+      throw new Error('User preferences not saved correctly or returned null');
     }
   }
 
@@ -131,7 +137,8 @@ class NotificationSystemTest {
       txHash: '0x123456789'
     });
 
-    if (!renderedEmail.includes('100.00')) {
+    // FIX: Added optional chaining just in case renderTemplate fails silently
+    if (!renderedEmail?.includes('100.00')) {
       throw new Error('Email template rendering failed');
     }
   }
