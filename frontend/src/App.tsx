@@ -1041,33 +1041,36 @@ function AppContent() {
       </ErrorBoundary>
 
       {showWithdrawDetails && withdrawTxDetails && (
-        <div className="card confirmation">
-          <h3>🔐 Confirm Withdrawal Transaction</h3>
-          <div style={{ marginBottom: '16px' }}>
-            <p><strong>Action:</strong> Withdraw STX from vault</p>
-            <p><strong>Amount:</strong> {withdrawTxDetails.amount} STX</p>
-            <p><strong>Current Balance:</strong> {withdrawTxDetails.currentBalance} STX</p>
-            <p><strong>Remaining Balance:</strong> {withdrawTxDetails.remainingBalance} STX</p>
-            <p><strong>Contract:</strong> {withdrawTxDetails.contractAddress}.{withdrawTxDetails.contractName}</p>
-            <p><strong>Function:</strong> {withdrawTxDetails.functionName}</p>
-            <p><strong>Network:</strong> {withdrawTxDetails.network.name}</p>
-            <p><small>{withdrawTxDetails.fee}</small></p>
+        <div className="card confirmation" role="dialog" aria-modal="true" aria-labelledby="confirm-withdraw-title">
+          <h3 id="confirm-withdraw-title">🔐 Confirm Withdrawal Transaction</h3>
+          <div style={{ marginBottom: '16px' }} role="list" aria-label="Transaction details">
+            <p role="listitem"><strong>Action:</strong> Withdraw STX from vault</p>
+            <p role="listitem"><strong>Amount:</strong> {withdrawTxDetails.amount} STX</p>
+            <p role="listitem"><strong>Current Balance:</strong> {withdrawTxDetails.currentBalance} STX</p>
+            <p role="listitem"><strong>Remaining Balance:</strong> {withdrawTxDetails.remainingBalance} STX</p>
+            <p role="listitem"><strong>Contract:</strong> {withdrawTxDetails.contractAddress}.{withdrawTxDetails.contractName}</p>
+            <p role="listitem"><strong>Function:</strong> {withdrawTxDetails.functionName}</p>
+            <p role="listitem"><strong>Network:</strong> {withdrawTxDetails.network.name}</p>
+            <p role="listitem"><small>{withdrawTxDetails.fee}</small></p>
           </div>
-          <div style={{ display: 'flex', gap: '12px' }}>
-            <button 
-              className="btn btn-primary" 
+          <div role="group" aria-label="Confirm or cancel withdrawal" style={{ display: 'flex', gap: '12px' }}>
+            <button
+              className="btn btn-primary"
               onClick={executeWithdraw}
               disabled={loading}
+              aria-label={loading ? 'Signing transaction, please wait' : 'Sign and submit withdrawal transaction'}
+              aria-busy={loading}
             >
               {loading ? 'Signing...' : 'Sign & Submit Transaction'}
             </button>
-            <button 
-              className="btn btn-secondary" 
+            <button
+              className="btn btn-secondary"
               onClick={() => {
                 setShowWithdrawDetails(false);
                 setWithdrawTxDetails(null);
               }}
               disabled={loading}
+              aria-label="Cancel withdrawal and return to input"
             >
               Cancel
             </button>
