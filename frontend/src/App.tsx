@@ -671,7 +671,7 @@ function AppContent() {
         )}
 
         {connectionError && (
-          <div className="card error">
+          <div className="card error" role="alert" aria-live="assertive">
             <h3>❌ Connection Failed</h3>
             <p>{connectionError}</p>
             <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
