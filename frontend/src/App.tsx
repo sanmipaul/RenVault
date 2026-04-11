@@ -170,10 +170,9 @@ function AppContent() {
 
   const handleBackupCodeVerify = async (code: string): Promise<boolean> => {
     try {
-      const storedCodes: string[] = JSON.parse(localStorage.getItem(APP_CONFIG.tfaBackupCodesKey) || '[]');
-      if (storedCodes.includes(code)) {
-        const remaining = storedCodes.filter(c => c !== code);
-        localStorage.setItem(APP_CONFIG.tfaBackupCodesKey, JSON.stringify(remaining));
+      if (storedBackupCodes.includes(code)) {
+        const remaining = storedBackupCodes.filter(c => c !== code);
+        setStoredBackupCodes(remaining);
         setShowBackupCodes(false);
         return true;
       }
@@ -184,9 +183,9 @@ function AppContent() {
   };
 
   const handleDisable2FA = () => {
-    localStorage.removeItem(APP_CONFIG.tfaEnabledKey);
-    localStorage.removeItem(APP_CONFIG.tfaSecretKey);
-    localStorage.removeItem(APP_CONFIG.tfaBackupCodesKey);
+    removeTfaEnabled();
+    removeStoredTfaSecret();
+    removeStoredBackupCodes();
     setTfaSecret('');
     setStatus('✅ Two-factor authentication disabled');
     
