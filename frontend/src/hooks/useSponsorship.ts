@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useWalletContext } from '../context/WalletProvider';
-import SponsorshipService from '../services/SponsorshipService';
+import SponsorshipService, { SponsorshipTxData } from '../services/SponsorshipService';
 
 export const useSponsorship = () => {
   const { sponsorshipQuota, isEligibleForSponsorship } = useWalletContext();
@@ -11,14 +11,14 @@ export const useSponsorship = () => {
     return await isEligibleForSponsorship(operation, value);
   }, [isEligibleForSponsorship]);
 
-  const getSponsorshipData = useCallback(async (txData: any) => {
+  const getSponsorshipData = useCallback(async (txData: SponsorshipTxData) => {
     setIsSponsoring(true);
     setError(null);
     try {
       const service = SponsorshipService.getInstance();
       const data = await service.getPaymasterData(txData);
       return data;
-    } catch (err: any) {
+    } catch (err: unknown) {
       const service = SponsorshipService.getInstance();
       const message = service.handleSponsorshipError(err);
       setError(message);

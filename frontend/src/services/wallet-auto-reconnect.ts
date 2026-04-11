@@ -1,4 +1,4 @@
-import { sessionManager } from './wallet-session';
+import { sessionManager, WalletSessionData } from './wallet-session';
 
 export class WalletAutoReconnect {
   private reconnectAttempts = 0;
@@ -24,7 +24,7 @@ export class WalletAutoReconnect {
     return false;
   }
 
-  private async reconnect(walletType: string, session: any) {
+  private async reconnect(walletType: string, session: WalletSessionData) {
     // Implement wallet-specific reconnection logic
     console.log(`Reconnecting ${walletType}...`);
     sessionManager.updateLastActive(session.address);

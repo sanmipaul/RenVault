@@ -1,6 +1,6 @@
 // services/wallet/WalletConnectProvider.ts
 import { BaseWalletProvider } from './BaseWalletProvider';
-import { WalletConnection } from '../../types/wallet';
+import { WalletConnection, StacksContractCallOptions, SignedTransactionResult } from '../../types/wallet';
 import { WalletKitService } from '../walletkit-service';
 
 export class WalletConnectProvider extends BaseWalletProvider {
@@ -26,7 +26,7 @@ export class WalletConnectProvider extends BaseWalletProvider {
     localStorage.removeItem('walletconnect-session');
   }
 
-  async signTransaction(tx: any): Promise<any> {
+  async signTransaction(tx: StacksContractCallOptions): Promise<SignedTransactionResult> {
     // Implement signing
     return tx;
   }

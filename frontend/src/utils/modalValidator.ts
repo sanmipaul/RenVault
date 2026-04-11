@@ -9,6 +9,6 @@ export const validateModalDimensions = (dimensions: ModalDimensions): boolean =>
   return widthValid && heightValid;
 };
 
-export const validateModalConfig = (config: any): boolean => {
+export const validateModalConfig = (config: { dimensions?: { desktop?: ModalDimensions; tablet?: ModalDimensions; mobile?: ModalDimensions } }): boolean => {
   return !!(config.dimensions?.desktop && config.dimensions?.tablet && config.dimensions?.mobile && validateModalDimensions(config.dimensions.desktop) && validateModalDimensions(config.dimensions.tablet) && validateModalDimensions(config.dimensions.mobile));
 };

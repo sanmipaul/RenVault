@@ -1,5 +1,5 @@
 // MultiSigWalletProvider.ts
-import { WalletProvider, WalletProviderType } from '../../types/wallet';
+import { WalletProvider, WalletProviderType, StacksContractCallOptions, SignedTransactionResult } from '../../types/wallet';
 
 export interface CoSigner {
   address: string;
@@ -24,7 +24,7 @@ export class MultiSigWalletProvider implements WalletProvider {
     return 'multisig';
   }
 
-  async connect(): Promise<any> {
+  async connect(): Promise<{ address: string; publicKey: string }> {
     // Multi-sig doesn't connect like regular wallets
     // It manages multiple signers
     return {
@@ -38,7 +38,7 @@ export class MultiSigWalletProvider implements WalletProvider {
     this.pendingSignatures.clear();
   }
 
-  async signTransaction(tx: any): Promise<any> {
+  async signTransaction(tx: StacksContractCallOptions): Promise<SignedTransactionResult> {
     if (!this.config) {
       throw new Error('Multi-sig wallet not configured');
     }
@@ -111,18 +111,18 @@ export class MultiSigWalletProvider implements WalletProvider {
     return pending ? { signatures: pending.signatures.length, required: pending.required } : null;
   }
 
-  private generateTxId(tx: any): string {
+  private generateTxId(tx: StacksContractCallOptions): string {
     // Simple hash of transaction data
     return btoa(JSON.stringify(tx)).slice(0, 16);
   }
 
-  private async getCurrentSignature(tx: any): Promise<string> {
+  private async getCurrentSignature(_tx: StacksContractCallOptions): Promise<string> {
     // In real implementation, this would sign with current connected wallet
     // For now, return a mock signature
     return 'mock-signature-' + Date.now();
   }
 
-  private combineSignatures(tx: any, signatures: string[]): any {
+  private combineSignatures(tx: StacksContractCallOptions, signatures: string[]): SignedTransactionResult {
     // Combine multiple signatures into final transaction
     return {
       ...tx,

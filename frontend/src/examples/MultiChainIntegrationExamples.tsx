@@ -142,7 +142,7 @@ export const TransactionTrackingExample: React.FC = () => {
 export const AddressValidationExample: React.FC = () => {
   const [address, setAddress] = React.useState('');
   const [chainType, setChainType] = React.useState<ChainType>('ethereum');
-  const [validation, setValidation] = React.useState<any>(null);
+  const [validation, setValidation] = React.useState<import('../services/chain/NetworkValidationService').AddressValidationResult | null>(null);
 
   const handleValidate = () => {
     const result = NetworkValidationService.validateAddress(address, chainType);
