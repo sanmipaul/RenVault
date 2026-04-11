@@ -108,6 +108,10 @@ function AppContent() {
   const [currentTransaction, setCurrentTransaction] = useState<any>(null);
   const [showPerformanceMonitor, setShowPerformanceMonitor] = useState<boolean>(false);
   const [tfaSecret, setTfaSecret] = useState<string>('');
+  const [tfaEnabled, setTfaEnabled, removeTfaEnabled] = useLocalStorage<boolean>(APP_CONFIG.tfaEnabledKey, false);
+  const [storedTfaSecret, setStoredTfaSecret, removeStoredTfaSecret] = useLocalStorage<string>(APP_CONFIG.tfaSecretKey, '');
+  const [storedBackupCodes, setStoredBackupCodes, removeStoredBackupCodes] = useLocalStorage<string[]>(APP_CONFIG.tfaBackupCodesKey, []);
+  const [analyticsOptOut] = useLocalStorage<boolean>(APP_CONFIG.analyticsOptOutKey, false);
   const [connectionError, setConnectionError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState<number>(0);
   const [showHelp, setShowHelp] = useState<boolean>(false);
