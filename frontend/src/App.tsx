@@ -845,10 +845,11 @@ function AppContent() {
               <span className={`network-badge ${detectedNetwork}`}>
                 {detectedNetwork.toUpperCase()}
               </span>
-              <button 
-                className="btn btn-secondary" 
+              <button
+                className="btn btn-secondary"
                 style={{ marginLeft: '12px', fontSize: '0.8rem', padding: '4px 8px' }}
                 onClick={() => window.location.reload()}
+                aria-label="Reload page to refresh network status"
               >
                 Refresh
               </button>
@@ -1089,9 +1090,9 @@ function AppContent() {
         </div>
       )}
 
-      <div className="card">
-        <h3>How it Works</h3>
-        <ul>
+      <div className="card" role="region" aria-label="How RenVault works">
+        <h3 id="how-it-works-heading">How it Works</h3>
+        <ul aria-labelledby="how-it-works-heading">
           <li>Deposit STX to your personal vault (1% protocol fee)</li>
           <li>Earn commitment points with each deposit</li>
           <li>Withdraw your funds anytime</li>
