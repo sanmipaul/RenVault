@@ -375,10 +375,10 @@ function AppContent() {
       return;
     }
     if (!validateNetwork()) return;
-    
+
     setLoading(true);
     setStatus('');
-    
+
     try {
       const amount = parseSTXInput(depositAmount) ?? 0;
       
@@ -410,7 +410,7 @@ function AppContent() {
         
         // Send deposit notification
         if (notificationService) {
-          notificationService.testDepositNotification(parseFloat(depositAmount), parseFloat(balance) + parseFloat(depositAmount));
+          notificationService.testDepositNotification(parseFloat(debouncedDepositAmount), parseFloat(balance) + parseFloat(debouncedDepositAmount));
         }
         
         setTimeout(fetchUserStats, 3000);
@@ -674,7 +674,7 @@ function AppContent() {
   }
 
   return (
-    <div className="container">
+    <div className="container" role="main">
       <SessionStatus />
       <AutoReconnect />
 
@@ -707,13 +707,13 @@ function AppContent() {
         onPromptSwitch={() => setStatus(promptSwitch())}
       />
 
-      <div className="card">
-        <h3>🔒 Security Settings</h3>
-        <div className="security-options">
+      <div className="card" role="region" aria-label="Security settings">
+        <h3 id="security-settings-heading">🔒 Security Settings</h3>
+        <div className="security-options" aria-labelledby="security-settings-heading">
           <div className="security-item">
-            <h4>Two-Factor Authentication</h4>
-            <p>Add an extra layer of security to your account</p>
-            <div style={{ display: 'flex', gap: '8px' }}>
+            <h4 id="tfa-heading">Two-Factor Authentication</h4>
+            <p id="tfa-desc">Add an extra layer of security to your account</p>
+            <div role="group" aria-labelledby="tfa-heading" aria-describedby="tfa-desc" style={{ display: 'flex', gap: '8px' }}>
               <button
                 className="btn btn-primary"
                 onClick={() => setShow2FASetup(true)}
@@ -725,6 +725,7 @@ function AppContent() {
                 <button
                   className="btn btn-outline"
                   onClick={handleDisable2FA}
+                  aria-label="Disable two-factor authentication"
                 >
                   Disable 2FA
                 </button>
@@ -732,14 +733,15 @@ function AppContent() {
             </div>
           </div>
           <div className="security-item">
-            <h4>Session Management</h4>
-            <p>Manage your active sessions</p>
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-              <button className="btn btn-secondary" onClick={disconnectWallet}>
+            <h4 id="session-heading">Session Management</h4>
+            <p id="session-desc">Manage your active sessions</p>
+            <div role="group" aria-labelledby="session-heading" aria-describedby="session-desc" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              <button className="btn btn-secondary" onClick={disconnectWallet} aria-label="Sign out and disconnect all active wallet sessions">
                 Sign Out All Sessions
               </button>
               <button
                 className="btn btn-outline"
+                aria-label="Trigger a test security alert notification"
                 onClick={() => {
                   if (notificationService) {
                     notificationService.testFailedLoginNotification('192.168.1.100', 'Chrome/91.0');
@@ -781,7 +783,7 @@ function AppContent() {
           >
             {loading ? 'Processing...' : 'Deposit'}
           </button>
-          <p><small>1% protocol fee applies</small></p>
+          <p id="deposit-fee-note"><small>1% protocol fee applies</small></p>
         </div>
 
         <div className="card">
