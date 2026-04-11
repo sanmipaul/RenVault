@@ -141,9 +141,9 @@ function AppContent() {
   );
   const handle2FASetupComplete = (secret: string, backupCodes: string[]) => {
     setTfaSecret(secret);
-    localStorage.setItem(APP_CONFIG.tfaEnabledKey, 'true');
-    localStorage.setItem(APP_CONFIG.tfaSecretKey, secret);
-    localStorage.setItem(APP_CONFIG.tfaBackupCodesKey, JSON.stringify(backupCodes));
+    setTfaEnabled(true);
+    setStoredTfaSecret(secret);
+    setStoredBackupCodes(backupCodes);
     setShow2FASetup(false);
     setStatus('✅ Two-factor authentication enabled successfully!');
     
