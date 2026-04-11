@@ -1113,7 +1113,7 @@ function AppContent() {
       </ErrorBoundary>
 
       {showWalletBackup && (
-        <div className="modal-overlay">
+        <div className="modal-overlay" role="dialog" aria-modal="true" aria-label="Wallet Backup">
           <ErrorBoundary
             sectionName="Wallet Backup"
             fallback={(error, reset) => (
@@ -1130,7 +1130,7 @@ function AppContent() {
       )}
 
       {showWalletRecovery && (
-        <div className="modal-overlay">
+        <div className="modal-overlay" role="dialog" aria-modal="true" aria-label="Wallet Recovery">
           <ErrorBoundary
             sectionName="Wallet Recovery"
             fallback={(error, reset) => (
@@ -1147,7 +1147,7 @@ function AppContent() {
       )}
 
       {showMultiSigSetup && (
-        <div className="modal-overlay">
+        <div className="modal-overlay" role="dialog" aria-modal="true" aria-label="MultiSig Setup">
           <ErrorBoundary
             sectionName="MultiSig Setup"
             fallback={(error, reset) => (
@@ -1164,7 +1164,7 @@ function AppContent() {
       )}
 
       {showCoSignerManagement && (
-        <div className="modal-overlay">
+        <div className="modal-overlay" role="dialog" aria-modal="true" aria-label="Co-Signer Management">
           <ErrorBoundary
             sectionName="Co-Signer Management"
             fallback={(error, reset) => (
@@ -1181,7 +1181,7 @@ function AppContent() {
       )}
 
       {showMultiSigSigner && (
-        <div className="modal-overlay">
+        <div className="modal-overlay" role="dialog" aria-modal="true" aria-label="MultiSig Transaction Signer">
           <ErrorBoundary
             sectionName="MultiSig Transaction Signer"
             fallback={(error, reset) => (
