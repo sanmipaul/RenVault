@@ -23,6 +23,8 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ address }) => {
   const [dateTo, setDateTo] = useState('');
   const pageSize = 20;
 
+  const { exporting, exportError, exportCurrentPage, exportAll } = useTransactionExport();
+
   const fetchTransactions = useCallback(async () => {
     setLoading(true);
     setError(null);
