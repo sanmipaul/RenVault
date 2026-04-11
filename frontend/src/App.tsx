@@ -905,14 +905,14 @@ function AppContent() {
               <button
                 className="btn btn-primary"
                 onClick={() => setShow2FASetup(true)}
-                disabled={localStorage.getItem('tfa-enabled') === 'true'}
-                aria-label={localStorage.getItem('tfa-enabled') === 'true' ? 'Two-factor authentication is already enabled' : 'Enable two-factor authentication'}
-                aria-pressed={localStorage.getItem('tfa-enabled') === 'true'}
+                disabled={tfaEnabled}
+                aria-label={tfaEnabled ? 'Two-factor authentication is already enabled' : 'Enable two-factor authentication'}
+                aria-pressed={tfaEnabled}
                 aria-haspopup="dialog"
               >
-                {localStorage.getItem('tfa-enabled') === 'true' ? '2FA Enabled' : 'Enable 2FA'}
+                {tfaEnabled ? '2FA Enabled' : 'Enable 2FA'}
               </button>
-              {localStorage.getItem('tfa-enabled') === 'true' && (
+              {tfaEnabled && (
                 <button
                   className="btn btn-outline"
                   onClick={handleDisable2FA}
