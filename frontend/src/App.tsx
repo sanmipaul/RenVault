@@ -253,9 +253,9 @@ function AppContent() {
       setStatus('✅ Disconnected from WalletConnect');
     }
     // Clear all session data
-    localStorage.removeItem('tfa-enabled');
-    localStorage.removeItem('tfa-secret');
-    localStorage.removeItem('tfa-backup-codes');
+    removeTfaEnabled();
+    removeStoredTfaSecret();
+    removeStoredBackupCodes();
     // Clear all connection-related state
     setBalance('0');
     setPoints('0');
@@ -267,7 +267,6 @@ function AppContent() {
 
   useEffect(() => {
     // Check for 2FA requirement on app load
-    const tfaEnabled = localStorage.getItem('tfa-enabled') === 'true';
     if (tfaEnabled && !userData) {
       setShow2FAVerify(true);
     }
