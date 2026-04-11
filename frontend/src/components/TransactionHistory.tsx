@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { TransactionHistoryService, TransactionHistoryItem } from '../services/transaction/TransactionHistoryService';
 import { useWallet } from '../hooks/useWallet';
+import { useTransactionExport } from '../hooks/useTransactionExport';
 import SponsoredBadge from './common/SponsoredBadge';
 import './TransactionHistory.css';
 
