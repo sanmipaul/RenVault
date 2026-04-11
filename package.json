@@ -29,25 +29,8 @@
   "dependencies": {
     "@stacks/transactions": "^6.5.4",
     "@stacks/network": "^6.5.4",
-    "renvault-admin": "^1.0.2",
-    "renvault-analytics": "^1.0.2",
-    "renvault-backup": "^1.0.2",
     "renvault-bridge": "^1.0.2",
-    "renvault-chainhooks-realtime": "^1.0.2",
-    "renvault-emergency": "^1.0.2",
-    "renvault-gateway": "^1.0.2",
-    "renvault-governance": "^1.0.2",
-    "renvault-leaderboard": "^1.0.2",
-    "renvault-liquidity": "^1.0.2",
-    "renvault-mobile": "^1.0.2",
-    "renvault-monitoring": "^1.0.2",
-    "renvault-multi-asset": "^1.0.2",
-    "renvault-nft-rewards": "^1.0.2",
-    "renvault-notifications": "^1.0.2",
-    "renvault-oracle": "^1.0.2",
-    "renvault-referral": "^1.0.2",
-    "renvault-security-audit": "^1.0.2",
-    "renvault-staking": "^1.0.2"
+    "renvault-security-audit": "^1.0.2"
   },
   "devDependencies": {
     "@hirosystems/clarinet": "^1.7.1",
