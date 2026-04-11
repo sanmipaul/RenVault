@@ -1199,7 +1199,7 @@ function AppContent() {
       )}
 
       {showPerformanceMonitor && (
-        <div className="modal-overlay">
+        <div className="modal-overlay" role="dialog" aria-modal="true" aria-label="Performance Monitor">
           <ErrorBoundary
             sectionName="Performance Monitor"
             fallback={(error, reset) => (
@@ -1214,6 +1214,7 @@ function AppContent() {
           <button
             className="modal-close"
             onClick={() => setShowPerformanceMonitor(false)}
+            aria-label="Close performance monitor"
           >
             ✕
           </button>
