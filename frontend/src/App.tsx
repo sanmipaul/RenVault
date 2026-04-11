@@ -891,9 +891,9 @@ function AppContent() {
         </div>
       )}
 
-      <div className="card">
-        <h3>🔒 Security Settings</h3>
-        <div className="security-options">
+      <div className="card" role="region" aria-label="Security settings">
+        <h3 id="security-settings-heading">🔒 Security Settings</h3>
+        <div className="security-options" aria-labelledby="security-settings-heading">
           <div className="security-item">
             <h4 id="tfa-heading">Two-Factor Authentication</h4>
             <p id="tfa-desc">Add an extra layer of security to your account</p>
