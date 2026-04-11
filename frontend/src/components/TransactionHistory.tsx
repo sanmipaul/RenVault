@@ -65,37 +65,51 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ address }) => {
   const formatDate = (timestamp: number) => {
     return new Date(timestamp * 1000).toLocaleString();
   };
-  const exportToCSV = () => {
-    const csvContent = [
-      ['Type', 'Amount', 'Fee (STX)', 'Status', 'Date', 'TxID', 'Memo', 'Sponsored'],
-      ...filteredAndSortedTransactions.map(tx => [
-        tx.type,
-        formatAmount(tx.amount),
-        (tx.fee / 1000000).toFixed(6),
-        tx.status,
-        formatDate(tx.timestamp),
-        tx.txId,
-        tx.memo || '',
-        tx.isSponsored ? 'Yes' : 'No',
-      ]),
-    ].map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'transaction-history.csv';
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
   if (loading) return <div>Loading transaction history...</div>;
   if (error) return <div>Error: {error}</div>;
 
   return (
     <div className="transaction-history">
       <h3>Transaction History</h3>
-      <button onClick={exportToCSV} className="export-btn">Export to CSV</button>
+      <div className="export-toolbar" role="group" aria-label="Export transaction history">
+        <button
+          className="export-btn"
+          onClick={() => exportCurrentPage(filteredAndSortedTransactions, 'csv', address)}
+          disabled={exporting || filteredAndSortedTransactions.length === 0}
+          aria-label="Export current page as CSV"
+        >
+          Export CSV
+        </button>
+        <button
+          className="export-btn"
+          onClick={() => exportCurrentPage(filteredAndSortedTransactions, 'json', address)}
+          disabled={exporting || filteredAndSortedTransactions.length === 0}
+          aria-label="Export current page as JSON"
+        >
+          Export JSON
+        </button>
+        <button
+          className="export-btn export-btn--all"
+          onClick={() => exportAll(address, 'csv')}
+          disabled={exporting}
+          aria-label="Export all transactions as CSV"
+          aria-busy={exporting}
+        >
+          {exporting ? 'Exporting...' : 'Export All (CSV)'}
+        </button>
+        <button
+          className="export-btn export-btn--all"
+          onClick={() => exportAll(address, 'json')}
+          disabled={exporting}
+          aria-label="Export all transactions as JSON"
+          aria-busy={exporting}
+        >
+          {exporting ? 'Exporting...' : 'Export All (JSON)'}
+        </button>
+        {exportError && (
+          <span className="export-error" role="alert">{exportError}</span>
+        )}
+      </div>
       <div className="filters">
         <label>
           Filter:
