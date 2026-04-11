@@ -257,6 +257,7 @@ function AppContent() {
     removeTfaEnabled();
     removeStoredTfaSecret();
     removeStoredBackupCodes();
+    removeLastConnectedAddress();
     // Clear all connection-related state
     setBalance('0');
     setPoints('0');
@@ -275,11 +276,16 @@ function AppContent() {
 
   useEffect(() => {
     if (userSession.isSignInPending()) {
-      userSession.handlePendingSignIn().then((userData) => {
-        setUserData(userData);
+      userSession.handlePendingSignIn().then((ud) => {
+        setUserData(ud);
+        const addr = ud?.profile?.stxAddress?.mainnet;
+        if (addr) setLastConnectedAddress(addr);
       });
     } else if (userSession.isUserSignedIn()) {
-      setUserData(userSession.loadUserData());
+      const ud = userSession.loadUserData();
+      setUserData(ud);
+      const addr = ud?.profile?.stxAddress?.mainnet;
+      if (addr) setLastConnectedAddress(addr);
     }
   }, []);
 
