@@ -4,6 +4,7 @@ import React from 'react';
 import { TwoFactorAuthSetup } from './TwoFactorAuthSetup';
 import { TwoFactorAuthVerify } from './TwoFactorAuthVerify';
 import { BackupCodes } from './BackupCodes';
+import { FocusTrapWrapper } from './FocusTrapWrapper';
 
 interface AuthModalsProps {
   show2FASetup: boolean;
@@ -33,24 +34,30 @@ const AuthModals: React.FC<AuthModalsProps> = ({
   return (
     <>
       {show2FASetup && (
-        <div className="modal-overlay">
-          <TwoFactorAuthSetup onSetupComplete={on2FASetupComplete} onCancel={onClose2FASetup} />
+        <div className="modal-overlay" role="dialog" aria-modal="true" aria-label="Two-Factor Authentication Setup">
+          <FocusTrapWrapper active={show2FASetup} onEscape={onClose2FASetup}>
+            <TwoFactorAuthSetup onSetupComplete={on2FASetupComplete} onCancel={onClose2FASetup} />
+          </FocusTrapWrapper>
         </div>
       )}
 
       {show2FAVerify && (
-        <div className="modal-overlay">
-          <TwoFactorAuthVerify
-            onVerify={on2FAVerify}
-            onUseBackup={onUseBackup}
-            onCancel={onClose2FAVerify}
-          />
+        <div className="modal-overlay" role="dialog" aria-modal="true" aria-label="Two-Factor Authentication Verification">
+          <FocusTrapWrapper active={show2FAVerify} onEscape={onClose2FAVerify}>
+            <TwoFactorAuthVerify
+              onVerify={on2FAVerify}
+              onUseBackup={onUseBackup}
+              onCancel={onClose2FAVerify}
+            />
+          </FocusTrapWrapper>
         </div>
       )}
 
       {showBackupCodes && (
-        <div className="modal-overlay">
-          <BackupCodes onVerify={onBackupCodeVerify} onCancel={onCloseBackupCodes} />
+        <div className="modal-overlay" role="dialog" aria-modal="true" aria-label="Backup Codes Verification">
+          <FocusTrapWrapper active={showBackupCodes} onEscape={onCloseBackupCodes}>
+            <BackupCodes onVerify={onBackupCodeVerify} onCancel={onCloseBackupCodes} />
+          </FocusTrapWrapper>
         </div>
       )}
     </>
