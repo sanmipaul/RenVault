@@ -112,6 +112,7 @@ function AppContent() {
   const [storedTfaSecret, setStoredTfaSecret, removeStoredTfaSecret] = useLocalStorage<string>(APP_CONFIG.tfaSecretKey, '');
   const [storedBackupCodes, setStoredBackupCodes, removeStoredBackupCodes] = useLocalStorage<string[]>(APP_CONFIG.tfaBackupCodesKey, []);
   const [analyticsOptOut] = useLocalStorage<boolean>(APP_CONFIG.analyticsOptOutKey, false);
+  const [lastConnectedAddress, setLastConnectedAddress, removeLastConnectedAddress] = useLocalStorage<string>('renvault_last_address', '');
   const [connectionError, setConnectionError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState<number>(0);
   const [showHelp, setShowHelp] = useState<boolean>(false);
