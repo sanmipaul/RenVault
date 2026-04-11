@@ -770,13 +770,13 @@ function AppContent() {
   }
 
   return (
-    <div className="container">
+    <div className="container" role="main">
       <SessionStatus />
       <AutoReconnect />
-      <div className="header">
+      <header className="header">
         <h1>RenVault 🏦</h1>
         <p>Welcome, {userData.profile.name || 'Stacker'}</p>
-        <div className="header-actions">
+        <nav className="header-actions" aria-label="Wallet and account actions">
           <button
             className="notification-button"
             onClick={() => setShowNotificationCenter(true)}
@@ -854,8 +854,8 @@ function AppContent() {
               </button>
             </div>
           )}
-        </div>
-      </div>
+        </nav>
+      </header>
 
       <ConnectionStatus
         isConnected={!!userData}
