@@ -1,5 +1,6 @@
 import React, { useRef, ReactNode } from 'react';
 import { useFocusTrap } from '../hooks/useFocusTrap';
+import { useAriaHideBackground } from '../hooks/useAriaHideBackground';
 
 interface FocusTrapWrapperProps {
   active: boolean;
@@ -9,18 +10,19 @@ interface FocusTrapWrapperProps {
 }
 
 /**
- * Wraps modal content in a div that traps keyboard focus when active.
- * Drop this around any modal body in place of a plain div.
+ * Wraps modal content so that:
+ * - Keyboard focus is trapped inside while active.
+ * - Background siblings are hidden from screen readers via aria-hidden.
  */
 export function FocusTrapWrapper({ active, onEscape, children, className }: FocusTrapWrapperProps) {
   const ref = useRef<HTMLDivElement>(null);
   useFocusTrap(ref, active, onEscape);
+  useAriaHideBackground(active);
 
   return (
     <div
       ref={ref}
       className={className}
-      // Allow container itself to receive focus as fallback
       tabIndex={-1}
       style={{ outline: 'none' }}
     >
