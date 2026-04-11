@@ -647,10 +647,10 @@ function AppContent() {
         />
 
         {showConnectionOptions ? (
-          <div className="card">
-            <h2>Choose Connection Method</h2>
-            <p>Select how you'd like to connect your wallet:</p>
-            <div style={{ display: 'flex', gap: '12px', flexDirection: 'column' }}>
+          <div className="card" role="region" aria-label="Wallet connection options">
+            <h2 id="connection-method-heading">Choose Connection Method</h2>
+            <p id="connection-method-desc">Select how you'd like to connect your wallet:</p>
+            <div role="group" aria-labelledby="connection-method-heading" aria-describedby="connection-method-desc" style={{ display: 'flex', gap: '12px', flexDirection: 'column' }}>
               <button className="btn btn-primary" onClick={connectWithStacks} aria-label="Connect using Stacks browser extension">
                 🌐 Browser Extension (Stacks)
               </button>
