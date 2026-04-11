@@ -13,7 +13,7 @@ interface Notification {
   read: boolean;
   priority?: 'low' | 'medium' | 'high';
   actions?: string[];
-  data?: any;
+  data?: Record<string, unknown>;
 }
 
 interface NotificationCenterProps {
@@ -46,7 +46,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
     const saved = localStorage.getItem(`notifications_${userId}`);
     if (saved) {
       const parsed = JSON.parse(saved);
-      setNotifications(parsed.map((n: any) => ({
+      setNotifications(parsed.map((n: Omit<Notification, 'timestamp'> & { timestamp: string }) => ({
         ...n,
         timestamp: new Date(n.timestamp)
       })));
@@ -73,14 +73,14 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
     const saved = localStorage.getItem(`notifications_${userId}`);
     if (saved) {
       const parsed = JSON.parse(saved);
-      const updated = parsed.map((n: any) =>
+      const updated = parsed.map((n: Notification) =>
         n.id === id ? { ...n, read: true } : n
       );
       localStorage.setItem(`notifications_${userId}`, JSON.stringify(updated));
     }
   };
 
-  const handleAction = async (notificationId: string, action: string, data: any) => {
+  const handleAction = async (notificationId: string, action: string, data: Record<string, unknown>) => {
     try {
       if (action === 'Approve') {
         if (data.proposalId) {

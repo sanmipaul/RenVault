@@ -1,7 +1,7 @@
 // services/wallet/TrezorWalletProvider.ts
 import TrezorConnect from '@trezor/connect-web';
 import { BaseWalletProvider } from './BaseWalletProvider';
-import { WalletConnection } from '../../types/wallet';
+import { WalletConnection, StacksContractCallOptions, SignedTransactionResult } from '../../types/wallet';
 import { WalletError, WalletErrorCode } from '../../utils/wallet-errors';
 
 export class TrezorWalletProvider extends BaseWalletProvider {
@@ -41,7 +41,7 @@ export class TrezorWalletProvider extends BaseWalletProvider {
     // Trezor doesn't require explicit disconnect
   }
 
-  async signTransaction(tx: any): Promise<any> {
+  async signTransaction(tx: StacksContractCallOptions): Promise<SignedTransactionResult> {
     // For Stacks transactions, we need to sign the serialized transaction
     const serializedTx = tx.serialize();
 

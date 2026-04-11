@@ -12,28 +12,17 @@ import {
   standardPrincipalCV
 } from '@stacks/transactions';
 import { WalletConnect } from './components/WalletConnect';
+import { WithdrawTxDetails, WalletConnectSession, WalletConnectTransactionParams, SignedTransactionResult, StacksContractCallOptions } from './types/wallet';
 import { AppKit } from '@reown/appkit/react';
 import ConnectionStatus from './components/ConnectionStatus';
-import { TwoFactorAuthSetup } from './components/TwoFactorAuthSetup';
-import { TwoFactorAuthVerify } from './components/TwoFactorAuthVerify';
 import { SessionStatus } from './components/SessionStatus';
 import { AutoReconnect } from './components/AutoReconnect';
 import NotificationService from './services/notificationService';
 import TransactionHistory from './components/TransactionHistory';
-import { WalletBackup } from './components/WalletBackup';
-import { WalletRecovery } from './components/WalletRecovery';
-import { WalletManager } from './services/wallet/WalletManager';
-import { MultiSigSetup } from './components/MultiSigSetup';
-import { CoSignerManagement } from './components/CoSignerManagement';
-import { MultiSigTransactionSigner } from './components/MultiSigTransactionSigner';
-import { WalletProviderLoader } from './services/wallet/WalletProviderLoader';
-import { PerformanceMonitor } from './components/PerformanceMonitor';
-import { getAnalyticsUrl } from './config/api';
-import { BackupCodes } from './components/BackupCodes';
-import { Analytics } from './components/Analytics';
 import NotificationCenter from './components/NotificationCenter';
-import { ErrorBoundary } from './components/ErrorBoundary';
-import { ErrorFallback } from './components/ErrorFallback';
+import AmountInput from './components/AmountInput';
+import { useAmountValidation } from './hooks/useAmountValidation';
+import { validateDepositAmount, validateWithdrawAmount, parseSTXInput } from './utils/amountValidator';
 
 const appConfig = new AppConfig(['store_write', 'publish_data']);
 const userSession = new UserSession({ appConfig });
@@ -62,7 +51,10 @@ const getCurrentNetwork = () => {
   return new StacksMainnet();
 };
 
-const trackAnalytics = async (event: string, data: any) => {
+const getErrorMessage = (error: unknown): string =>
+  error instanceof Error ? error.message : String(error);
+
+const trackAnalytics = async (event: string, data: Record<string, unknown>) => {
   const optOut = localStorage.getItem(APP_CONFIG.analyticsOptOutKey) === 'true';
   if (optOut) return;
   
@@ -90,32 +82,38 @@ function AppContent() {
   const [detectedNetwork, setDetectedNetwork] = useState<'mainnet' | 'testnet' | null>(null);
   const [networkMismatch, setNetworkMismatch] = useState<boolean>(false);
   const [showWithdrawDetails, setShowWithdrawDetails] = useState<boolean>(false);
-  const [withdrawTxDetails, setWithdrawTxDetails] = useState<any>(null);
+  const [withdrawTxDetails, setWithdrawTxDetails] = useState<WithdrawTxDetails | null>(null);
   const [connectionMethod, setConnectionMethod] = useState<'stacks' | 'walletconnect' | null>(null);
   const [showConnectionOptions, setShowConnectionOptions] = useState<boolean>(false);
-  const [walletConnectSession, setWalletConnectSession] = useState<any>(null);
+  const [walletConnectSession, setWalletConnectSession] = useState<WalletConnectSession | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [connectionError, setConnectionError] = useState<string | null>(null);
+  const [, setRetryCount] = useState<number>(0);
+  const [showHelp, setShowHelp] = useState<boolean>(false);
+  const [currentTransaction, setCurrentTransaction] = useState<any>(null);
+
+  // Modal visibility state
   const [show2FASetup, setShow2FASetup] = useState<boolean>(false);
   const [show2FAVerify, setShow2FAVerify] = useState<boolean>(false);
   const [showBackupCodes, setShowBackupCodes] = useState<boolean>(false);
   const [showNotificationCenter, setShowNotificationCenter] = useState<boolean>(false);
   const [showWalletBackup, setShowWalletBackup] = useState<boolean>(false);
   const [showWalletRecovery, setShowWalletRecovery] = useState<boolean>(false);
-  const [walletManager] = useState(() => new WalletManager());
   const [showMultiSigSetup, setShowMultiSigSetup] = useState<boolean>(false);
   const [showCoSignerManagement, setShowCoSignerManagement] = useState<boolean>(false);
   const [showMultiSigSigner, setShowMultiSigSigner] = useState<boolean>(false);
-  const [currentTransaction, setCurrentTransaction] = useState<any>(null);
+  const [currentTransaction, setCurrentTransaction] = useState<StacksContractCallOptions | null>(null);
   const [showPerformanceMonitor, setShowPerformanceMonitor] = useState<boolean>(false);
   const [tfaSecret, setTfaSecret] = useState<string>('');
-  const [tfaEnabled, setTfaEnabled, removeTfaEnabled] = useLocalStorage<boolean>(APP_CONFIG.tfaEnabledKey, false);
-  const [storedTfaSecret, setStoredTfaSecret, removeStoredTfaSecret] = useLocalStorage<string>(APP_CONFIG.tfaSecretKey, '');
-  const [storedBackupCodes, setStoredBackupCodes, removeStoredBackupCodes] = useLocalStorage<string[]>(APP_CONFIG.tfaBackupCodesKey, []);
-  const [analyticsOptOut] = useLocalStorage<boolean>(APP_CONFIG.analyticsOptOutKey, false);
-  const [lastConnectedAddress, setLastConnectedAddress, removeLastConnectedAddress] = useLocalStorage<string>('renvault_last_address', '');
+  const [tfaEnabled, setTfaEnabled] = useState<boolean>(TwoFactorSecureStorage.hasSecret());
   const [connectionError, setConnectionError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState<number>(0);
   const [showHelp, setShowHelp] = useState<boolean>(false);
+
+  // ── Real-time amount validation ─────────────────────────────────────────
+  const balanceNum = parseFloat(balance) || 0;
+  const depositValidation = useAmountValidation('deposit');
+  const withdrawValidation = useAmountValidation('withdraw', balanceNum);
 
   // Cleanup effect for component unmount
   useEffect(() => {
@@ -127,32 +125,35 @@ function AppContent() {
     };
   }, []);
 
-  // Derive the notification userId from the connected wallet address so it is
-  // stable and consistent with the key used everywhere else in the app.
-  const notificationUserId = userData?.profile.stxAddress.mainnet ?? null;
+  const userAddress = userData?.profile.stxAddress.mainnet ?? null;
+  const notificationUserId = userAddress;
 
-  // Initialize notification service — use the singleton so the same instance
-  // (and its registered listeners) is reused across re-renders.
   const notificationService = useMemo(
-    () =>
-      notificationUserId
-        ? NotificationService.getInstance(notificationUserId)
-        : null,
+    () => (notificationUserId ? NotificationService.getInstance(notificationUserId) : null),
     [notificationUserId]
   );
-  const handle2FASetupComplete = (secret: string, backupCodes: string[]) => {
+  /** Derive the active wallet address from userData, preferring mainnet. */
+  const getWalletAddress = (): string =>
+    userData?.profile?.stxAddress?.mainnet ??
+    userData?.profile?.stxAddress?.testnet ??
+    '';
+
+  const handle2FASetupComplete = async (secret: string, backupCodes: string[]) => {
     setTfaSecret(secret);
+    localStorage.setItem(APP_CONFIG.tfaEnabledKey, 'true');
     setTfaEnabled(true);
-    setStoredTfaSecret(secret);
-    setStoredBackupCodes(backupCodes);
+    // Store secret and backup codes encrypted, not as plain text
+    const walletAddress = getWalletAddress();
+    await TwoFactorSecureStorage.saveSecret(secret, walletAddress);
+    await TwoFactorSecureStorage.saveBackupCodes(backupCodes, walletAddress);
     setShow2FASetup(false);
     setStatus('✅ Two-factor authentication enabled successfully!');
-    
+
     // Send 2FA enabled notification
     if (notificationService) {
       notificationService.testTwoFactorEnabledNotification();
     }
-    
+
     setTimeout(() => setStatus(''), 5000);
   };
 
@@ -171,54 +172,26 @@ function AppContent() {
 
   const handleBackupCodeVerify = async (code: string): Promise<boolean> => {
     try {
-      if (storedBackupCodes.includes(code)) {
-        const remaining = storedBackupCodes.filter(c => c !== code);
-        setStoredBackupCodes(remaining);
-        setShowBackupCodes(false);
-        return true;
-      }
-      return false;
+      const valid = await TwoFactorSecureStorage.verifyAndConsumeBackupCode(code, getWalletAddress());
+      if (valid) setShowBackupCodes(false);
+      return valid;
     } catch {
       return false;
     }
   };
 
   const handleDisable2FA = () => {
-    removeTfaEnabled();
-    removeStoredTfaSecret();
-    removeStoredBackupCodes();
+    localStorage.removeItem(APP_CONFIG.tfaEnabledKey);
+    TwoFactorSecureStorage.clearAll();
     setTfaSecret('');
+    setTfaEnabled(false);
     setStatus('✅ Two-factor authentication disabled');
     
     // Send 2FA disabled notification
     if (notificationService) {
       notificationService.testTwoFactorDisabledNotification();
     }
-    
-    setTimeout(() => setStatus(''), 5000);
-  };
-
-  const handleWalletBackupComplete = (backupData: string) => {
-    setShowWalletBackup(false);
-    setStatus('✅ Wallet backup created successfully! Store it securely.');
-    // Optionally send to backend
-    fetch('/api/wallet/backup', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId: userData?.profile.stxAddress.mainnet, encryptedBackup: backupData })
-    });
-    setTimeout(() => setStatus(''), 5000);
-  };
-
-  const handleWalletRecoveryComplete = () => {
-    setShowWalletRecovery(false);
-    setStatus('✅ Wallet recovered successfully!');
-    // Refresh user data
-    if (userSession.isUserSignedIn()) {
-      setUserData(userSession.loadUserData());
-    }
-    setTimeout(() => setStatus(''), 5000);
-  };
+  }, [userAddress, detectFromAddress]);
 
   const handleMultiSigSetupComplete = () => {
     setShowMultiSigSetup(false);
@@ -231,7 +204,7 @@ function AppContent() {
     setTimeout(() => setStatus(''), 3000);
   };
 
-  const handleMultiSigTransactionSigned = (signedTx: any) => {
+  const handleMultiSigTransactionSigned = (_signedTx: SignedTransactionResult): void => {
     setShowMultiSigSigner(false);
     setCurrentTransaction(null);
     setStatus('✅ Transaction signed successfully!');
@@ -253,11 +226,11 @@ function AppContent() {
       setConnectionMethod(null);
       setStatus('✅ Disconnected from WalletConnect');
     }
-    // Clear all session data
-    removeTfaEnabled();
-    removeStoredTfaSecret();
-    removeStoredBackupCodes();
-    removeLastConnectedAddress();
+    // Clear all 2FA session data on disconnect so no secrets linger in storage
+    localStorage.removeItem(APP_CONFIG.tfaEnabledKey);
+    TwoFactorSecureStorage.clearAll();
+    setTfaEnabled(false);
+    console.info('[RenVault] 2FA encrypted storage cleared on wallet disconnect');
     // Clear all connection-related state
     setBalance('0');
     setPoints('0');
@@ -267,77 +240,46 @@ function AppContent() {
     setNetworkMismatch(false);
   };
 
+  // Show 2FA verify on load if enabled — intentionally runs once on mount
   useEffect(() => {
-    // Check for 2FA requirement on app load
-    if (tfaEnabled && !userData) {
+    // Check for 2FA requirement on app load — use encrypted storage as source of truth,
+    // fall back to the plain-text enabled flag for backwards compatibility.
+    const has2FA =
+      TwoFactorSecureStorage.hasSecret() ||
+      localStorage.getItem(APP_CONFIG.tfaEnabledKey) === 'true';
+    setTfaEnabled(has2FA);
+    if (has2FA && !userData) {
       setShow2FAVerify(true);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Handle pending Stacks sign-in on mount
   useEffect(() => {
-    if (userSession.isSignInPending()) {
-      userSession.handlePendingSignIn().then((ud) => {
-        setUserData(ud);
-        const addr = ud?.profile?.stxAddress?.mainnet;
-        if (addr) setLastConnectedAddress(addr);
-      });
-    } else if (userSession.isUserSignedIn()) {
-      const ud = userSession.loadUserData();
-      setUserData(ud);
-      const addr = ud?.profile?.stxAddress?.mainnet;
-      if (addr) setLastConnectedAddress(addr);
-    }
-  }, []);
+    const initSession = async () => {
+      let loadedData = null;
+      if (userSession.isSignInPending()) {
+        loadedData = await userSession.handlePendingSignIn();
+        setUserData(loadedData);
+      } else if (userSession.isUserSignedIn()) {
+        loadedData = userSession.loadUserData();
+        setUserData(loadedData);
+      }
 
-  useEffect(() => {
-    if (userData && detectedNetwork) {
-      console.log('Detected network:', detectedNetwork, 'Address:', userData.profile.stxAddress.mainnet);
-      fetchUserStats();
-    }
-  }, [userData, detectedNetwork]);
-
-  useEffect(() => {
-    if (status) {
-      const timer = setTimeout(() => {
-        setStatus('');
-      }, 10000); // Clear status after 10 seconds
-      return () => clearTimeout(timer);
-    }
-  }, [status]);
-
-  useEffect(() => {
-    const handleKeyPress = (event: KeyboardEvent) => {
-      if (showWithdrawDetails) {
-        if (event.key === 'Enter' && !loading) {
-          executeWithdraw();
-        } else if (event.key === 'Escape') {
-          setShowWithdrawDetails(false);
-          setWithdrawTxDetails(null);
+      // Run 2FA data migration once wallet address is available
+      if (loadedData && TwoFactorMigration.needsMigration()) {
+        const walletAddress =
+          loadedData.profile?.stxAddress?.mainnet ??
+          loadedData.profile?.stxAddress?.testnet ??
+          '';
+        if (walletAddress) {
+          await TwoFactorMigration.migrate(walletAddress);
         }
       }
     };
 
-    if (showWithdrawDetails) {
-      document.addEventListener('keydown', handleKeyPress);
-      return () => document.removeEventListener('keydown', handleKeyPress);
-    }
-  }, [showWithdrawDetails, loading]);
-
-  const promptNetworkSwitch = () => {
-    setStatus('To switch networks: Open your Stacks wallet extension and select "Mainnet" from the network dropdown, then refresh this page.');
-  };
-
-  const validateNetwork = (): boolean => {
-    if (networkMismatch) {
-      setStatus('Please switch to mainnet to perform this action');
-      return false;
-    }
-    return true;
-  };
-
-  const connectWallet = () => {
-    setShowConnectionOptions(true);
-  };
+    initSession();
+  }, []);
 
   const connectWithStacks = () => {
     setConnectionError(null);
@@ -347,24 +289,20 @@ function AppContent() {
     const startTime = Date.now();
     try {
       showConnect({
-        appDetails: {
-          name: APP_CONFIG.name,
-          icon: APP_CONFIG.icon,
-        },
+        appDetails: { name: APP_CONFIG.name, icon: APP_CONFIG.icon },
         redirectTo: '/',
         onFinish: () => {
-          const duration = Date.now() - startTime;
           trackAnalytics('wallet-connect', { user: 'anonymous', method: 'stacks', success: true });
-          trackAnalytics('performance', { operation: 'wallet-connect-stacks', duration });
+          trackAnalytics('performance', { operation: 'wallet-connect-stacks', duration: Date.now() - startTime });
           window.location.reload();
         },
         userSession,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       const duration = Date.now() - startTime;
-      setConnectionError(`Failed to connect with Stacks wallet: ${error.message}`);
+      setConnectionError(`Failed to connect with Stacks wallet: ${getErrorMessage(error)}`);
       trackAnalytics('wallet-connect', { user: 'anonymous', method: 'stacks', success: false });
-      trackAnalytics('wallet-error', { user: 'anonymous', method: 'stacks', errorType: error.message });
+      trackAnalytics('wallet-error', { user: 'anonymous', method: 'stacks', errorType: getErrorMessage(error) });
       trackAnalytics('performance', { operation: 'wallet-connect-stacks', duration });
       setToastMessage('Connection failed. Check the error message above.');
       setTimeout(() => setToastMessage(null), 5000);
@@ -372,7 +310,7 @@ function AppContent() {
   };
 
   const retryConnectWithStacks = () => {
-    setRetryCount(prev => prev + 1);
+    setRetryCount((prev) => prev + 1);
     connectWithStacks();
   };
 
@@ -381,28 +319,31 @@ function AppContent() {
     setShowConnectionOptions(false);
   };
 
-  const fetchUserStats = async () => {
-    if (!userData || networkMismatch) return;
-    
-    const startTime = Date.now();
+  const disconnectWallet = () => {
+    if (connectionMethod === 'stacks') {
+      userSession.signUserOut();
+    }
+    setUserData(null);
+    setConnectionMethod(null);
+    setWalletConnectSession(null);
+    resetStats();
+    resetNetwork();
+    disable2FA();
+  };
+
+  const handle2FASetupComplete = (secret: string, backupCodes: string[]) => {
+    enable2FA(secret, backupCodes);
+    setShow2FASetup(false);
+    setStatus('Two-factor authentication enabled successfully!');
+    notificationService?.testTwoFactorEnabledNotification();
+  };
+
+  const handle2FAVerify = async (code: string): Promise<boolean> => {
     try {
-      const network = getCurrentNetwork();
-      const balanceResult = await callReadOnlyFunction({
-        contractAddress: CONTRACT_ADDRESS,
-        contractName: CONTRACT_NAME,
-        functionName: 'get-balance',
-        functionArgs: [standardPrincipalCV(userData.profile.stxAddress.mainnet)],
-        network,
-        senderAddress: userData.profile.stxAddress.mainnet,
-      });
-      
-      const pointsResult = await callReadOnlyFunction({
-        contractAddress: CONTRACT_ADDRESS,
-        contractName: CONTRACT_NAME,
-        functionName: 'get-points',
-        functionArgs: [standardPrincipalCV(userData.profile.stxAddress.mainnet)],
-        network,
-        senderAddress: userData.profile.stxAddress.mainnet,
+      const response = await fetch('/api/2fa/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: 'current-user', code }),
       });
 
       // Assuming result is a UIntCV
@@ -413,10 +354,13 @@ function AppContent() {
       
       const duration = Date.now() - startTime;
       trackAnalytics('performance', { operation: 'fetch-user-stats', duration });
-    } catch (error) {
-      console.error('Error fetching stats:', error);
+    } catch (error: unknown) {
       if (networkMismatch) {
         setStatus('Unable to fetch data: Please switch to mainnet');
+      } else if (ContractErrorMapper.isContractError(error)) {
+        console.warn('Contract error fetching stats:', ContractErrorMapper.toStatusMessage(error, CONTRACT_NAME));
+      } else {
+        console.error('Error fetching stats:', error);
       }
       const duration = Date.now() - startTime;
       trackAnalytics('performance', { operation: 'fetch-user-stats', duration });
@@ -424,14 +368,20 @@ function AppContent() {
   };
 
   const handleDeposit = async () => {
-    if (!debouncedDepositAmount || !userData) return;
+    if (!userData) return;
+    const preSubmitCheck = validateDepositAmount(depositAmount);
+    if (!preSubmitCheck.valid) {
+      depositValidation.validate(depositAmount); // surface the error in the field
+      setStatus(`❌ ${preSubmitCheck.error}`);
+      return;
+    }
     if (!validateNetwork()) return;
 
     setLoading(true);
     setStatus('');
 
     try {
-      const amount = Math.floor(parseFloat(debouncedDepositAmount) * 1000000);
+      const amount = parseSTXInput(depositAmount) ?? 0;
       
       if (connectionMethod === 'walletconnect' && walletConnectSession) {
         // Use WalletConnect for signing
@@ -455,6 +405,7 @@ function AppContent() {
         
         setStatus(`Deposit transaction submitted: ${broadcastResponse.txid}`);
         setDepositAmount('');
+        depositValidation.reset();
         
         trackAnalytics('deposit', { user: userData.profile.stxAddress.mainnet, amount });
         
@@ -465,9 +416,13 @@ function AppContent() {
         
         setTimeout(fetchUserStats, 3000);
       }
-    } catch (error: any) {
-      setStatus(`Error: ${error.message}`);
-      trackAnalytics('wallet-error', { user: userData?.profile?.stxAddress?.mainnet || 'anonymous', method: connectionMethod || 'unknown', errorType: error.message });
+    } catch (error: unknown) {
+      const friendlyMsg = ContractErrorMapper.isContractError(error)
+        ? ContractErrorMapper.toStatusMessage(error, CONTRACT_NAME)
+        : error instanceof Error ? error.message : 'Unknown error';
+      setStatus(`❌ Deposit failed: ${friendlyMsg}`);
+      const errMsg = error instanceof Error ? error.message : String(error);
+      trackAnalytics('wallet-error', { user: userData?.profile?.stxAddress?.mainnet || 'anonymous', method: connectionMethod || 'unknown', errorType: errMsg });
     } finally {
       setLoading(false);
     }
@@ -506,6 +461,7 @@ function AppContent() {
             clearTimeout(signingTimeout);
             setStatus(`✅ Withdraw transaction submitted successfully! Transaction ID: ${data.txId}`);
             setWithdrawAmount('');
+            withdrawValidation.reset();
             setWithdrawTxDetails(null);
             trackAnalytics('withdrawal', { user: userData.profile.stxAddress.mainnet, amount: withdrawTxDetails.amount });
             
@@ -524,15 +480,18 @@ function AppContent() {
           },
         });
       }
-    } catch (error: any) {
-      setStatus(`Error signing transaction: ${error.message}`);
+    } catch (error: unknown) {
+      const friendlyMsg = ContractErrorMapper.isContractError(error)
+        ? ContractErrorMapper.toStatusMessage(error, CONTRACT_NAME)
+        : error instanceof Error ? error.message : 'Unknown error';
+      setStatus(`❌ Withdrawal failed: ${friendlyMsg}`);
       setWithdrawTxDetails(null);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleWalletConnectTransaction = async (action: 'deposit' | 'withdraw', params: any) => {
+  const handleWalletConnectTransaction = async (action: 'deposit' | 'withdraw', params: WalletConnectTransactionParams) => {
     if (!walletConnectSession) return;
     
     try {
@@ -558,12 +517,15 @@ function AppContent() {
       }
       
       setTimeout(fetchUserStats, 5000); // Longer delay for WalletConnect
-    } catch (error: any) {
-      setStatus(`WalletConnect error: ${error.message}`);
+    } catch (error: unknown) {
+      const friendlyMsg = ContractErrorMapper.isContractError(error)
+        ? ContractErrorMapper.toStatusMessage(error, CONTRACT_NAME)
+        : error instanceof Error ? error.message : 'Unknown error';
+      setStatus(`❌ WalletConnect error: ${friendlyMsg}`);
     }
   };
 
-  const handleWalletConnectSession = (session: any) => {
+  const handleWalletConnectSession = (session: WalletConnectSession) => {
     // Extract Stacks account from WalletConnect session
     const stacksAccount = session.namespaces.stacks?.accounts?.[0];
     if (stacksAccount) {
@@ -589,34 +551,26 @@ function AppContent() {
   };
 
   const handleWithdraw = async () => {
-    if (!withdrawAmount || !userData) return;
+    if (!userData) return;
+    const preSubmitCheck = validateWithdrawAmount(withdrawAmount, balanceNum);
+    if (!preSubmitCheck.valid) {
+      withdrawValidation.validate(withdrawAmount); // surface error in the field
+      setStatus(`❌ ${preSubmitCheck.error}`);
+      return;
+    }
     if (!validateNetwork()) return;
-    
-    const withdrawAmountNum = parseFloat(withdrawAmount);
-    const balanceNum = parseFloat(balance);
-    
-    if (isNaN(withdrawAmountNum) || withdrawAmountNum <= 0) {
-      setStatus('Error: Please enter a valid withdrawal amount greater than 0');
-      return;
-    }
-    
-    if (withdrawAmountNum > balanceNum) {
-      setStatus(`Error: Insufficient balance. You have ${balance} STX available`);
-      return;
-    }
-    
-    // Warn if withdrawal would leave less than 0.01 STX
-    const remainingBalance = balanceNum - withdrawAmountNum;
-    if (remainingBalance > 0 && remainingBalance < 0.01) {
-      const confirmLeave = window.confirm(`Warning: This withdrawal will leave only ${remainingBalance.toFixed(6)} STX in your vault. Continue?`);
-      if (!confirmLeave) return;
+
+    // Dust-threshold advisory — confirm before proceeding
+    if (preSubmitCheck.warning) {
+      const ok = window.confirm(`⚠ ${preSubmitCheck.warning}\n\nContinue?`);
+      if (!ok) return;
     }
     
     setLoading(true);
     setStatus('Preparing transaction details...');
     
     try {
-      const amount = Math.floor(parseFloat(withdrawAmount) * 1000000);
+      const amount = parseSTXInput(withdrawAmount) ?? 0;
       const network = getCurrentNetwork();
       
       // Prepare transaction details for display
@@ -636,145 +590,86 @@ function AppContent() {
       setWithdrawTxDetails(txDetails);
       setShowWithdrawDetails(true);
       setLoading(false);
-    } catch (error: any) {
-      setStatus(`Error preparing transaction: ${error.message}`);
+    } catch (error: unknown) {
+      const friendlyMsg = ContractErrorMapper.isContractError(error)
+        ? ContractErrorMapper.toStatusMessage(error, CONTRACT_NAME)
+        : error instanceof Error ? error.message : 'Unknown error';
+      setStatus(`❌ Error preparing transaction: ${friendlyMsg}`);
       setLoading(false);
     }
+    trackAnalytics('withdrawal', { user: userAddress ?? 'anonymous', amount });
+  };
+
+  const handleRefreshStats = () => {
+    if (userAddress) fetchStats(userAddress, networkMismatch);
   };
 
   if (!userData) {
     return (
       <>
-      <div className="container">
-        <div className="header">
-          <h1>RenVault 🏦</h1>
-          <p>Clarity 4 Micro-Savings Protocol</p>
+        <div className="container">
+          <div className="header">
+            <h1>RenVault</h1>
+            <p>Clarity 4 Micro-Savings Protocol</p>
+          </div>
+
+          <ConnectionStatus isConnected={false} connectionMethod={null} />
+
+          {showConnectionOptions ? (
+            <ConnectionOptions
+              onConnectStacks={connectWithStacks}
+              onConnectWalletConnect={connectWithWalletConnect}
+              onCancel={() => setShowConnectionOptions(false)}
+            />
+          ) : (
+            <div className="card">
+              <h2>Connect Your Wallet</h2>
+              <p>Connect your Stacks wallet to start saving STX and earning commitment points.</p>
+              <appkit-button aria-label="Open wallet connection modal" />
+            </div>
+          )}
+
+          {connectionError && (
+            <div className="card error">
+              <h3>Connection Failed</h3>
+              <p>{connectionError}</p>
+              <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
+                <button className="btn btn-primary" onClick={retryConnectWithStacks}>
+                  Retry Stacks Wallet
+                </button>
+                <button className="btn btn-secondary" onClick={connectWithWalletConnect}>
+                  Try WalletConnect Instead
+                </button>
+                <button className="btn btn-outline" onClick={() => setShowHelp(true)}>
+                  Help
+                </button>
+              </div>
+            </div>
+          )}
+
+          {showHelp && <HelpPanel onClose={() => setShowHelp(false)} />}
+
+          <AuthModals
+            show2FASetup={show2FASetup}
+            show2FAVerify={show2FAVerify}
+            showBackupCodes={showBackupCodes}
+            on2FASetupComplete={handle2FASetupComplete}
+            on2FAVerify={handle2FAVerify}
+            onBackupCodeVerify={handleBackupCodeVerify}
+            onClose2FASetup={() => setShow2FASetup(false)}
+            onClose2FAVerify={() => setShow2FAVerify(false)}
+            onUseBackup={() => { setShow2FAVerify(false); setShowBackupCodes(true); }}
+            onCloseBackupCodes={() => setShowBackupCodes(false)}
+          />
+
+          {connectionMethod === 'walletconnect' && (
+            <div className="card">
+              <WalletConnect />
+            </div>
+          )}
         </div>
 
-        <ConnectionStatus
-          isConnected={false}
-          connectionMethod={null}
-        />
-
-        {showConnectionOptions ? (
-          <div className="card" role="region" aria-label="Wallet connection options">
-            <h2 id="connection-method-heading">Choose Connection Method</h2>
-            <p id="connection-method-desc">Select how you'd like to connect your wallet:</p>
-            <div role="group" aria-labelledby="connection-method-heading" aria-describedby="connection-method-desc" style={{ display: 'flex', gap: '12px', flexDirection: 'column' }}>
-              <button className="btn btn-primary" onClick={connectWithStacks} aria-label="Connect using Stacks browser extension">
-                🌐 Browser Extension (Stacks)
-              </button>
-              <button className="btn btn-secondary" onClick={connectWithWalletConnect} aria-label="Connect using WalletConnect for mobile or desktop">
-                📱 WalletConnect (Mobile/Desktop)
-              </button>
-              <button className="btn btn-outline" onClick={() => setShowConnectionOptions(false)} aria-label="Cancel wallet connection">
-                Cancel
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div className="card">
-            <h2>Connect Your Wallet</h2>
-            <p>Connect your Stacks wallet to start saving STX and earning commitment points.</p>
-            <appkit-button aria-label="Open wallet connection modal" />
-          </div>
-        )}
-
-        {connectionError && (
-          <div className="card error" role="alert" aria-live="assertive">
-            <h3>❌ Connection Failed</h3>
-            <p>{connectionError}</p>
-            <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
-              <button className="btn btn-primary" onClick={retryConnectWithStacks} aria-label="Retry connecting with Stacks wallet extension">
-                Retry Stacks Wallet
-              </button>
-              <button className="btn btn-secondary" onClick={connectWithWalletConnect} aria-label="Try WalletConnect as an alternative connection method">
-                Try WalletConnect Instead
-              </button>
-              <button className="btn btn-outline" onClick={() => setShowHelp(true)} aria-label="Open connection help guide" aria-expanded={showHelp}>
-                Help
-              </button>
-            </div>
-          </div>
-        )}
-
-        {showHelp && (
-          <div className="card" role="region" aria-label="Connection help guide" aria-live="polite">
-            <h3 id="help-heading">🔧 Connection Help</h3>
-            <p><strong>Stacks Wallet Extension:</strong> Make sure you have the Stacks Wallet browser extension installed and unlocked.</p>
-            <p><strong>WalletConnect:</strong> Ensure your mobile wallet app supports WalletConnect and is connected to the internet.</p>
-            <p><strong>Network Issues:</strong> Check your internet connection and try refreshing the page.</p>
-            <p><strong>Timeout Errors:</strong> The app will automatically retry connections. If it persists, try a different connection method.</p>
-            <button className="btn btn-primary" onClick={() => setShowHelp(false)} style={{ marginTop: '16px' }} aria-label="Close connection help guide">
-              Close Help
-            </button>
-          </div>
-        )}
-
-        {show2FASetup && (
-          <div className="modal-overlay">
-            <ErrorBoundary
-              sectionName="2FA Setup"
-              fallback={(error, reset) => (
-                <ErrorFallback error={error} sectionName="2FA Setup" onReset={reset} />
-              )}
-            >
-              <TwoFactorAuthSetup
-                onSetupComplete={handle2FASetupComplete}
-                onCancel={() => setShow2FASetup(false)}
-              />
-            </ErrorBoundary>
-          </div>
-        )}
-
-        {show2FAVerify && (
-          <div className="modal-overlay">
-            <ErrorBoundary
-              sectionName="2FA Verify"
-              fallback={(error, reset) => (
-                <ErrorFallback error={error} sectionName="2FA Verify" onReset={reset} />
-              )}
-            >
-              <TwoFactorAuthVerify
-                onVerify={handle2FAVerify}
-                onUseBackup={() => {
-                  setShow2FAVerify(false);
-                  setShowBackupCodes(true);
-                }}
-                onCancel={() => setShow2FAVerify(false)}
-              />
-            </ErrorBoundary>
-          </div>
-        )}
-
-        {showBackupCodes && (
-          <div className="modal-overlay">
-            <ErrorBoundary
-              sectionName="Backup Codes"
-              fallback={(error, reset) => (
-                <ErrorFallback error={error} sectionName="Backup Codes" onReset={reset} />
-              )}
-            >
-              <BackupCodes
-                onVerify={handleBackupCodeVerify}
-                onCancel={() => setShowBackupCodes(false)}
-              />
-            </ErrorBoundary>
-          </div>
-        )}
-
-        {connectionMethod === 'walletconnect' && (
-          <div className="card">
-            <WalletConnect />
-          </div>
-        )}
-      </div>
-
-      {toastMessage && (
-        <div className="toast" role="alert" aria-live="assertive" aria-atomic="true">
-          {toastMessage}
-        </div>
-      )}
+        {toastMessage && <div className="toast">{toastMessage}</div>}
       </>
     );
   }
@@ -783,95 +678,23 @@ function AppContent() {
     <div className="container" role="main">
       <SessionStatus />
       <AutoReconnect />
-      <header className="header">
-        <h1>RenVault 🏦</h1>
-        <p>Welcome, {userData.profile.name || 'Stacker'}</p>
-        <nav className="header-actions" aria-label="Wallet and account actions">
-          <button
-            className="notification-button"
-            onClick={() => setShowNotificationCenter(true)}
-            title="Notifications"
-            aria-label="Open notification center"
-            aria-haspopup="dialog"
-          >
-            🔔
-          </button>
-          <button
-            className="btn btn-outline"
-            onClick={() => setShowWalletBackup(true)}
-            title="Backup Wallet"
-            aria-label="Open wallet backup"
-            aria-haspopup="dialog"
-          >
-            🛡️ Backup
-          </button>
-          <button
-            className="btn btn-outline"
-            onClick={() => setShowWalletRecovery(true)}
-            title="Recover Wallet"
-            aria-label="Open wallet recovery"
-            aria-haspopup="dialog"
-          >
-            🔄 Recover
-          </button>
-          <button
-            className="btn btn-outline"
-            onClick={() => setShowMultiSigSetup(true)}
-            title="Setup Multi-Sig"
-            aria-label="Open multi-signature wallet setup"
-            aria-haspopup="dialog"
-          >
-            🔐 Multi-Sig
-          </button>
-          <button
-            className="btn btn-outline"
-            onClick={() => setShowCoSignerManagement(true)}
-            title="Manage Co-Signers"
-            aria-label="Manage co-signers for multi-signature wallet"
-            aria-haspopup="dialog"
-          >
-            👥 Co-Signers
-          </button>
-          <button
-            className="btn btn-outline"
-            onClick={() => setShowMultiSigSigner(true)}
-            title="Sign Multi-Sig Transactions"
-            aria-label="Sign pending multi-signature transactions"
-            aria-haspopup="dialog"
-          >
-            ✍️ Sign Tx
-          </button>
-          <button
-            className="btn btn-outline"
-            onClick={() => setShowPerformanceMonitor(true)}
-            title="Performance Monitor"
-            aria-label="Open performance monitor"
-            aria-haspopup="dialog"
-          >
-            ⚡ Perf
-          </button>
-          {detectedNetwork && (
-            <div className="network-indicator">
-              <span className={`network-badge ${detectedNetwork}`}>
-                {detectedNetwork.toUpperCase()}
-              </span>
-              <button
-                className="btn btn-secondary"
-                style={{ marginLeft: '12px', fontSize: '0.8rem', padding: '4px 8px' }}
-                onClick={() => window.location.reload()}
-                aria-label="Reload page to refresh network status"
-              >
-                Refresh
-              </button>
-            </div>
-          )}
-        </nav>
-      </header>
+
+      <AppHeader
+        userName={userData.profile.name}
+        detectedNetwork={detectedNetwork}
+        onOpenNotifications={() => setShowNotificationCenter(true)}
+        onOpenWalletBackup={() => setShowWalletBackup(true)}
+        onOpenWalletRecovery={() => setShowWalletRecovery(true)}
+        onOpenMultiSigSetup={() => setShowMultiSigSetup(true)}
+        onOpenCoSignerManagement={() => setShowCoSignerManagement(true)}
+        onOpenMultiSigSigner={() => setShowMultiSigSigner(true)}
+        onOpenPerformanceMonitor={() => setShowPerformanceMonitor(true)}
+      />
 
       <ConnectionStatus
-        isConnected={!!userData}
+        isConnected
         connectionMethod={connectionMethod}
-        walletAddress={userData?.profile?.stxAddress?.mainnet}
+        walletAddress={userAddress ?? undefined}
         onDisconnect={disconnectWallet}
       />
 
@@ -880,27 +703,10 @@ function AppContent() {
         <appkit-network-button aria-label="Switch blockchain network" />
       </div>
 
-      {detectedNetwork === 'mainnet' && (
-        <div className="card success">
-          <h3>✅ Connected to Mainnet</h3>
-          <p>You are connected to the correct network. You can now use RenVault.</p>
-        </div>
-      )}
-      {detectedNetwork !== 'mainnet' && (
-        <div className="card warning">
-          <h3>⚠️ Network Mismatch Detected</h3>
-          <p>Your wallet is connected to <strong>{detectedNetwork}</strong>, but RenVault operates on <strong>mainnet</strong>.</p>
-          <p>Please switch your wallet to mainnet to use this application.</p>
-          <div role="group" aria-label="Network switch actions" style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
-            <button className="btn btn-primary" onClick={promptNetworkSwitch} aria-label="Show instructions for switching to mainnet">
-              How to Switch Network
-            </button>
-            <button className="btn btn-secondary" onClick={() => window.location.reload()} aria-label="Reload page after switching network">
-              Refresh After Switching
-            </button>
-          </div>
-        </div>
-      )}
+      <NetworkStatus
+        detectedNetwork={detectedNetwork}
+        onPromptSwitch={() => setStatus(promptSwitch())}
+      />
 
       <div className="card" role="region" aria-label="Security settings">
         <h3 id="security-settings-heading">🔒 Security Settings</h3>
@@ -913,9 +719,6 @@ function AppContent() {
                 className="btn btn-primary"
                 onClick={() => setShow2FASetup(true)}
                 disabled={tfaEnabled}
-                aria-label={tfaEnabled ? 'Two-factor authentication is already enabled' : 'Enable two-factor authentication'}
-                aria-pressed={tfaEnabled}
-                aria-haspopup="dialog"
               >
                 {tfaEnabled ? '2FA Enabled' : 'Enable 2FA'}
               </button>
@@ -953,69 +756,31 @@ function AppContent() {
         </div>
       </div>
 
-      <div className="stats" role="region" aria-label="Vault statistics">
-        <div className="stat-card" role="group" aria-label="Vault balance">
-          <div className="stat-value" aria-live="polite" aria-atomic="true">{balance} STX</div>
-          <div>Vault Balance</div>
-        </div>
-        <div className="stat-card" role="group" aria-label="Commitment points">
-          <div className="stat-value" aria-live="polite" aria-atomic="true">{points}</div>
-          <div>Commitment Points</div>
-        </div>
-        <div className="stat-card" role="group" aria-label="Connected network">
-          <div className="stat-value">{detectedNetwork ? detectedNetwork.toUpperCase() : 'Unknown'}</div>
-          <div>Network</div>
-        </div>
-      </div>
+      <StatsPanel balance={balance} points={points} detectedNetwork={detectedNetwork} />
 
-      <ErrorBoundary
-        sectionName="Analytics"
-        fallback={(error, reset) => (
-          <ErrorFallback error={error} sectionName="Analytics" onReset={reset} compact />
-        )}
-      >
-        <Analytics userId={userData?.profile?.stxAddress?.mainnet} />
-      </ErrorBoundary>
+      <Analytics userId={userAddress ?? ''} />
 
-      <ErrorBoundary
-        sectionName="Transaction History"
-        fallback={(error, reset) => (
-          <ErrorFallback error={error} sectionName="Transaction History" onReset={reset} />
-        )}
-      >
-        <TransactionHistory address={userData?.profile?.stxAddress?.mainnet} />
-      </ErrorBoundary>
+      <TransactionHistory address={userAddress ?? ''} />
 
-      <ErrorBoundary
-        sectionName="Vault Actions"
-        fallback={(error, reset) => (
-          <ErrorFallback error={error} sectionName="Vault Actions" onReset={reset} />
-        )}
-      >
-      <div className="actions" role="region" aria-label="Vault deposit and withdrawal actions">
+      <div className="actions">
         <div className="card">
-          <h3 id="deposit-heading">Deposit STX</h3>
-          <div className="input-group">
-            <label htmlFor="deposit-amount">Amount (STX)</label>
-            <input
-              id="deposit-amount"
-              type="number"
-              value={depositAmount}
-              onChange={(e) => setDepositAmount(e.target.value)}
-              placeholder="Enter amount to deposit"
-              step="0.000001"
-              aria-labelledby="deposit-heading"
-              aria-describedby="deposit-fee-note"
-              aria-required="true"
-              min="0.000001"
-            />
-          </div>
+          <h3>Deposit STX</h3>
+          <AmountInput
+            value={depositAmount}
+            onChange={(val) => {
+              setDepositAmount(val);
+              depositValidation.validate(val);
+            }}
+            validation={depositValidation.result}
+            label="Amount (STX)"
+            placeholder="Enter amount to deposit"
+            disabled={loading}
+            onEnter={handleDeposit}
+          />
           <button
             className="btn btn-primary"
             onClick={handleDeposit}
-            disabled={loading || !depositAmount}
-            aria-label={loading ? 'Processing deposit, please wait' : 'Submit deposit transaction'}
-            aria-busy={loading}
+            disabled={loading || !depositValidation.result.valid || !depositAmount}
           >
             {loading ? 'Processing...' : 'Deposit'}
           </button>
@@ -1023,27 +788,23 @@ function AppContent() {
         </div>
 
         <div className="card">
-          <h3 id="withdraw-heading">Withdraw STX</h3>
-          <div className="input-group">
-            <label htmlFor="withdraw-amount">Amount (STX)</label>
-            <input
-              id="withdraw-amount"
-              type="number"
-              value={withdrawAmount}
-              onChange={(e) => setWithdrawAmount(e.target.value)}
-              placeholder="Enter amount to withdraw"
-              step="0.000001"
-              aria-labelledby="withdraw-heading"
-              aria-required="true"
-              min="0.000001"
-            />
-          </div>
+          <h3>Withdraw STX</h3>
+          <AmountInput
+            value={withdrawAmount}
+            onChange={(val) => {
+              setWithdrawAmount(val);
+              withdrawValidation.validate(val);
+            }}
+            validation={withdrawValidation.result}
+            label="Amount (STX)"
+            placeholder="Enter amount to withdraw"
+            disabled={loading || showWithdrawDetails}
+            onEnter={handleWithdraw}
+          />
           <button
             className="btn btn-secondary"
             onClick={handleWithdraw}
-            disabled={loading || !withdrawAmount || showWithdrawDetails}
-            aria-label={loading ? 'Preparing withdrawal, please wait' : 'Prepare withdrawal transaction for review'}
-            aria-busy={loading}
+            disabled={loading || !withdrawValidation.result.valid || !withdrawAmount || showWithdrawDetails}
           >
             {loading ? 'Preparing...' : showWithdrawDetails ? 'Review Transaction' : 'Withdraw'}
           </button>
@@ -1051,186 +812,54 @@ function AppContent() {
       </div>
       </ErrorBoundary>
 
-      {showWithdrawDetails && withdrawTxDetails && (
-        <div className="card confirmation" role="dialog" aria-modal="true" aria-labelledby="confirm-withdraw-title">
-          <h3 id="confirm-withdraw-title">🔐 Confirm Withdrawal Transaction</h3>
-          <div style={{ marginBottom: '16px' }} role="list" aria-label="Transaction details">
-            <p role="listitem"><strong>Action:</strong> Withdraw STX from vault</p>
-            <p role="listitem"><strong>Amount:</strong> {withdrawTxDetails.amount} STX</p>
-            <p role="listitem"><strong>Current Balance:</strong> {withdrawTxDetails.currentBalance} STX</p>
-            <p role="listitem"><strong>Remaining Balance:</strong> {withdrawTxDetails.remainingBalance} STX</p>
-            <p role="listitem"><strong>Contract:</strong> {withdrawTxDetails.contractAddress}.{withdrawTxDetails.contractName}</p>
-            <p role="listitem"><strong>Function:</strong> {withdrawTxDetails.functionName}</p>
-            <p role="listitem"><strong>Network:</strong> {withdrawTxDetails.network.name}</p>
-            <p role="listitem"><small>{withdrawTxDetails.fee}</small></p>
-          </div>
-          <div role="group" aria-label="Confirm or cancel withdrawal" style={{ display: 'flex', gap: '12px' }}>
-            <button
-              className="btn btn-primary"
-              onClick={executeWithdraw}
-              disabled={loading}
-              aria-label={loading ? 'Signing transaction, please wait' : 'Sign and submit withdrawal transaction'}
-              aria-busy={loading}
-            >
-              {loading ? 'Signing...' : 'Sign & Submit Transaction'}
-            </button>
-            <button
-              className="btn btn-secondary"
-              onClick={() => {
-                setShowWithdrawDetails(false);
-                setWithdrawTxDetails(null);
-              }}
-              disabled={loading}
-              aria-label="Cancel withdrawal and return to input"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      )}
-
       {status && (
-        <div
-          className={`status ${status.includes('Error') ? 'error' : 'success'}`}
-          role="status"
-          aria-live="polite"
-          aria-atomic="true"
-        >
+        <div className={`status ${status.toLowerCase().includes('error') ? 'error' : 'success'}`}>
           {status}
         </div>
       )}
 
-      <div className="card" role="region" aria-label="How RenVault works">
-        <h3 id="how-it-works-heading">How it Works</h3>
-        <ul aria-labelledby="how-it-works-heading">
-          <li>Deposit STX to your personal vault (1% protocol fee)</li>
-          <li>Earn commitment points with each deposit</li>
-          <li>Withdraw your funds anytime</li>
-          <li>Built with Clarity 4 on Stacks blockchain</li>
-        </ul>
-      </div>
+      <HowItWorks />
 
-      <ErrorBoundary
-        sectionName="Notification Center"
-        fallback={(error, reset) => (
-          <ErrorFallback error={error} sectionName="Notification Center" onReset={reset} compact />
-        )}
-      >
-        <NotificationCenter
-          userId={userData.profile.stxAddress.mainnet}
-          isOpen={showNotificationCenter}
-          onClose={() => setShowNotificationCenter(false)}
-        />
-      </ErrorBoundary>
+      <NotificationCenter
+        userId={userAddress ?? ''}
+        isOpen={showNotificationCenter}
+        onClose={() => setShowNotificationCenter(false)}
+      />
 
-      {showWalletBackup && (
-        <div className="modal-overlay" role="dialog" aria-modal="true" aria-label="Wallet Backup">
-          <ErrorBoundary
-            sectionName="Wallet Backup"
-            fallback={(error, reset) => (
-              <ErrorFallback error={error} sectionName="Wallet Backup" onReset={reset} />
-            )}
-          >
-            <WalletBackup
-              walletManager={walletManager}
-              onBackupComplete={handleWalletBackupComplete}
-              onCancel={() => setShowWalletBackup(false)}
-            />
-          </ErrorBoundary>
-        </div>
-      )}
+      <WalletActionModals
+        walletManager={walletManager}
+        showWalletBackup={showWalletBackup}
+        showWalletRecovery={showWalletRecovery}
+        showMultiSigSetup={showMultiSigSetup}
+        showCoSignerManagement={showCoSignerManagement}
+        showMultiSigSigner={showMultiSigSigner}
+        showPerformanceMonitor={showPerformanceMonitor}
+        currentTransaction={currentTransaction}
+        onBackupComplete={handleWalletBackupComplete}
+        onRecoveryComplete={handleWalletRecoveryComplete}
+        onMultiSigSetupComplete={handleMultiSigSetupComplete}
+        onCoSignerUpdate={handleCoSignerUpdate}
+        onMultiSigTransactionSigned={handleMultiSigTransactionSigned}
+        onCloseBackup={() => setShowWalletBackup(false)}
+        onCloseRecovery={() => setShowWalletRecovery(false)}
+        onCloseMultiSigSetup={() => setShowMultiSigSetup(false)}
+        onCloseCoSignerManagement={() => setShowCoSignerManagement(false)}
+        onCloseMultiSigSigner={() => setShowMultiSigSigner(false)}
+        onClosePerformanceMonitor={() => setShowPerformanceMonitor(false)}
+      />
 
-      {showWalletRecovery && (
-        <div className="modal-overlay" role="dialog" aria-modal="true" aria-label="Wallet Recovery">
-          <ErrorBoundary
-            sectionName="Wallet Recovery"
-            fallback={(error, reset) => (
-              <ErrorFallback error={error} sectionName="Wallet Recovery" onReset={reset} />
-            )}
-          >
-            <WalletRecovery
-              walletManager={walletManager}
-              onRecoveryComplete={handleWalletRecoveryComplete}
-              onCancel={() => setShowWalletRecovery(false)}
-            />
-          </ErrorBoundary>
-        </div>
-      )}
-
-      {showMultiSigSetup && (
-        <div className="modal-overlay" role="dialog" aria-modal="true" aria-label="MultiSig Setup">
-          <ErrorBoundary
-            sectionName="MultiSig Setup"
-            fallback={(error, reset) => (
-              <ErrorFallback error={error} sectionName="MultiSig Setup" onReset={reset} />
-            )}
-          >
-            <MultiSigSetup
-              walletManager={walletManager}
-              onSetupComplete={handleMultiSigSetupComplete}
-              onCancel={() => setShowMultiSigSetup(false)}
-            />
-          </ErrorBoundary>
-        </div>
-      )}
-
-      {showCoSignerManagement && (
-        <div className="modal-overlay" role="dialog" aria-modal="true" aria-label="Co-Signer Management">
-          <ErrorBoundary
-            sectionName="Co-Signer Management"
-            fallback={(error, reset) => (
-              <ErrorFallback error={error} sectionName="Co-Signer Management" onReset={reset} />
-            )}
-          >
-            <CoSignerManagement
-              walletManager={walletManager}
-              onUpdate={handleCoSignerUpdate}
-              onCancel={() => setShowCoSignerManagement(false)}
-            />
-          </ErrorBoundary>
-        </div>
-      )}
-
-      {showMultiSigSigner && (
-        <div className="modal-overlay" role="dialog" aria-modal="true" aria-label="MultiSig Transaction Signer">
-          <ErrorBoundary
-            sectionName="MultiSig Transaction Signer"
-            fallback={(error, reset) => (
-              <ErrorFallback error={error} sectionName="MultiSig Transaction Signer" onReset={reset} />
-            )}
-          >
-            <MultiSigTransactionSigner
-              walletManager={walletManager}
-              transaction={currentTransaction}
-              onSigned={handleMultiSigTransactionSigned}
-              onCancel={() => setShowMultiSigSigner(false)}
-            />
-          </ErrorBoundary>
-        </div>
-      )}
-
-      {showPerformanceMonitor && (
-        <div className="modal-overlay" role="dialog" aria-modal="true" aria-label="Performance Monitor">
-          <ErrorBoundary
-            sectionName="Performance Monitor"
-            fallback={(error, reset) => (
-              <ErrorFallback error={error} sectionName="Performance Monitor" onReset={reset} />
-            )}
-          >
-            <PerformanceMonitor
-              walletManager={walletManager}
-              isVisible={showPerformanceMonitor}
-            />
-          </ErrorBoundary>
-          <button
-            className="modal-close"
-            onClick={() => setShowPerformanceMonitor(false)}
-            aria-label="Close performance monitor"
-          >
-            ✕
-          </button>
-        </div>
-      )}
+      <AuthModals
+        show2FASetup={show2FASetup}
+        show2FAVerify={show2FAVerify}
+        showBackupCodes={showBackupCodes}
+        on2FASetupComplete={handle2FASetupComplete}
+        on2FAVerify={handle2FAVerify}
+        onBackupCodeVerify={handleBackupCodeVerify}
+        onClose2FASetup={() => setShow2FASetup(false)}
+        onClose2FAVerify={() => setShow2FAVerify(false)}
+        onUseBackup={() => { setShow2FAVerify(false); setShowBackupCodes(true); }}
+        onCloseBackupCodes={() => setShowBackupCodes(false)}
+      />
     </div>
   );
 }
@@ -1242,17 +871,14 @@ function App() {
   useEffect(() => {
     const initAppKit = async () => {
       try {
-        // AppKit is initialized in AppKitService, but we need to ensure it's ready
         const { AppKitService } = await import('./services/appkit-service');
         await AppKitService.init();
         setAppKitInitialized(true);
-        setAppKitError(null);
       } catch (error) {
         console.error('Failed to initialize AppKit:', error);
         setAppKitError('Failed to initialize wallet service. Please refresh the page.');
       }
     };
-
     initAppKit();
   }, []);
 
@@ -1260,16 +886,13 @@ function App() {
     return (
       <div className="container">
         <div className="header">
-          <h1>RenVault 🏦</h1>
+          <h1>RenVault</h1>
           <p>Wallet Service Error</p>
         </div>
         <div className="card error">
-          <h3>❌ Initialization Failed</h3>
+          <h3>Initialization Failed</h3>
           <p>{appKitError}</p>
-          <button
-            className="btn btn-primary"
-            onClick={() => window.location.reload()}
-          >
+          <button className="btn btn-primary" onClick={() => window.location.reload()}>
             Refresh Page
           </button>
         </div>
@@ -1281,12 +904,11 @@ function App() {
     return (
       <div className="container">
         <div className="header">
-          <h1>RenVault 🏦</h1>
+          <h1>RenVault</h1>
           <p>Initializing AppKit...</p>
         </div>
         <div className="card">
           <div style={{ textAlign: 'center', padding: '20px' }}>
-            <div style={{ fontSize: '24px', marginBottom: '16px' }}>🔄</div>
             <p>Loading wallet service...</p>
           </div>
         </div>

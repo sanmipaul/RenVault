@@ -1,14 +1,9 @@
-export class ConnectionPool {
-  private connections: Map<string, { connection: any; createdAt: number }> = new Map();
+export class ConnectionPool<T = unknown> {
+  private connections: Map<string, T> = new Map();
   private maxSize: number;
-  private ttl: number;
-  private onEvict?: (id: string, connection: any) => void;
+  private onEvict?: (id: string, connection: T) => void;
 
-  constructor(
-    maxSize: number = 10,
-    onEvict?: (id: string, connection: any) => void,
-    ttl: number = 5 * 60 * 1000 // 5 minutes default
-  ) {
+  constructor(maxSize: number = 10, onEvict?: (id: string, connection: T) => void) {
     this.maxSize = maxSize;
     this.onEvict = onEvict;
     this.ttl = ttl;
@@ -27,7 +22,7 @@ export class ConnectionPool {
     }
   }
 
-  add(id: string, connection: any): void {
+  add(id: string, connection: T): void {
     if (this.connections.has(id)) {
       throw new Error(`ConnectionPool: connection "${id}" already exists. Use update() to replace it.`);
     }
@@ -36,27 +31,20 @@ export class ConnectionPool {
       const firstKey = this.connections.keys().next().value as string;
       const evicted = this.connections.get(firstKey)!;
       this.connections.delete(firstKey);
-      this.onEvict?.(firstKey, evicted.connection);
+      if (evicted !== undefined) this.onEvict?.(firstKey, evicted);
     }
     this.connections.set(id, { connection, createdAt: Date.now() });
   }
 
-  update(id: string, connection: any): void {
+  update(id: string, connection: T): void {
     if (!this.connections.has(id)) {
       throw new Error(`ConnectionPool: connection "${id}" does not exist. Use add() to register a new connection.`);
     }
     this.connections.set(id, { connection, createdAt: Date.now() });
   }
 
-  get(id: string): any {
-    const entry = this.connections.get(id);
-    if (!entry) return undefined;
-    if (this.isExpired(entry)) {
-      this.connections.delete(id);
-      this.onEvict?.(id, entry.connection);
-      return undefined;
-    }
-    return entry.connection;
+  get(id: string): T | undefined {
+    return this.connections.get(id);
   }
 
   has(id: string): boolean {
@@ -70,8 +58,8 @@ export class ConnectionPool {
     return true;
   }
 
-  remove(id: string): any | undefined {
-    const entry = this.connections.get(id);
+  remove(id: string): T | undefined {
+    const connection = this.connections.get(id);
     this.connections.delete(id);
     return entry?.connection;
   }

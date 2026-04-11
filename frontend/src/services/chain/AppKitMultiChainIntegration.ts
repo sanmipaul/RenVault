@@ -17,7 +17,7 @@ import { MultiChainBalanceService } from './MultiChainBalanceService';
 
 // Adapter stubs — proper adapters require @reown/appkit-adapter-* packages
 class EthereumAdapter {
-  constructor(_opts: any) {}
+  constructor(_opts: Record<string, unknown>) {}
 }
 
 /**
@@ -31,7 +31,7 @@ export interface AppKitMultiChainConfig {
   defaultChain?: string;
 }
 
-let appKit: any = null;
+let appKit: ReturnType<typeof createAppKit> | null = null;
 let appKitConfig: AppKitMultiChainConfig | null = null;
 
 /**
@@ -74,7 +74,7 @@ export const initializeAppKitMultiChain = async (config: AppKitMultiChainConfig)
 
     // Subscribe to AppKit account changes
     if (appKit?.subscribeAccount) {
-      appKit.subscribeAccount(({ address, chainId }: any) => {
+      appKit.subscribeAccount(({ address, chainId }: { address?: string; chainId?: string | number }) => {
         if (address && chainId) {
           // Update active chain based on AppKit selection
           handleAppKitChainChange(chainId);
@@ -88,7 +88,7 @@ export const initializeAppKitMultiChain = async (config: AppKitMultiChainConfig)
 
     // Subscribe to AppKit network changes
     if (appKit?.subscribeNetwork) {
-      appKit.subscribeNetwork(({ chainId }: any) => {
+      appKit.subscribeNetwork(({ chainId }: { chainId?: string | number }) => {
         if (chainId) {
           handleAppKitChainChange(chainId);
         }

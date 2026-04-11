@@ -1,0 +1,25 @@
+/* SecuritySettings.css */
+.security-options {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.security-item {
+  padding: 16px;
+  background: var(--surface-secondary, #f8f9fa);
+  border-radius: 8px;
+  border: 1px solid var(--border-color, #e5e7eb);
+}
+
+.security-item h4 {
+  margin: 0 0 4px 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.security-item p {
+  margin: 0 0 12px 0;
+  font-size: 0.875rem;
+  color: var(--text-secondary, #6b7280);
+}

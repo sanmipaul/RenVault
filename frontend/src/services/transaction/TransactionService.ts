@@ -13,6 +13,7 @@ import { retryWithBackoff } from '../../utils/retry';
 import { validateTransactionDetails, validateContractName } from '../../utils/transactionValidator';
 import { TransactionStatus } from '../../types/transactionState';
 import {
+  ClarityValue,
   makeContractCall,
   broadcastTransaction,
   AnchorMode,
@@ -27,7 +28,7 @@ export interface TransactionDetails {
   contractAddress: string;
   contractName: string;
   functionName: string;
-  functionArgs: any[];
+  functionArgs: ClarityValue[];
   amount: number;
   fee?: number;
   network: string;
@@ -40,7 +41,7 @@ export interface TransactionDetails {
 
 export interface SignedTransaction {
   txId: string;
-  signedTx: any;
+  signedTx: import('../../types/wallet').SignedTransactionResult;
   details: TransactionDetails;
 }
 
@@ -125,7 +126,7 @@ export class TransactionService {
       }
 
       // Create the contract call transaction
-      const txOptions: any = {
+      const txOptions: import('../../types/wallet').StacksContractCallOptions = {
         contractAddress: details.contractAddress,
         contractName: details.contractName,
         functionName: details.functionName,
@@ -134,7 +135,7 @@ export class TransactionService {
         anchorMode: details.anchorMode || AnchorMode.Any,
         postConditionMode: details.postConditionMode || PostConditionMode.Allow,
         sponsored: details.isSponsored,
-        onFinish: (data: any) => {
+        onFinish: (data: import('../../types/wallet').SignedTransactionResult) => {
           console.log('Transaction signed:', data);
         },
         onCancel: () => {
