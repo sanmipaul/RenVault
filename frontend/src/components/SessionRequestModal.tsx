@@ -19,9 +19,10 @@ export const SessionRequestModal: React.FC<Props> = ({ request, onClose }) => {
 
   const { topic, params, id } = request;
 
-  // Immediately reject unsupported methods so the dApp gets a proper error
+  // Immediately reject unsupported methods so the dApp gets a proper JSONRPC error
   React.useEffect(() => {
-    if (!isSupportedMethod(params.request.method)) {
+    if (!isSupportedMethod(requestData.method)) {
+      logger.warn(`Auto-rejecting unsupported method: ${requestData.method}`);
       const service = WalletKitService.getInstance();
       service
         .rejectSessionRequest(topic, id, getSdkError('UNSUPPORTED_METHODS'))
