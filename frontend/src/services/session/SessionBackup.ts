@@ -198,6 +198,11 @@ export class SessionBackup {
       }
 
       const capped = validEvents.slice(-this.MAX_RESTORE_EVENTS);
+      if (capped.length < validEvents.length) {
+        logger.warn(
+          `Backup ${backupId}: event count capped at ${this.MAX_RESTORE_EVENTS} (had ${validEvents.length})`
+        );
+      }
 
       monitor.clearAllEvents();
       monitor.importEvents(capped);
