@@ -406,7 +406,14 @@ export class SessionBackup {
   private async getAllBackups(): Promise<{ metadata: BackupMetadata; data: string }[]> {
     try {
       const stored = localStorage.getItem(this.BACKUP_KEY);
-      return stored ? JSON.parse(stored) : [];
+      if (!stored) return [];
+      const parsed = JSON.parse(stored);
+      if (!Array.isArray(parsed)) {
+        logger.warn('Backup store is corrupted; resetting to empty list');
+        localStorage.removeItem(this.BACKUP_KEY);
+        return [];
+      }
+      return parsed;
     } catch (error) {
       logger.error('Failed to load backups:', error instanceof Error ? error : new Error(String(error)));
       return [];
