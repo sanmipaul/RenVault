@@ -225,6 +225,21 @@ export class SessionBackup {
   }
 
   /**
+   * Verify the integrity of a stored backup without restoring it.
+   * Returns true when the checksum matches, false otherwise.
+   */
+  async verifyBackupIntegrity(backupId: string): Promise<boolean> {
+    try {
+      const backup = await this.getBackup(backupId);
+      if (!backup) return false;
+      const checksum = await this.generateChecksum(backup.data);
+      return checksum === backup.metadata.checksum;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
    * Return the history of all restore operations (most recent first)
    */
   getRestorationHistory(): RestoreResult[] {
