@@ -1,4 +1,6 @@
 // Asset Registry Management
+const { AssetValidator } = require('./assetValidator');
+
 const supportedAssets = {
   STX: {
     name: 'Stacks',
@@ -72,6 +74,23 @@ class AssetRegistry {
   }
 
   addAsset(symbol, config) {
+    if (!AssetValidator.isValidSymbol(symbol)) {
+      throw new Error(`Invalid asset symbol "${symbol}". Must be 2-10 uppercase alphanumeric characters.`);
+    }
+    if (!config || typeof config !== 'object') {
+      throw new Error('Asset config must be a non-null object');
+    }
+    if (!['native', 'sip010'].includes(config.type)) {
+      throw new Error(`Asset type must be "native" or "sip010", got "${config.type}"`);
+    }
+    if (config.type === 'sip010') {
+      if (!AssetValidator.validateAssetContract(config.contract)) {
+        throw new Error(`Invalid contract address for SIP-010 asset: "${config.contract}"`);
+      }
+    }
+    if (typeof config.decimals !== 'number' || !Number.isInteger(config.decimals) || config.decimals < 0 || config.decimals > 18) {
+      throw new Error('Asset decimals must be an integer between 0 and 18');
+    }
     this.assets[symbol] = config;
   }
 }
