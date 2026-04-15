@@ -77,6 +77,10 @@ class StakingAPI {
 
     this.app.get('/api/staking/info/:userAddress', (req, res) => {
       try {
+        const addressCheck = validateAddress(req.params.userAddress);
+        if (!addressCheck.valid) {
+          return res.status(400).json({ error: addressCheck.error });
+        }
         const info = this.stakingManager.getStakeInfo(req.params.userAddress);
         res.json(info);
       } catch (error) {
