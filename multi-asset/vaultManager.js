@@ -62,6 +62,9 @@ class VaultManager {
   }
 
   async getBalance(user, asset) {
+    if (!AssetValidator.validateStacksAddress(user)) {
+      throw new Error(`Invalid Stacks address: "${user}"`);
+    }
     if (!AssetValidator.isValidSymbol(asset)) {
       throw new Error(`Invalid asset symbol: "${asset}"`);
     }
