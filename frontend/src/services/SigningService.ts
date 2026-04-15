@@ -125,6 +125,8 @@ function validateContractCallParams(params: unknown): ContractCallParams {
   };
 }
 
+const MAX_CODE_BODY_BYTES = 512 * 1024; // 512 KB — Stacks protocol limit
+
 function validateContractDeployParams(params: unknown): ContractDeployParams {
   const p = params as Record<string, unknown>;
   if (!p || typeof p.contractName !== 'string' || p.contractName.trim().length === 0) {
@@ -132,6 +134,12 @@ function validateContractDeployParams(params: unknown): ContractDeployParams {
   }
   if (typeof p.codeBody !== 'string' || p.codeBody.trim().length === 0) {
     throw new WalletError(WalletErrorCode.INVALID_REQUEST, 'stacks_contractDeploy requires "codeBody"');
+  }
+  if (new Blob([p.codeBody]).size > MAX_CODE_BODY_BYTES) {
+    throw new WalletError(
+      WalletErrorCode.INVALID_REQUEST,
+      `stacks_contractDeploy "codeBody" exceeds ${MAX_CODE_BODY_BYTES / 1024}KB limit`
+    );
   }
   return {
     contractName: p.contractName,
