@@ -1,3 +1,4 @@
+import { logger } from './logger';
 import { environment } from '../config/environment';
 
 export interface EnvironmentValidation {
@@ -42,15 +43,15 @@ export const logEnvironmentValidation = () => {
   const validation = validateEnvironmentVariables();
 
   if (!validation.isValid) {
-    console.error('Environment Validation Errors:');
-    validation.errors.forEach((error) => console.error(`  - ${error}`));
+    logger.error('Environment Validation Errors:');
+    validation.errors.forEach((error) => logger.error(`  - ${error}`));
     throw new Error('Invalid environment configuration');
   }
 
   if (validation.warnings.length > 0) {
-    console.warn('Environment Validation Warnings:');
-    validation.warnings.forEach((warning) => console.warn(`  - ${warning}`));
+    logger.warn('Environment Validation Warnings:');
+    validation.warnings.forEach((warning) => logger.warn(`  - ${warning}`));
   }
 
-  console.log('Environment validation passed');
+  logger.info('Environment validation passed');
 };
