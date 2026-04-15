@@ -208,10 +208,12 @@ export class SessionBackup {
         restoredAt: Date.now(),
       };
 
+      logger.info(`Restore complete: ${capped.length} events restored from backup ${backupId}`);
       this.storeRestoreRecord(result);
       return result;
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Unknown error during restoration';
+      logger.error(`Restore failed for backup ${backupId}: ${msg}`);
       const result = failResult(msg);
       this.storeRestoreRecord(result);
       return result;
