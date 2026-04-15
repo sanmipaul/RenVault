@@ -26,10 +26,8 @@ class VaultManager {
         : [assetInfo.contract, amount];
 
       const result = await this.callContract(functionName, functionArgs, senderKey);
-      console.log(`Deposit successful for ${asset}: ${result.txId}`);
       return result;
     } catch (error) {
-      console.error(`Deposit failed for ${asset}:`, error.message);
       throw error;
     }
   }
