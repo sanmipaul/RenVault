@@ -11,6 +11,9 @@ class StakingManager {
   }
 
   stake(userAddress, amount) {
+    if (!Number.isFinite(amount) || !Number.isInteger(amount) || amount <= 0) {
+      throw new Error('Amount must be a positive integer (microSTX units)');
+    }
     if (amount < this.minStake) {
       throw new Error(`Minimum stake is ${this.minStake / 1000000} STX`);
     }
@@ -31,6 +34,9 @@ class StakingManager {
   }
 
   unstake(userAddress, amount) {
+    if (!Number.isFinite(amount) || !Number.isInteger(amount) || amount <= 0) {
+      throw new Error('Amount must be a positive integer (microSTX units)');
+    }
     const currentStake = this.stakes.get(userAddress) || 0;
     const stakeTime = this.stakeTimestamps.get(userAddress) || 0;
 
@@ -149,6 +155,9 @@ class StakingManager {
   }
 
   updateMinStake(newMinStake) {
+    if (!Number.isFinite(newMinStake) || newMinStake <= 0 || !Number.isInteger(newMinStake)) {
+      throw new Error('Minimum stake must be a positive integer (microSTX units)');
+    }
     this.minStake = newMinStake;
     return this.minStake;
   }

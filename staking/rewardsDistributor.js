@@ -59,11 +59,15 @@ class RewardsDistributor {
       }
     }
 
-    this.distributionHistory.push(distribution);
-    
-    if (distribution.recipients > 0) {
-      console.log(`Distributed ${distribution.totalDistributed} rewards to ${distribution.recipients} stakers`);
+    if (
+      typeof distribution.totalDistributed !== 'number' ||
+      !Number.isFinite(distribution.totalDistributed) ||
+      typeof distribution.recipients !== 'number'
+    ) {
+      throw new Error('distributeRewards produced an invalid distribution record');
     }
+
+    this.distributionHistory.push(distribution);
 
     return distribution;
   }
