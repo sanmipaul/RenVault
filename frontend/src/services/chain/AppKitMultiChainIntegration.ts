@@ -17,7 +17,7 @@ import { MultiChainBalanceService } from './MultiChainBalanceService';
 
 // Adapter stubs — proper adapters require @reown/appkit-adapter-* packages
 class EthereumAdapter {
-  constructor(_opts: Record<string, unknown>) {}
+  constructor(_opts: any) {}
 }
 
 /**
@@ -31,7 +31,7 @@ export interface AppKitMultiChainConfig {
   defaultChain?: string;
 }
 
-let appKit: ReturnType<typeof createAppKit> | null = null;
+let appKit: any = null;
 let appKitConfig: AppKitMultiChainConfig | null = null;
 
 /**
@@ -74,7 +74,7 @@ export const initializeAppKitMultiChain = async (config: AppKitMultiChainConfig)
 
     // Subscribe to AppKit account changes
     if (appKit?.subscribeAccount) {
-      appKit.subscribeAccount(({ address, chainId }: { address?: string; chainId?: string | number }) => {
+      appKit.subscribeAccount(({ address, chainId }: any) => {
         if (address && chainId) {
           // Update active chain based on AppKit selection
           handleAppKitChainChange(chainId);
@@ -88,7 +88,7 @@ export const initializeAppKitMultiChain = async (config: AppKitMultiChainConfig)
 
     // Subscribe to AppKit network changes
     if (appKit?.subscribeNetwork) {
-      appKit.subscribeNetwork(({ chainId }: { chainId?: string | number }) => {
+      appKit.subscribeNetwork(({ chainId }: any) => {
         if (chainId) {
           handleAppKitChainChange(chainId);
         }
@@ -97,7 +97,7 @@ export const initializeAppKitMultiChain = async (config: AppKitMultiChainConfig)
 
     return appKit;
   } catch (error) {
-    console.error('Error initializing AppKit multi-chain:', error);
+    logger.error('Error initializing AppKit multi-chain:', error);
     throw error;
   }
 };
@@ -121,7 +121,7 @@ const handleAppKitChainChange = (chainId: number) => {
       ChainSwitchService.switchChain(chainType);
     }
   } catch (error) {
-    console.error('Error handling AppKit chain change:', error);
+    logger.error('Error handling AppKit chain change:', error);
   }
 };
 
@@ -186,7 +186,7 @@ export const switchChainViaAppKit = async (chainId: number): Promise<void> => {
   try {
     await appKit.switchNetwork?.({ chainId });
   } catch (error) {
-    console.error('Error switching chain via AppKit:', error);
+    logger.error('Error switching chain via AppKit:', error);
     throw error;
   }
 };
@@ -203,7 +203,7 @@ export const connectWalletViaAppKit = async (): Promise<string | null> => {
     await appKit.open();
     return getConnectedAddress();
   } catch (error) {
-    console.error('Error connecting wallet via AppKit:', error);
+    logger.error('Error connecting wallet via AppKit:', error);
     throw error;
   }
 };
@@ -219,7 +219,7 @@ export const disconnectWalletViaAppKit = async (): Promise<void> => {
   try {
     await appKit.disconnect?.();
   } catch (error) {
-    console.error('Error disconnecting wallet from AppKit:', error);
+    logger.error('Error disconnecting wallet from AppKit:', error);
   }
 };
 
@@ -267,7 +267,7 @@ export const sendTransactionViaAppKit = async (tx: {
 
     return hash;
   } catch (error) {
-    console.error('Error sending transaction via AppKit:', error);
+    logger.error('Error sending transaction via AppKit:', error);
     throw error;
   }
 };
@@ -283,7 +283,7 @@ export const getWalletProvider = async () => {
   try {
     return await appKit.getProvider?.();
   } catch (error) {
-    console.error('Error getting wallet provider:', error);
+    logger.error('Error getting wallet provider:', error);
     throw error;
   }
 };
