@@ -1,4 +1,6 @@
-export type WalletEvent = 
+import { logger } from '../utils/logger';
+
+export type WalletEvent =
   | 'connected'
   | 'disconnected'
   | 'accountChanged'
@@ -31,7 +33,7 @@ export class WalletEventEmitter {
         try {
           callback(...args);
         } catch (error) {
-          console.error(`Error in ${event} listener:`, error);
+          logger.error(`Error in ${event} listener:`, error);
         }
       });
     }
