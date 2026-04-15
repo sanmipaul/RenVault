@@ -66,7 +66,7 @@ export class SecureStorageService {
       localStorage.setItem(this.prefix + key, finalData);
       return true;
     } catch (error) {
-      console.error('SecureStorage: Failed to store item:', error);
+      logger.error('SecureStorage: Failed to store item:', error);
       return false;
     }
   }
@@ -96,13 +96,13 @@ export class SecureStorageService {
 
       // Check version compatibility
       if (storageItem.version !== STORAGE_VERSION) {
-        console.warn('SecureStorage: Version mismatch, data may be outdated');
+        logger.warn('SecureStorage: Version mismatch, data may be outdated');
       }
 
       // Check expiration
       const expirationMs = options.expirationMs || DEFAULT_EXPIRATION_MS;
       if (Date.now() - storageItem.timestamp > expirationMs) {
-        console.warn('SecureStorage: Data has expired');
+        logger.warn('SecureStorage: Data has expired');
         await this.removeItem(key);
         return null;
       }
@@ -110,14 +110,14 @@ export class SecureStorageService {
       // Verify integrity
       const checksum = await hashData(storageItem.data);
       if (checksum !== storageItem.checksum) {
-        console.error('SecureStorage: Data integrity check failed');
+        logger.error('SecureStorage: Data integrity check failed');
         await this.removeItem(key);
         return null;
       }
 
       return JSON.parse(storageItem.data) as T;
     } catch (error) {
-      console.error('SecureStorage: Failed to retrieve item:', error);
+      logger.error('SecureStorage: Failed to retrieve item:', error);
       return null;
     }
   }
@@ -130,7 +130,7 @@ export class SecureStorageService {
       localStorage.removeItem(this.prefix + key);
       return true;
     } catch (error) {
-      console.error('SecureStorage: Failed to remove item:', error);
+      logger.error('SecureStorage: Failed to remove item:', error);
       return false;
     }
   }
@@ -152,7 +152,7 @@ export class SecureStorageService {
       keysToRemove.forEach(key => localStorage.removeItem(key));
       return true;
     } catch (error) {
-      console.error('SecureStorage: Failed to clear storage:', error);
+      logger.error('SecureStorage: Failed to clear storage:', error);
       return false;
     }
   }

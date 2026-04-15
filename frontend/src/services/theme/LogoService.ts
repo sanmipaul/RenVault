@@ -190,7 +190,7 @@ export class LogoService {
         this.preloadLogo('dark'),
       ]);
     } catch (error) {
-      console.error('Failed to preload logos:', error);
+      logger.error('Failed to preload logos:', error);
     }
   }
 

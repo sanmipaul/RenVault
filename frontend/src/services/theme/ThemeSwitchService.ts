@@ -175,7 +175,7 @@ export class ThemeSwitchService {
         })
       );
     } catch (error) {
-      console.error('Failed to save theme preference:', error);
+      logger.error('Failed to save theme preference:', error);
     }
   }
 
@@ -192,7 +192,7 @@ export class ThemeSwitchService {
         return mode as ThemeMode;
       }
     } catch (error) {
-      console.error('Failed to load theme preference:', error);
+      logger.error('Failed to load theme preference:', error);
     }
 
     return null;
@@ -205,7 +205,7 @@ export class ThemeSwitchService {
     try {
       localStorage.removeItem(this.STORAGE_KEY);
     } catch (error) {
-      console.error('Failed to clear theme preference:', error);
+      logger.error('Failed to clear theme preference:', error);
     }
   }
 
@@ -228,7 +228,7 @@ export class ThemeSwitchService {
       try {
         listener(mode);
       } catch (error) {
-        console.error('Theme listener error:', error);
+        logger.error('Theme listener error:', error);
       }
     });
   }

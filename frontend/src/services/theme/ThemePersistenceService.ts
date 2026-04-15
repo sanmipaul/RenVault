@@ -47,7 +47,7 @@ export class ThemePersistenceService {
       this.addToHistory(updated.mode);
       return true;
     } catch (error) {
-      console.error('Failed to save theme preference:', error);
+      logger.error('Failed to save theme preference:', error);
       return false;
     }
   }
@@ -66,7 +66,7 @@ export class ThemePersistenceService {
         }
       }
     } catch (error) {
-      console.error('Failed to load theme preference:', error);
+      logger.error('Failed to load theme preference:', error);
     }
     return null;
   }
@@ -157,7 +157,7 @@ export class ThemePersistenceService {
 
       localStorage.setItem(this.HISTORY_KEY, JSON.stringify(history));
     } catch (error) {
-      console.error('Failed to update theme history:', error);
+      logger.error('Failed to update theme history:', error);
     }
   }
 
@@ -171,7 +171,7 @@ export class ThemePersistenceService {
         return JSON.parse(saved) as ThemeHistory[];
       }
     } catch (error) {
-      console.error('Failed to load theme history:', error);
+      logger.error('Failed to load theme history:', error);
     }
     return [];
   }
@@ -249,7 +249,7 @@ export class ThemePersistenceService {
 
       return true;
     } catch (error) {
-      console.error('Failed to import preferences:', error);
+      logger.error('Failed to import preferences:', error);
       return false;
     }
   }
@@ -264,7 +264,7 @@ export class ThemePersistenceService {
       localStorage.removeItem(this.SETTINGS_KEY);
       return true;
     } catch (error) {
-      console.error('Failed to clear theme data:', error);
+      logger.error('Failed to clear theme data:', error);
       return false;
     }
   }
@@ -277,7 +277,7 @@ export class ThemePersistenceService {
       localStorage.removeItem(this.HISTORY_KEY);
       return true;
     } catch (error) {
-      console.error('Failed to clear theme history:', error);
+      logger.error('Failed to clear theme history:', error);
       return false;
     }
   }
@@ -297,7 +297,7 @@ export class ThemePersistenceService {
         kb: Math.round((bytes / 1024) * 100) / 100,
       };
     } catch (error) {
-      console.error('Failed to get storage size:', error);
+      logger.error('Failed to get storage size:', error);
       return { bytes: 0, kb: 0 };
     }
   }
@@ -319,7 +319,7 @@ export class ThemePersistenceService {
         }
       }
     } catch (error) {
-      console.error('Failed to migrate preferences:', error);
+      logger.error('Failed to migrate preferences:', error);
     }
   }
 
