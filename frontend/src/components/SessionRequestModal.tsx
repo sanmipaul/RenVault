@@ -45,7 +45,7 @@ export const SessionRequestModal: React.FC<Props> = ({ request, onClose }) => {
       );
 
       await service.respondSessionRequest(topic, id, result);
-      logger.info('Session request approved');
+      logger.info(`Session request approved: ${requestData.method} on chain ${chainId}`);
       
       const session = await service.getSession(topic);
       if (session) {
