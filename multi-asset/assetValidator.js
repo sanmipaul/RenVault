@@ -48,6 +48,22 @@ class AssetValidator {
     const symbolRegex = /^[A-Z0-9]{2,10}$/;
     return symbolRegex.test(symbol);
   }
+
+  static validateSenderKey(key) {
+    if (key === undefined || key === null) return false;
+    if (typeof key !== 'string') return false;
+    if (key.trim().length === 0) return false;
+    // Stacks private keys are 64 hex chars (optionally with 01 compression suffix = 66)
+    const hexKey = /^[0-9a-fA-F]{64}([0-9a-fA-F]{2})?$/.test(key);
+    return hexKey;
+  }
+
+  static validateStacksAddress(address) {
+    if (!address || typeof address !== 'string') return false;
+    // C32-encoded Stacks addresses start with SP or ST and are 41 chars
+    const addressRegex = /^S[TP][0-9A-Z]{38}$/;
+    return addressRegex.test(address);
+  }
 }
 
 module.exports = { AssetValidator };
