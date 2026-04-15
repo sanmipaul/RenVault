@@ -42,7 +42,9 @@ export interface RestoreResult {
 export class SessionBackup {
   private static instance: SessionBackup;
   private readonly BACKUP_KEY = 'renvault_session_backups';
+  private readonly RESTORE_HISTORY_KEY = 'renvault_restore_history';
   private readonly MAX_BACKUPS = 10;
+  private readonly MAX_RESTORE_EVENTS = 1000;
   private readonly VERSION = '1.0.0';
 
   private constructor() {}
