@@ -2,6 +2,16 @@
 const express = require('express');
 const { StakingManager } = require('./stakingManager');
 const { RewardsDistributor } = require('./rewardsDistributor');
+const {
+  validateAddress,
+  validateAmount,
+  validateRate,
+  clampLimit,
+  MAX_LEADERBOARD_LIMIT,
+  MAX_HISTORY_LIMIT,
+  DEFAULT_LEADERBOARD_LIMIT,
+  DEFAULT_HISTORY_LIMIT,
+} = require('./inputValidator');
 
 class StakingAPI {
   constructor(port = 3010) {
@@ -56,7 +66,7 @@ class StakingAPI {
     });
 
     this.app.get('/api/staking/leaderboard', (req, res) => {
-      const limit = parseInt(req.query.limit) || 10;
+      const limit = clampLimit(req.query.limit, 1, MAX_LEADERBOARD_LIMIT, DEFAULT_LEADERBOARD_LIMIT);
       const leaderboard = this.stakingManager.getTopStakers(limit);
       res.json({ leaderboard });
     });
