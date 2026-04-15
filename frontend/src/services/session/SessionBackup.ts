@@ -225,6 +225,19 @@ export class SessionBackup {
   }
 
   /**
+   * Return the history of all restore operations (most recent first)
+   */
+  getRestorationHistory(): RestoreResult[] {
+    try {
+      const raw = localStorage.getItem(this.RESTORE_HISTORY_KEY);
+      const history: RestoreResult[] = raw ? JSON.parse(raw) : [];
+      return history.slice().reverse();
+    } catch {
+      return [];
+    }
+  }
+
+  /**
    * Get backup statistics
    */
   async getBackupStats(): Promise<{
