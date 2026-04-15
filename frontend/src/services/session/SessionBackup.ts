@@ -138,55 +138,82 @@ export class SessionBackup {
   }
 
   /**
-   * Restore session data from backup
+   * Restore session data from backup.
    * @param backupId The backup ID to restore
    * @param password Optional password for encrypted backups
    */
-  async restoreBackup(backupId: string, password?: string): Promise<boolean> {
-    try {
-      console.log(`Restoring backup: ${backupId}`);
+  async restoreBackup(backupId: string, password?: string): Promise<RestoreResult> {
+    const failResult = (error: string): RestoreResult => ({
+      success: false,
+      eventsRestored: 0,
+      backupId,
+      restoredAt: Date.now(),
+      error,
+    });
 
+    try {
       const backup = await this.getBackup(backupId);
-      if (!backup) {
-        throw new Error('Backup not found');
-      }
+      if (!backup) return failResult('Backup not found');
+
+      // Version compatibility check
+      this.assertVersionCompatible(backup.metadata.version);
 
       let data = backup.data;
 
-      // Verify checksum using secure SHA-256 hash
+      // Verify checksum
       const checksum = await this.generateChecksum(data);
       if (checksum !== backup.metadata.checksum) {
-        throw new Error('Backup data integrity check failed');
+        return failResult('Backup data integrity check failed — checksum mismatch');
       }
 
-      // Decrypt if encrypted (requires password)
+      // Decrypt if needed
       if (backup.metadata.options.encrypt) {
-        if (!password) {
-          throw new Error('Password is required to restore encrypted backup');
-        }
+        if (!password) return failResult('Password is required to restore encrypted backup');
         data = await this.decryptData(data, password);
       }
 
-      // Decompress if compressed
+      // Decompress if needed
       if (backup.metadata.options.compress) {
         data = await this.decompressData(data);
       }
 
-      // Parse and restore data
-      const sessionData = JSON.parse(data);
+      // Parse and validate structure
+      const sessionData: unknown = JSON.parse(data);
+      this.validateRestoredStructure(sessionData);
 
-      // Here you would typically restore the data to the session services
-      // For now, we'll just validate the structure
-      if (sessionData.metrics && sessionData.events && sessionData.healthReport) {
-        console.log('Backup data validated and ready for restoration');
-        // TODO: Implement actual data restoration
-        return true;
-      } else {
-        throw new Error('Invalid backup data structure');
-      }
+      // Restore events into SessionMonitor
+      const monitor = SessionMonitor.getInstance();
+      const rawEvents: unknown[] = Array.isArray(sessionData.events) ? sessionData.events : [];
+      const validEvents = this.filterValidEvents(rawEvents);
+      const capped = validEvents.slice(-this.MAX_RESTORE_EVENTS);
+
+      monitor.clearAllEvents();
+      monitor.importEvents(capped);
+
+      // Record the restoration as a new session event
+      monitor.recordEvent({
+        type: 'restored',
+        metadata: {
+          backupId,
+          eventsRestored: capped.length,
+          backupTimestamp: backup.metadata.timestamp,
+        },
+      });
+
+      const result: RestoreResult = {
+        success: true,
+        eventsRestored: capped.length,
+        backupId,
+        restoredAt: Date.now(),
+      };
+
+      this.storeRestoreRecord(result);
+      return result;
     } catch (error) {
-      console.error('Failed to restore backup:', error);
-      return false;
+      const msg = error instanceof Error ? error.message : 'Unknown error during restoration';
+      const result = failResult(msg);
+      this.storeRestoreRecord(result);
+      return result;
     }
   }
 
