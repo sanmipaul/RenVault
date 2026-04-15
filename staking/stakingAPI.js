@@ -50,7 +50,11 @@ class StakingAPI {
         if (!addressCheck.valid) {
           return res.status(400).json({ error: addressCheck.error });
         }
-        const result = this.stakingManager.unstake(userAddress, amount);
+        const amountCheck = validateAmount(amount);
+        if (!amountCheck.valid) {
+          return res.status(400).json({ error: amountCheck.error });
+        }
+        const result = this.stakingManager.unstake(userAddress, amountCheck.value);
         res.json(result);
       } catch (error) {
         res.status(400).json({ error: error.message });
