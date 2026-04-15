@@ -190,6 +190,13 @@ export class SessionBackup {
       const monitor = SessionMonitor.getInstance();
       const rawEvents: unknown[] = Array.isArray(sessionData.events) ? sessionData.events : [];
       const validEvents = this.filterValidEvents(rawEvents);
+
+      if (validEvents.length < rawEvents.length) {
+        logger.warn(
+          `Backup ${backupId}: ${rawEvents.length - validEvents.length} malformed events were discarded`
+        );
+      }
+
       const capped = validEvents.slice(-this.MAX_RESTORE_EVENTS);
 
       monitor.clearAllEvents();
