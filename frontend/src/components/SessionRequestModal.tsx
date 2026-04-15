@@ -88,6 +88,12 @@ export const SessionRequestModal: React.FC<Props> = ({ request, onClose }) => {
           </div>
         </div>
         
+        {!isSupportedMethod(requestData.method) && (
+          <div className='method-warning' role='alert'>
+            Warning: <strong>{requestData.method}</strong> is not a supported signing method and will be rejected.
+          </div>
+        )}
+
         {signingError && (
           <div className='signing-error' role='alert'>
             <strong>Error:</strong> {signingError}
