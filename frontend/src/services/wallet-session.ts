@@ -43,7 +43,7 @@ export class WalletSessionManager {
     try {
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(Array.from(this.sessions.entries())));
     } catch (e) {
-      console.error('Failed to persist sessions:', e);
+      logger.error('Failed to persist sessions:', e);
     }
   }
 
@@ -55,7 +55,7 @@ export class WalletSessionManager {
         this.sessions = new Map(entries);
       }
     } catch (e) {
-      console.error('Failed to load sessions:', e);
+      logger.error('Failed to load sessions:', e);
     }
   }
 

@@ -26,7 +26,7 @@ export class ConnectionQueue {
         try {
           await fn();
         } catch (error) {
-          console.error('Connection queue error:', error);
+          logger.error('Connection queue error:', error);
         }
       }
     }
