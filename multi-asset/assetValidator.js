@@ -2,8 +2,9 @@
 class AssetValidator {
   static validateAmount(amount, decimals = 6) {
     if (amount === undefined || amount === null) return false;
+    if (typeof amount === 'boolean') return false;
     const numAmount = Number(amount);
-    if (isNaN(numAmount) || numAmount <= 0) return false;
+    if (!Number.isFinite(numAmount) || numAmount <= 0) return false;
     if (numAmount > Number.MAX_SAFE_INTEGER) return false;
     return true;
   }
