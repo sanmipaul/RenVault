@@ -85,6 +85,12 @@ export const SessionRequestModal: React.FC<Props> = ({ request, onClose }) => {
           </div>
         </div>
         
+        {signingError && (
+          <div className='signing-error' role='alert'>
+            <strong>Error:</strong> {signingError}
+          </div>
+        )}
+
         <div className='modal-actions'>
           <button 
             onClick={handleApprove} 
