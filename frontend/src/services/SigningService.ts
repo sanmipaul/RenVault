@@ -18,6 +18,9 @@ export enum SigningMethodType {
 /** Timeout (ms) before a pending signing request is auto-rejected */
 export const SIGNING_TIMEOUT_MS = 120_000; // 2 minutes
 
+/** Maximum length of a Stacks address (C32-encoded) */
+export const MAX_STACKS_ADDRESS_LENGTH = 42;
+
 // ---------------------------------------------------------------------------
 // Parameter shapes
 // ---------------------------------------------------------------------------
