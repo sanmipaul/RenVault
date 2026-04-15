@@ -57,6 +57,7 @@ class AssetValidator {
   }
 
   static isValidSymbol(symbol) {
+    if (!symbol || typeof symbol !== 'string') return false;
     const symbolRegex = /^[A-Z0-9]{2,10}$/;
     return symbolRegex.test(symbol);
   }
