@@ -20,6 +20,7 @@ import { AutoReconnect } from './components/AutoReconnect';
 import NotificationService from './services/notificationService';
 import TransactionHistory from './components/TransactionHistory';
 import NotificationCenter from './components/NotificationCenter';
+import { FocusTrapWrapper } from './components/FocusTrapWrapper';
 import AmountInput from './components/AmountInput';
 import { useAmountValidation } from './hooks/useAmountValidation';
 import { validateDepositAmount, validateWithdrawAmount, parseSTXInput } from './utils/amountValidator';

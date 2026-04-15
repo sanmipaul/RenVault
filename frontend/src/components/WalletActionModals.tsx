@@ -8,6 +8,7 @@ import { CoSignerManagement } from './CoSignerManagement';
 import { MultiSigTransactionSigner } from './MultiSigTransactionSigner';
 import { PerformanceMonitor } from './PerformanceMonitor';
 import { WalletManager } from '../services/wallet/WalletManager';
+import { FocusTrapWrapper } from './FocusTrapWrapper';
 
 interface WalletActionModalsProps {
   walletManager: WalletManager;
@@ -55,62 +56,74 @@ const WalletActionModals: React.FC<WalletActionModalsProps> = ({
   return (
     <>
       {showWalletBackup && (
-        <div className="modal-overlay">
-          <WalletBackup
-            walletManager={walletManager}
-            onBackupComplete={onBackupComplete}
-            onCancel={onCloseBackup}
-          />
+        <div className="modal-overlay" role="dialog" aria-modal="true" aria-label="Wallet Backup">
+          <FocusTrapWrapper active={showWalletBackup} onEscape={onCloseBackup}>
+            <WalletBackup
+              walletManager={walletManager}
+              onBackupComplete={onBackupComplete}
+              onCancel={onCloseBackup}
+            />
+          </FocusTrapWrapper>
         </div>
       )}
 
       {showWalletRecovery && (
-        <div className="modal-overlay">
-          <WalletRecovery
-            walletManager={walletManager}
-            onRecoveryComplete={onRecoveryComplete}
-            onCancel={onCloseRecovery}
-          />
+        <div className="modal-overlay" role="dialog" aria-modal="true" aria-label="Wallet Recovery">
+          <FocusTrapWrapper active={showWalletRecovery} onEscape={onCloseRecovery}>
+            <WalletRecovery
+              walletManager={walletManager}
+              onRecoveryComplete={onRecoveryComplete}
+              onCancel={onCloseRecovery}
+            />
+          </FocusTrapWrapper>
         </div>
       )}
 
       {showMultiSigSetup && (
-        <div className="modal-overlay">
-          <MultiSigSetup
-            walletManager={walletManager}
-            onSetupComplete={onMultiSigSetupComplete}
-            onCancel={onCloseMultiSigSetup}
-          />
+        <div className="modal-overlay" role="dialog" aria-modal="true" aria-label="MultiSig Setup">
+          <FocusTrapWrapper active={showMultiSigSetup} onEscape={onCloseMultiSigSetup}>
+            <MultiSigSetup
+              walletManager={walletManager}
+              onSetupComplete={onMultiSigSetupComplete}
+              onCancel={onCloseMultiSigSetup}
+            />
+          </FocusTrapWrapper>
         </div>
       )}
 
       {showCoSignerManagement && (
-        <div className="modal-overlay">
-          <CoSignerManagement
-            walletManager={walletManager}
-            onUpdate={onCoSignerUpdate}
-            onCancel={onCloseCoSignerManagement}
-          />
+        <div className="modal-overlay" role="dialog" aria-modal="true" aria-label="Co-Signer Management">
+          <FocusTrapWrapper active={showCoSignerManagement} onEscape={onCloseCoSignerManagement}>
+            <CoSignerManagement
+              walletManager={walletManager}
+              onUpdate={onCoSignerUpdate}
+              onCancel={onCloseCoSignerManagement}
+            />
+          </FocusTrapWrapper>
         </div>
       )}
 
       {showMultiSigSigner && (
-        <div className="modal-overlay">
-          <MultiSigTransactionSigner
-            walletManager={walletManager}
-            transaction={currentTransaction}
-            onSigned={onMultiSigTransactionSigned}
-            onCancel={onCloseMultiSigSigner}
-          />
+        <div className="modal-overlay" role="dialog" aria-modal="true" aria-label="MultiSig Transaction Signer">
+          <FocusTrapWrapper active={showMultiSigSigner} onEscape={onCloseMultiSigSigner}>
+            <MultiSigTransactionSigner
+              walletManager={walletManager}
+              transaction={currentTransaction}
+              onSigned={onMultiSigTransactionSigned}
+              onCancel={onCloseMultiSigSigner}
+            />
+          </FocusTrapWrapper>
         </div>
       )}
 
       {showPerformanceMonitor && (
-        <div className="modal-overlay">
-          <PerformanceMonitor walletManager={walletManager} isVisible={showPerformanceMonitor} />
-          <button className="modal-close" onClick={onClosePerformanceMonitor}>
-            X
-          </button>
+        <div className="modal-overlay" role="dialog" aria-modal="true" aria-label="Performance Monitor">
+          <FocusTrapWrapper active={showPerformanceMonitor} onEscape={onClosePerformanceMonitor}>
+            <PerformanceMonitor walletManager={walletManager} isVisible={showPerformanceMonitor} />
+            <button className="modal-close" onClick={onClosePerformanceMonitor} aria-label="Close performance monitor">
+              ✕
+            </button>
+          </FocusTrapWrapper>
         </div>
       )}
     </>
