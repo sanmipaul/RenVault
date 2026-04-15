@@ -72,7 +72,7 @@ class StakingAPI {
     });
 
     this.app.get('/api/staking/rewards/history', (req, res) => {
-      const limit = parseInt(req.query.limit) || 50;
+      const limit = clampLimit(req.query.limit, 1, MAX_HISTORY_LIMIT, DEFAULT_HISTORY_LIMIT);
       const history = this.rewardsDistributor.getDistributionHistory(limit);
       res.json({ history });
     });
