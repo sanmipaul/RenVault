@@ -153,6 +153,10 @@ export class SessionBackup {
     });
 
     try {
+      if (!backupId || typeof backupId !== 'string' || backupId.trim().length === 0) {
+        return failResult('backupId must be a non-empty string');
+      }
+
       const backup = await this.getBackup(backupId);
       if (!backup) return failResult('Backup not found');
 
