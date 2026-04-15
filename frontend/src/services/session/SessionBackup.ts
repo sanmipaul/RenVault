@@ -263,6 +263,21 @@ export class SessionBackup {
     }
   }
 
+  // ---------------------------------------------------------------------------
+  // Type guards and validators
+  // ---------------------------------------------------------------------------
+
+  private isValidSessionEvent(e: unknown): e is SessionEvent {
+    if (!e || typeof e !== 'object') return false;
+    const ev = e as Record<string, unknown>;
+    const validTypes = ['created', 'restored', 'expired', 'extended', 'cleared', 'reconnected', 'failed'];
+    return typeof ev.type === 'string'
+      && validTypes.includes(ev.type)
+      && typeof ev.timestamp === 'number'
+      && Number.isFinite(ev.timestamp)
+      && ev.timestamp > 0;
+  }
+
   // Private helper methods
 
   private async storeBackup(backup: { metadata: BackupMetadata; data: string }): Promise<void> {
