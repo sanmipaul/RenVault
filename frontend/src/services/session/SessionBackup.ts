@@ -31,6 +31,14 @@ export interface BackupResult {
   error?: string;
 }
 
+export interface RestoreResult {
+  success: boolean;
+  eventsRestored: number;
+  backupId: string;
+  restoredAt: number;
+  error?: string;
+}
+
 export class SessionBackup {
   private static instance: SessionBackup;
   private readonly BACKUP_KEY = 'renvault_session_backups';
