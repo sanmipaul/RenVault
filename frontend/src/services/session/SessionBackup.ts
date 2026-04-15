@@ -310,6 +310,19 @@ export class SessionBackup {
 
   // Private helper methods
 
+  private storeRestoreRecord(result: RestoreResult): void {
+    try {
+      const raw = localStorage.getItem(this.RESTORE_HISTORY_KEY);
+      const history: RestoreResult[] = raw ? JSON.parse(raw) : [];
+      history.push(result);
+      // Keep the last 50 restore records
+      if (history.length > 50) history.splice(0, history.length - 50);
+      localStorage.setItem(this.RESTORE_HISTORY_KEY, JSON.stringify(history));
+    } catch {
+      // Non-fatal — best-effort record keeping
+    }
+  }
+
   private async storeBackup(backup: { metadata: BackupMetadata; data: string }): Promise<void> {
     const backups = await this.getAllBackups();
     backups.push(backup);
