@@ -286,6 +286,11 @@ export class SessionBackup {
     }
   }
 
+  /** Clear the stored restoration history */
+  clearRestorationHistory(): void {
+    localStorage.removeItem(this.RESTORE_HISTORY_KEY);
+  }
+
   /**
    * Get backup statistics
    */
