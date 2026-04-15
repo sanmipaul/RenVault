@@ -71,7 +71,10 @@ export const SessionRequestModal: React.FC<Props> = ({ request, onClose }) => {
         <div className='request-details'>
           <div className='detail-row'>
             <span className='label'>Method:</span>
-            <span className='value'>{requestData.method}</span>
+            <span className='value'>
+              {getMethodDisplayName(requestData.method)}{' '}
+              <code className='method-raw'>({requestData.method})</code>
+            </span>
           </div>
           <div className='detail-row'>
             <span className='label'>Chain:</span>
