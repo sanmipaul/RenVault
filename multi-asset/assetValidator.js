@@ -17,7 +17,10 @@ class AssetValidator {
 
   static formatAmount(amount, decimals = 6) {
     if (!this.validateAmount(amount, decimals)) return '0';
-    return Math.floor(amount * Math.pow(10, decimals)).toString();
+    if (!Number.isInteger(decimals) || decimals < 0 || decimals > 18) {
+      throw new Error('decimals must be an integer between 0 and 18');
+    }
+    return Math.floor(Number(amount) * Math.pow(10, decimals)).toString();
   }
 
   static parseAmount(amount, decimals = 6) {
