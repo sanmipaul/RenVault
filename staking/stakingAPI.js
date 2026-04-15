@@ -25,6 +25,14 @@ class StakingAPI {
   setupRoutes() {
     this.app.use(express.json({ limit: '10kb' }));
 
+    // Enforce application/json Content-Type on all POST requests
+    this.app.use((req, res, next) => {
+      if (req.method === 'POST' && !req.is('application/json')) {
+        return res.status(415).json({ error: 'Content-Type must be application/json' });
+      }
+      next();
+    });
+
     this.app.post('/api/staking/stake', (req, res) => {
       try {
         const { userAddress, amount } = req.body;
