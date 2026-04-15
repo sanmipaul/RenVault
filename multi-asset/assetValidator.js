@@ -29,7 +29,10 @@ class AssetValidator {
     if (!this.validateAmount(amount)) {
       throw new Error('Invalid deposit amount');
     }
-    if (amount < minDeposit) {
+    if (!Number.isFinite(minDeposit) || minDeposit < 0) {
+      throw new Error('minDeposit must be a non-negative finite number');
+    }
+    if (Number(amount) < minDeposit) {
       throw new Error(`Deposit amount below minimum of ${minDeposit}`);
     }
     return true;
