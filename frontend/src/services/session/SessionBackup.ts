@@ -267,6 +267,20 @@ export class SessionBackup {
   // Type guards and validators
   // ---------------------------------------------------------------------------
 
+  private validateRestoredStructure(data: unknown): asserts data is {
+    events?: unknown[];
+    metrics?: unknown;
+    healthReport?: unknown;
+  } {
+    if (!data || typeof data !== 'object') {
+      throw new Error('Backup data is not a valid object');
+    }
+    const d = data as Record<string, unknown>;
+    if (d.events !== undefined && !Array.isArray(d.events)) {
+      throw new Error('Backup "events" field must be an array');
+    }
+  }
+
   private isValidSessionEvent(e: unknown): e is SessionEvent {
     if (!e || typeof e !== 'object') return false;
     const ev = e as Record<string, unknown>;
