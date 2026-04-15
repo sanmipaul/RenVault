@@ -39,7 +39,12 @@ class AssetValidator {
     if (!this.validateAmount(amount)) {
       throw new Error('Invalid withdrawal amount');
     }
-    if (Number(amount) > Number(balance)) {
+    const numAmount = Number(amount);
+    const numBalance = Number(balance);
+    if (!Number.isFinite(numBalance) || numBalance < 0) {
+      throw new Error('balance must be a non-negative finite number');
+    }
+    if (numAmount > numBalance) {
       throw new Error('Insufficient balance');
     }
     return true;
