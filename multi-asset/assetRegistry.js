@@ -65,6 +65,12 @@ class AssetRegistry {
     return this.assets[symbol]?.decimals || 6;
   }
 
+  getAssetOrThrow(symbol) {
+    const asset = this.assets[symbol];
+    if (!asset) throw new Error(`Asset "${symbol}" is not supported by the registry`);
+    return asset;
+  }
+
   addAsset(symbol, config) {
     this.assets[symbol] = config;
   }
