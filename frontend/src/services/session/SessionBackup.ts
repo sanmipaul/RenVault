@@ -1,5 +1,5 @@
 // services/session/SessionBackup.ts
-import { SessionMonitor } from './SessionMonitor';
+import { SessionMonitor, SessionEvent } from './SessionMonitor';
 import { exportSessionData, ExportOptions } from '../../utils/sessionExport';
 import { generateSecureBackupId } from '../../utils/crypto';
 import { encryptForStorage, decryptFromStorage, hashData } from '../../utils/encryption';
