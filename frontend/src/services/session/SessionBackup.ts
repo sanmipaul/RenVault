@@ -294,6 +294,16 @@ export class SessionBackup {
       && ev.timestamp > 0;
   }
 
+  private assertVersionCompatible(backupVersion: string): void {
+    const [bMajor] = backupVersion.split('.').map(Number);
+    const [cMajor] = this.VERSION.split('.').map(Number);
+    if (bMajor !== cMajor) {
+      throw new Error(
+        `Backup version ${backupVersion} is incompatible with current version ${this.VERSION}`
+      );
+    }
+  }
+
   private filterValidEvents(raw: unknown[]): SessionEvent[] {
     return raw.filter((e): e is SessionEvent => this.isValidSessionEvent(e));
   }
