@@ -11,7 +11,7 @@ class RewardsDistributor {
     if (this.isRunning) return;
     
     this.isRunning = true;
-    console.log('Rewards distributor started');
+    // console.log('Rewards distributor started');
     
     this.intervalId = setInterval(() => {
       this.distributeRewards();
@@ -23,7 +23,7 @@ class RewardsDistributor {
     
     this.isRunning = false;
     clearInterval(this.intervalId);
-    console.log('Rewards distributor stopped');
+    // console.log('Rewards distributor stopped');
   }
 
   async distributeRewards() {
@@ -62,7 +62,7 @@ class RewardsDistributor {
     this.distributionHistory.push(distribution);
     
     if (distribution.recipients > 0) {
-      console.log(`Distributed ${distribution.totalDistributed} rewards to ${distribution.recipients} stakers`);
+      // console.log(`Distributed ${distribution.totalDistributed} rewards to ${distribution.recipients} stakers`);
     }
 
     return distribution;

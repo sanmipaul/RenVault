@@ -119,7 +119,7 @@ class StakingAPI {
 
   start() {
     this.app.listen(this.port, () => {
-      console.log(`Staking API server running on port ${this.port}`);
+      // console.log(`Staking API server running on port ${this.port}`);
     });
     
     // Start rewards distributor
