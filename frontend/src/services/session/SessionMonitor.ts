@@ -173,6 +173,19 @@ export class SessionMonitor {
     this.events = this.events.filter(event => event.timestamp > cutoffTime);
   }
 
+  /**
+   * Replace the in-memory event log with a restored set.
+   * Existing events are discarded; the restored array is capped at maxEvents.
+   */
+  importEvents(restoredEvents: SessionEvent[]): void {
+    this.events = restoredEvents.slice(-this.maxEvents);
+  }
+
+  /** Remove every in-memory event (used before an import). */
+  clearAllEvents(): void {
+    this.events = [];
+  }
+
   // Start periodic metrics collection
   private startPeriodicMetricsCollection(): void {
     // Collect metrics every hour
