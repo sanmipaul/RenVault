@@ -76,8 +76,12 @@ class StakingAPI {
     });
 
     this.app.get('/api/staking/info/:userAddress', (req, res) => {
-      const info = this.stakingManager.getStakeInfo(req.params.userAddress);
-      res.json(info);
+      try {
+        const info = this.stakingManager.getStakeInfo(req.params.userAddress);
+        res.json(info);
+      } catch (error) {
+        res.status(400).json({ error: error.message });
+      }
     });
 
     this.app.get('/api/staking/stats', (req, res) => {
