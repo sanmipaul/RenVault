@@ -96,7 +96,10 @@ export const SessionRequestModal: React.FC<Props> = ({ request, onClose }) => {
           <div className='params-container'>
             <span className='label'>Params:</span>
             <pre className='params-code'>
-              {JSON.stringify(requestData.params, null, 2)}
+              {(() => {
+                const raw = JSON.stringify(requestData.params, null, 2);
+                return raw.length > 2000 ? raw.slice(0, 2000) + '\n… (truncated)' : raw;
+              })()}
             </pre>
           </div>
         </div>
