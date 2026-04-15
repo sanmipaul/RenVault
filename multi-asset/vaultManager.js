@@ -35,9 +35,10 @@ class VaultManager {
   }
 
   async withdrawAsset(asset, amount, senderKey) {
-    console.log(`Initiating withdrawal for ${amount} ${asset}...`);
-    const assetInfo = this.registry.getAsset(asset);
-    if (!assetInfo) throw new Error(`Asset ${asset} not supported by registry`);
+    if (!AssetValidator.isValidSymbol(asset)) {
+      throw new Error(`Invalid asset symbol: "${asset}"`);
+    }
+    const assetInfo = this.registry.getAssetOrThrow(asset);
 
     try {
       const functionName = assetInfo.type === 'native' ? 'withdraw-stx' : 'withdraw-sip010';
