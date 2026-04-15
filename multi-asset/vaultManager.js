@@ -62,9 +62,12 @@ class VaultManager {
   }
 
   async getBalance(user, asset) {
-    const assetInfo = this.registry.getAsset(asset);
+    if (!AssetValidator.isValidSymbol(asset)) {
+      throw new Error(`Invalid asset symbol: "${asset}"`);
+    }
+    const assetInfo = this.registry.getAssetOrThrow(asset);
     const assetContract = assetInfo.type === 'native' ? 'STX' : assetInfo.contract;
-    
+
     return await this.readContract('get-asset-balance', [user, assetContract]);
   }
 
