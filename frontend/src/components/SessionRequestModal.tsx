@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { WalletKitTypes } from '@reown/walletkit';
 import { getSdkError } from '@walletconnect/utils';
 import { WalletKitService } from '../services/walletkit-service';
-import { signRequest } from '../services/SigningService';
+import { signRequest, getMethodDisplayName, isSupportedMethod } from '../services/SigningService';
 import { logger } from '../utils/logger';
 import { handleRedirect } from '../utils/walletkit-helpers';
 
