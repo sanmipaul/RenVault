@@ -28,6 +28,10 @@ class StakingAPI {
     this.app.post('/api/staking/stake', (req, res) => {
       try {
         const { userAddress, amount } = req.body;
+        const addressCheck = validateAddress(userAddress);
+        if (!addressCheck.valid) {
+          return res.status(400).json({ error: addressCheck.error });
+        }
         const result = this.stakingManager.stake(userAddress, amount);
         res.json(result);
       } catch (error) {
