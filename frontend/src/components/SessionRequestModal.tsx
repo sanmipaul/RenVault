@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { WalletKitTypes } from '@reown/walletkit';
 import { getSdkError } from '@walletconnect/utils';
 import { WalletKitService } from '../services/walletkit-service';
+import { signRequest, getMethodDisplayName, isSupportedMethod } from '../services/SigningService';
 import { logger } from '../utils/logger';
 import { handleRedirect } from '../utils/walletkit-helpers';
 
@@ -12,23 +13,40 @@ interface Props {
 
 export const SessionRequestModal: React.FC<Props> = ({ request, onClose }) => {
   const [loading, setLoading] = useState(false);
+  const [signingError, setSigningError] = useState<string | null>(null);
 
   if (!request) return null;
 
   const { topic, params, id } = request;
+
+  // Immediately reject unsupported methods so the dApp gets a proper JSONRPC error
+  React.useEffect(() => {
+    if (!isSupportedMethod(requestData.method)) {
+      logger.warn(`Auto-rejecting unsupported method: ${requestData.method}`);
+      const service = WalletKitService.getInstance();
+      service
+        .rejectSessionRequest(topic, id, getSdkError('UNSUPPORTED_METHODS'))
+        .catch((err) => logger.error('Failed to auto-reject unsupported method:', err as Error));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const { request: requestData, chainId } = params;
 
   const handleApprove = async () => {
     try {
       setLoading(true);
+      setSigningError(null);
+      logger.info(`User approved ${requestData.method} on chain ${chainId}`);
       const service = WalletKitService.getInstance();
-      
-      // TODO: Implement actual signing logic here
-      // For now, we return a dummy signature for testing
-      const result = "0x0000000000000000000000000000000000000000000000000000000000000000";
-      
+
+      const result = await signRequest(
+        requestData.method,
+        requestData.params,
+        chainId
+      );
+
       await service.respondSessionRequest(topic, id, result);
-      logger.info('Session request approved');
+      logger.info(`Session request approved: ${requestData.method} on chain ${chainId}`);
       
       const session = await service.getSession(topic);
       if (session) {
@@ -37,6 +55,8 @@ export const SessionRequestModal: React.FC<Props> = ({ request, onClose }) => {
       
       onClose();
     } catch (error) {
+      const msg = error instanceof Error ? error.message : 'Signing failed';
+      setSigningError(msg);
       logger.error('Request approval failed:', error as Error);
     } finally {
       setLoading(false);
@@ -46,6 +66,7 @@ export const SessionRequestModal: React.FC<Props> = ({ request, onClose }) => {
   const handleReject = async () => {
     try {
       setLoading(true);
+      setSigningError(null);
       const service = WalletKitService.getInstance();
       await service.rejectSessionRequest(topic, id, getSdkError('USER_REJECTED'));
       logger.info('Session request rejected');
@@ -60,11 +81,14 @@ export const SessionRequestModal: React.FC<Props> = ({ request, onClose }) => {
   return (
     <div className='modal-overlay'>
       <div className='modal-content'>
-        <h2>Sign Request</h2>
+        <h2>{getMethodDisplayName(requestData.method)} Request</h2>
         <div className='request-details'>
           <div className='detail-row'>
             <span className='label'>Method:</span>
-            <span className='value'>{requestData.method}</span>
+            <span className='value'>
+              {getMethodDisplayName(requestData.method)}{' '}
+              <code className='method-raw'>({requestData.method})</code>
+            </span>
           </div>
           <div className='detail-row'>
             <span className='label'>Chain:</span>
@@ -73,15 +97,36 @@ export const SessionRequestModal: React.FC<Props> = ({ request, onClose }) => {
           <div className='params-container'>
             <span className='label'>Params:</span>
             <pre className='params-code'>
-              {JSON.stringify(requestData.params, null, 2)}
+              {(() => {
+                const raw = JSON.stringify(requestData.params, null, 2);
+                return raw.length > 2000 ? raw.slice(0, 2000) + '\n… (truncated)' : raw;
+              })()}
             </pre>
           </div>
         </div>
         
+        {chainId && !chainId.startsWith('stacks:') && (
+          <div className='chain-warning' role='alert'>
+            Warning: this request is for chain <strong>{chainId}</strong> which may not be supported by this wallet.
+          </div>
+        )}
+
+        {!isSupportedMethod(requestData.method) && (
+          <div className='method-warning' role='alert'>
+            Warning: <strong>{requestData.method}</strong> is not a supported signing method and will be rejected.
+          </div>
+        )}
+
+        {signingError && (
+          <div className='signing-error' role='alert'>
+            <strong>Error:</strong> {signingError}
+          </div>
+        )}
+
         <div className='modal-actions'>
-          <button 
-            onClick={handleApprove} 
-            disabled={loading}
+          <button
+            onClick={handleApprove}
+            disabled={loading || !isSupportedMethod(requestData.method)}
             className='btn btn-primary'
           >
             {loading ? 'Signing...' : 'Approve'}
