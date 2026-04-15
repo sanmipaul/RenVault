@@ -292,6 +292,10 @@ export class SessionBackup {
       && ev.timestamp > 0;
   }
 
+  private filterValidEvents(raw: unknown[]): SessionEvent[] {
+    return raw.filter((e): e is SessionEvent => this.isValidSessionEvent(e));
+  }
+
   // Private helper methods
 
   private async storeBackup(backup: { metadata: BackupMetadata; data: string }): Promise<void> {
