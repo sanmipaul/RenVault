@@ -137,7 +137,11 @@ class StakingAPI {
     this.app.post('/api/staking/settings/reward-rate', (req, res) => {
       try {
         const { rate } = req.body;
-        const newRate = this.stakingManager.updateRewardRate(rate);
+        const rateCheck = validateRate(rate);
+        if (!rateCheck.valid) {
+          return res.status(400).json({ error: rateCheck.error });
+        }
+        const newRate = this.stakingManager.updateRewardRate(rateCheck.value);
         res.json({ rewardRate: newRate });
       } catch (error) {
         res.status(400).json({ error: error.message });
