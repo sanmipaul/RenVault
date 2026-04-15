@@ -41,6 +41,9 @@ class VaultManager {
     if (!AssetValidator.validateSenderKey(senderKey)) {
       throw new Error('senderKey must be a valid 64-character hex private key');
     }
+    if (!AssetValidator.validateAmount(amount)) {
+      throw new Error('Withdrawal amount must be a positive finite number');
+    }
     const assetInfo = this.registry.getAssetOrThrow(asset);
 
     try {
