@@ -4,6 +4,7 @@ import { WalletProviderLoader } from './WalletProviderLoader';
 import { MultiSigWalletProvider } from './MultiSigWalletProvider';
 import { getRandomBytes } from '../../utils/crypto';
 import { encryptForStorage, decryptFromStorage } from '../../utils/encryption';
+import { logger } from '../../utils/logger';
 
 export class WalletManager {
   private providers: Map<WalletProviderType, WalletProvider> = new Map();
@@ -36,7 +37,7 @@ export class WalletManager {
       const leatherProvider = await WalletProviderLoader.loadProvider('leather');
       this.providers.set('leather', leatherProvider);
     } catch (error) {
-      console.warn('Failed to load leather provider:', error);
+      logger.warn('Failed to load leather provider:', error);
     }
   }
 
@@ -309,7 +310,7 @@ export class WalletManager {
   async preloadAllProviders(): Promise<void> {
     const preloadPromises = Array.from(this.lazyLoadedProviders).map(type =>
       this.lazyLoadProvider(type).catch(error =>
-        console.warn(`Failed to preload provider ${type}:`, error)
+        logger.warn(`Failed to preload provider ${type}:`, error)
       )
     );
     await Promise.all(preloadPromises);

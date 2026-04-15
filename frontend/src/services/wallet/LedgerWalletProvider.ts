@@ -3,6 +3,7 @@
 import { BaseWalletProvider } from './BaseWalletProvider';
 import { WalletConnection, StacksContractCallOptions, SignedTransactionResult } from '../../types/wallet';
 import { WalletError, WalletErrorCode } from '../../utils/wallet-errors';
+import { logger } from '../../utils/logger';
 
 export class LedgerWalletProvider extends BaseWalletProvider {
   id = 'ledger';
@@ -25,7 +26,7 @@ export class LedgerWalletProvider extends BaseWalletProvider {
       this.app = new StacksApp(this.transport);
 
       const response = await this.app.getVersion();
-      console.log('Ledger version:', response);
+      logger.debug('Ledger version:', response);
 
       const addressResponse = await this.app.getAddressAndPubKey("44'/5757'/0'/0/0");
       const address = addressResponse.address;
