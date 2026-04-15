@@ -35,6 +35,7 @@ export const SessionRequestModal: React.FC<Props> = ({ request, onClose }) => {
     try {
       setLoading(true);
       setSigningError(null);
+      logger.info(`User approved ${requestData.method} on chain ${chainId}`);
       const service = WalletKitService.getInstance();
 
       const result = await signRequest(
