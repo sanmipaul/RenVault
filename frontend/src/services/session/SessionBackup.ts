@@ -3,6 +3,7 @@ import { SessionMonitor, SessionEvent } from './SessionMonitor';
 import { exportSessionData, ExportOptions } from '../../utils/sessionExport';
 import { generateSecureBackupId } from '../../utils/crypto';
 import { encryptForStorage, decryptFromStorage, hashData } from '../../utils/encryption';
+import { logger } from '../../utils/logger';
 
 export interface BackupOptions {
   includeEvents: boolean;
