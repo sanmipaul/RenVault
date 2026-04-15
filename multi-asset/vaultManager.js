@@ -13,6 +13,9 @@ class VaultManager {
     if (!AssetValidator.isValidSymbol(asset)) {
       throw new Error(`Invalid asset symbol: "${asset}"`);
     }
+    if (!AssetValidator.validateSenderKey(senderKey)) {
+      throw new Error('senderKey must be a valid 64-character hex private key');
+    }
     const assetInfo = this.registry.getAssetOrThrow(asset);
     AssetValidator.validateDeposit(asset, amount);
 
