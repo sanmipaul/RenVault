@@ -81,7 +81,7 @@ export const SessionRequestModal: React.FC<Props> = ({ request, onClose }) => {
   return (
     <div className='modal-overlay'>
       <div className='modal-content'>
-        <h2>Sign Request</h2>
+        <h2>{getMethodDisplayName(requestData.method)} Request</h2>
         <div className='request-details'>
           <div className='detail-row'>
             <span className='label'>Method:</span>
