@@ -1,3 +1,4 @@
+import { logger } from './logger';
 import { ErrorInfo } from 'react';
 
 export interface BoundaryErrorReport {
@@ -22,8 +23,8 @@ export function logBoundaryError(error: Error, errorInfo: ErrorInfo, section?: s
   // Always log to console in development
   if (process.env.NODE_ENV !== 'production') {
     console.group('[ErrorBoundary]' + (section ? ` — ${section}` : ''));
-    console.error('Error:', error);
-    console.error('Component stack:', errorInfo.componentStack);
+    logger.error('Error:', error);
+    logger.error('Component stack:', errorInfo.componentStack);
     console.groupEnd();
   }
 
