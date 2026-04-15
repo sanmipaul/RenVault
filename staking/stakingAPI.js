@@ -151,7 +151,11 @@ class StakingAPI {
     this.app.post('/api/staking/settings/min-stake', (req, res) => {
       try {
         const { amount } = req.body;
-        const newMinStake = this.stakingManager.updateMinStake(amount);
+        const amountCheck = validateAmount(amount);
+        if (!amountCheck.valid) {
+          return res.status(400).json({ error: amountCheck.error });
+        }
+        const newMinStake = this.stakingManager.updateMinStake(amountCheck.value);
         res.json({ minStake: newMinStake });
       } catch (error) {
         res.status(400).json({ error: error.message });
