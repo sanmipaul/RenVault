@@ -126,8 +126,12 @@ class StakingAPI {
     });
 
     this.app.get('/api/staking/rewards/stats', (req, res) => {
-      const stats = this.rewardsDistributor.getDistributionStats();
-      res.json(stats);
+      try {
+        const stats = this.rewardsDistributor.getDistributionStats();
+        res.json(stats);
+      } catch (error) {
+        res.status(500).json({ error: error.message });
+      }
     });
 
     this.app.post('/api/staking/rewards/distribute', async (req, res) => {
