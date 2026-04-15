@@ -42,6 +42,8 @@ export const SessionRequestModal: React.FC<Props> = ({ request, onClose }) => {
       
       onClose();
     } catch (error) {
+      const msg = error instanceof Error ? error.message : 'Signing failed';
+      setSigningError(msg);
       logger.error('Request approval failed:', error as Error);
     } finally {
       setLoading(false);
