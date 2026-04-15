@@ -4,6 +4,9 @@ const { AssetValidator } = require('./assetValidator');
 
 class VaultManager {
   constructor(stacksApi) {
+    if (!stacksApi) {
+      throw new Error('VaultManager requires a valid stacksApi instance');
+    }
     this.stacksApi = stacksApi;
     this.registry = new AssetRegistry();
     this.contractAddress = 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.multi-asset-vault';
