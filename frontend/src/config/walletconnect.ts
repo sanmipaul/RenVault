@@ -1,3 +1,4 @@
+import { logger } from '../utils/logger';
 import { environment } from './environment';
 import { stacksWallets, getFeaturedWalletIds } from './customWallets';
 import { validateWalletConfig } from '../utils/walletConfigValidator';
@@ -153,7 +154,7 @@ export const customWalletsConfig = {
   wallets: stacksWallets.map((wallet) => {
     const validation = validateWalletConfig(wallet);
     if (!validation.valid) {
-      console.error(`Wallet ${wallet.id} validation failed:`, validation.errors);
+      logger.error(`Wallet ${wallet.id} validation failed:`, validation.errors);
     }
     return {
       id: wallet.id,
