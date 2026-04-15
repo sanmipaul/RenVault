@@ -106,9 +106,13 @@ class StakingAPI {
     });
 
     this.app.get('/api/staking/leaderboard', (req, res) => {
-      const limit = clampLimit(req.query.limit, 1, MAX_LEADERBOARD_LIMIT, DEFAULT_LEADERBOARD_LIMIT);
-      const leaderboard = this.stakingManager.getTopStakers(limit);
-      res.json({ leaderboard });
+      try {
+        const limit = clampLimit(req.query.limit, 1, MAX_LEADERBOARD_LIMIT, DEFAULT_LEADERBOARD_LIMIT);
+        const leaderboard = this.stakingManager.getTopStakers(limit);
+        res.json({ leaderboard });
+      } catch (error) {
+        res.status(500).json({ error: error.message });
+      }
     });
 
     this.app.get('/api/staking/rewards/history', (req, res) => {
