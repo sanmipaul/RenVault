@@ -101,9 +101,9 @@ export const SessionRequestModal: React.FC<Props> = ({ request, onClose }) => {
         )}
 
         <div className='modal-actions'>
-          <button 
-            onClick={handleApprove} 
-            disabled={loading}
+          <button
+            onClick={handleApprove}
+            disabled={loading || !isSupportedMethod(requestData.method)}
             className='btn btn-primary'
           >
             {loading ? 'Signing...' : 'Approve'}
