@@ -34,6 +34,9 @@ class StakingManager {
   }
 
   unstake(userAddress, amount) {
+    if (!Number.isFinite(amount) || !Number.isInteger(amount) || amount <= 0) {
+      throw new Error('Amount must be a positive integer (microSTX units)');
+    }
     const currentStake = this.stakes.get(userAddress) || 0;
     const stakeTime = this.stakeTimestamps.get(userAddress) || 0;
 
