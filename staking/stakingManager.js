@@ -11,6 +11,9 @@ class StakingManager {
   }
 
   stake(userAddress, amount) {
+    if (!Number.isFinite(amount) || !Number.isInteger(amount) || amount <= 0) {
+      throw new Error('Amount must be a positive integer (microSTX units)');
+    }
     if (amount < this.minStake) {
       throw new Error(`Minimum stake is ${this.minStake / 1000000} STX`);
     }
