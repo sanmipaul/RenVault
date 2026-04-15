@@ -100,6 +100,12 @@ function validateContractCallParams(params: unknown): ContractCallParams {
   if (!p || typeof p.contractAddress !== 'string') {
     throw new WalletError(WalletErrorCode.INVALID_REQUEST, 'stacks_contractCall requires "contractAddress"');
   }
+  if (p.contractAddress.length > MAX_STACKS_ADDRESS_LENGTH) {
+    throw new WalletError(
+      WalletErrorCode.INVALID_REQUEST,
+      `stacks_contractCall "contractAddress" exceeds max length of ${MAX_STACKS_ADDRESS_LENGTH}`
+    );
+  }
   if (typeof p.contractName !== 'string') {
     throw new WalletError(WalletErrorCode.INVALID_REQUEST, 'stacks_contractCall requires "contractName"');
   }
