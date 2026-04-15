@@ -53,7 +53,7 @@ export const useVaultStats = (): UseVaultStatsResult => {
 
       trackAnalytics('performance', { operation: 'fetch-user-stats', duration: Date.now() - startTime });
     } catch (error) {
-      console.error('Error fetching vault stats:', error);
+      logger.error('Error fetching vault stats:', error);
       trackAnalytics('performance', { operation: 'fetch-user-stats', duration: Date.now() - startTime });
     }
   }, []);

@@ -50,14 +50,14 @@ export const useSession = (): UseSessionReturn => {
         setCurrentSession(session);
         setHasSession(true);
         setSessionError(null);
-        console.log('Session restored in hook:', session.providerType);
+        logger.info('Session restored in hook:', session.providerType);
       },
       () => {
         // Session expired
         setCurrentSession(null);
         setHasSession(false);
         setSessionError('Session expired');
-        console.log('Session expired in hook');
+        logger.info('Session expired in hook');
       }
     );
   }, []);
@@ -80,7 +80,7 @@ export const useSession = (): UseSessionReturn => {
           setHasSession(false);
         }
       } catch (error) {
-        console.error('Session restoration failed:', error);
+        logger.error('Session restoration failed:', error);
         setSessionError('Failed to restore session');
         setCurrentSession(null);
         setHasSession(false);
@@ -101,7 +101,7 @@ export const useSession = (): UseSessionReturn => {
       setHasSession(true);
       setSessionError(null);
     } catch (error) {
-      console.error('Failed to store session:', error);
+      logger.error('Failed to store session:', error);
       setSessionError('Failed to store session');
     }
   }, []);
