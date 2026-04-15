@@ -23,7 +23,7 @@ class StakingAPI {
   }
 
   setupRoutes() {
-    this.app.use(express.json());
+    this.app.use(express.json({ limit: '10kb' }));
 
     this.app.post('/api/staking/stake', (req, res) => {
       try {
