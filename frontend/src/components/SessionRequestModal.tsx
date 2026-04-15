@@ -23,12 +23,15 @@ export const SessionRequestModal: React.FC<Props> = ({ request, onClose }) => {
   const handleApprove = async () => {
     try {
       setLoading(true);
+      setSigningError(null);
       const service = WalletKitService.getInstance();
-      
-      // TODO: Implement actual signing logic here
-      // For now, we return a dummy signature for testing
-      const result = "0x0000000000000000000000000000000000000000000000000000000000000000";
-      
+
+      const result = await signRequest(
+        requestData.method,
+        requestData.params,
+        chainId
+      );
+
       await service.respondSessionRequest(topic, id, result);
       logger.info('Session request approved');
       
