@@ -29,7 +29,7 @@ export const AutoReconnect: React.FC<AutoReconnectProps> = ({
           setIsReconnecting(true);
           setReconnectError(null);
 
-          console.log('Attempting auto-reconnection for provider:', currentSession.providerType);
+          logger.info('Attempting auto-reconnection for provider:', currentSession.providerType);
 
           // Set the provider from session
           setSelectedProvider(currentSession.providerType);
@@ -37,11 +37,11 @@ export const AutoReconnect: React.FC<AutoReconnectProps> = ({
           // Attempt to connect
           await connect();
 
-          console.log('Auto-reconnection successful');
+          logger.info('Auto-reconnection successful');
           onReconnectSuccess?.(currentSession.providerType);
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : 'Auto-reconnection failed';
-          console.error('Auto-reconnection failed:', errorMessage);
+          logger.error('Auto-reconnection failed:', errorMessage);
           setReconnectError(errorMessage);
           onReconnectFailure?.(errorMessage);
         } finally {

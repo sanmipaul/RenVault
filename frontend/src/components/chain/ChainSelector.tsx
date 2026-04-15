@@ -102,7 +102,7 @@ export const ChainSelector: React.FC<ChainSelectorProps> = ({
         onChainChange(chainType);
       }
     } catch (error) {
-      console.error('Error switching chain:', error);
+      logger.error('Error switching chain:', error);
     } finally {
       setLoading(false);
     }

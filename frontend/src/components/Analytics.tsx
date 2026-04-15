@@ -29,7 +29,7 @@ export const Analytics: React.FC<AnalyticsProps> = ({ userId }) => {
       setStats(statsData);
       setWalletStats(walletData);
     } catch (error) {
-      console.error('Failed to fetch analytics:', error);
+      logger.error('Failed to fetch analytics:', error);
     } finally {
       setLoading(false);
     }
