@@ -14,6 +14,7 @@ class VaultManager {
       throw new Error(`Invalid asset symbol: "${asset}"`);
     }
     const assetInfo = this.registry.getAssetOrThrow(asset);
+    AssetValidator.validateDeposit(asset, amount);
 
     try {
       const functionName = assetInfo.type === 'native' ? 'deposit-stx' : 'deposit-sip010';
