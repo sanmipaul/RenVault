@@ -18,6 +18,17 @@ export const SessionRequestModal: React.FC<Props> = ({ request, onClose }) => {
   if (!request) return null;
 
   const { topic, params, id } = request;
+
+  // Immediately reject unsupported methods so the dApp gets a proper error
+  React.useEffect(() => {
+    if (!isSupportedMethod(params.request.method)) {
+      const service = WalletKitService.getInstance();
+      service
+        .rejectSessionRequest(topic, id, getSdkError('UNSUPPORTED_METHODS'))
+        .catch((err) => logger.error('Failed to auto-reject unsupported method:', err as Error));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const { request: requestData, chainId } = params;
 
   const handleApprove = async () => {
