@@ -78,6 +78,12 @@ function validateStxTransferParams(params: unknown): StxTransferParams {
   if (!p || typeof p.recipient !== 'string' || p.recipient.trim().length === 0) {
     throw new WalletError(WalletErrorCode.INVALID_REQUEST, 'stacks_stxTransfer requires "recipient"');
   }
+  if (p.recipient.length > MAX_STACKS_ADDRESS_LENGTH) {
+    throw new WalletError(
+      WalletErrorCode.INVALID_REQUEST,
+      `stacks_stxTransfer "recipient" exceeds max length of ${MAX_STACKS_ADDRESS_LENGTH}`
+    );
+  }
   if (typeof p.amount !== 'string' && typeof p.amount !== 'number') {
     throw new WalletError(WalletErrorCode.INVALID_REQUEST, 'stacks_stxTransfer requires "amount"');
   }
