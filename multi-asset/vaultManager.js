@@ -1,5 +1,6 @@
 // Multi-Asset Vault Manager
 const { AssetRegistry } = require('./assetRegistry');
+const { AssetValidator } = require('./assetValidator');
 
 class VaultManager {
   constructor(stacksApi) {
