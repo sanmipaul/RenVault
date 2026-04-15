@@ -101,6 +101,12 @@ export const SessionRequestModal: React.FC<Props> = ({ request, onClose }) => {
           </div>
         </div>
         
+        {chainId && !chainId.startsWith('stacks:') && (
+          <div className='chain-warning' role='alert'>
+            Warning: this request is for chain <strong>{chainId}</strong> which may not be supported by this wallet.
+          </div>
+        )}
+
         {!isSupportedMethod(requestData.method) && (
           <div className='method-warning' role='alert'>
             Warning: <strong>{requestData.method}</strong> is not a supported signing method and will be rejected.
