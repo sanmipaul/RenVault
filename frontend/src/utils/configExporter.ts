@@ -1,3 +1,4 @@
+import { logger } from './logger';
 import { renvaultBranding, modalFeatureFlags, walletConnectConfig, supportedChains, customWalletsConfig, modalConfig } from '../config/walletconnect';
 
 export const exportConfiguration = () => {
@@ -13,5 +14,5 @@ export const exportConfiguration = () => {
 };
 
 export const logConfiguration = () => {
-  console.log('RenVault Configuration:', exportConfiguration());
+  logger.info('RenVault Configuration:', exportConfiguration());
 };

@@ -3,7 +3,7 @@ export class ConnectionPersistence {
     try {
       localStorage.setItem(`conn_${key}`, JSON.stringify(value));
     } catch (error) {
-      console.error('Failed to save connection state:', error);
+      logger.error('Failed to save connection state:', error);
     }
   }
 
@@ -12,7 +12,7 @@ export class ConnectionPersistence {
       const stored = localStorage.getItem(`conn_${key}`);
       return stored ? (JSON.parse(stored) as T) : null;
     } catch (error) {
-      console.error('Failed to load connection state:', error);
+      logger.error('Failed to load connection state:', error);
       return null;
     }
   }

@@ -14,6 +14,6 @@ export const trackAnalytics = async (event: string, data: Record<string, unknown
       body: JSON.stringify(data),
     });
   } catch (error) {
-    console.warn('Analytics tracking failed:', error);
+    logger.warn('Analytics tracking failed:', error);
   }
 };
