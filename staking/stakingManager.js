@@ -149,6 +149,9 @@ class StakingManager {
   }
 
   updateMinStake(newMinStake) {
+    if (!Number.isFinite(newMinStake) || newMinStake <= 0 || !Number.isInteger(newMinStake)) {
+      throw new Error('Minimum stake must be a positive integer (microSTX units)');
+    }
     this.minStake = newMinStake;
     return this.minStake;
   }
