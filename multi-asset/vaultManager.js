@@ -95,6 +95,12 @@ class VaultManager {
   }
 
   async readContract(functionName, args) {
+    if (!functionName || typeof functionName !== 'string') {
+      throw new Error('readContract requires a non-empty functionName string');
+    }
+    if (!Array.isArray(args)) {
+      throw new Error('readContract requires args to be an array');
+    }
     // Contract read implementation
     return { success: true, result: 0 };
   }
