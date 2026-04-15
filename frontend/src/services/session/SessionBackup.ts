@@ -69,7 +69,7 @@ export class SessionBackup {
     retentionDays: 30
   }): Promise<BackupResult> {
     try {
-      console.log('Creating session data backup...');
+      logger.info('Creating session data backup...');
 
       // Export data
       const exportOptions: ExportOptions = {
@@ -120,7 +120,7 @@ export class SessionBackup {
       // Cleanup old backups
       await this.cleanupOldBackups();
 
-      console.log(`Backup created successfully: ${backupId}`);
+      logger.info(`Backup created successfully: ${backupId}`);
 
       return {
         success: true,
@@ -128,7 +128,7 @@ export class SessionBackup {
         size: data.length
       };
     } catch (error) {
-      console.error('Failed to create backup:', error);
+      logger.error('Failed to create backup:', error instanceof Error ? error : new Error(String(error)));
       return {
         success: false,
         id: '',
