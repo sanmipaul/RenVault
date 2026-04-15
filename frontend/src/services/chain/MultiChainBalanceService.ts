@@ -67,7 +67,7 @@ export class MultiChainBalanceService {
       // Placeholder for now
       return null;
     } catch (error) {
-      console.error(`Error fetching ${chainType} balance:`, error);
+      logger.error(`Error fetching ${chainType} balance:`, error);
       return null;
     }
   }
@@ -158,7 +158,7 @@ export class MultiChainBalanceService {
       try {
         listener(balances);
       } catch (error) {
-        console.error('Error in balance update listener:', error);
+        logger.error('Error in balance update listener:', error);
       }
     });
   }

@@ -353,7 +353,7 @@ export class MultiChainErrorHandler {
       try {
         listener(error);
       } catch (err) {
-        console.error('Error in error listener:', err);
+        logger.error('Error in error listener:', err);
       }
     });
   }

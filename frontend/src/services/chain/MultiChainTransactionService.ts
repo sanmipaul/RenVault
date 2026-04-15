@@ -209,7 +209,7 @@ export class MultiChainTransactionService {
         JSON.stringify(this.transactions)
       );
     } catch (error) {
-      console.error('Failed to save transactions:', error);
+      logger.error('Failed to save transactions:', error);
     }
   }
 
@@ -223,7 +223,7 @@ export class MultiChainTransactionService {
         this.transactions = JSON.parse(saved);
       }
     } catch (error) {
-      console.error('Failed to load transactions:', error);
+      logger.error('Failed to load transactions:', error);
     }
   }
 
@@ -254,7 +254,7 @@ export class MultiChainTransactionService {
       }
       return false;
     } catch (error) {
-      console.error('Failed to import transactions:', error);
+      logger.error('Failed to import transactions:', error);
       return false;
     }
   }
