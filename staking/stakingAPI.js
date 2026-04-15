@@ -97,8 +97,12 @@ class StakingAPI {
     });
 
     this.app.get('/api/staking/stats', (req, res) => {
-      const stats = this.stakingManager.getGlobalStats();
-      res.json(stats);
+      try {
+        const stats = this.stakingManager.getGlobalStats();
+        res.json(stats);
+      } catch (error) {
+        res.status(500).json({ error: error.message });
+      }
     });
 
     this.app.get('/api/staking/leaderboard', (req, res) => {
