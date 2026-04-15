@@ -116,9 +116,13 @@ class StakingAPI {
     });
 
     this.app.get('/api/staking/rewards/history', (req, res) => {
-      const limit = clampLimit(req.query.limit, 1, MAX_HISTORY_LIMIT, DEFAULT_HISTORY_LIMIT);
-      const history = this.rewardsDistributor.getDistributionHistory(limit);
-      res.json({ history });
+      try {
+        const limit = clampLimit(req.query.limit, 1, MAX_HISTORY_LIMIT, DEFAULT_HISTORY_LIMIT);
+        const history = this.rewardsDistributor.getDistributionHistory(limit);
+        res.json({ history });
+      } catch (error) {
+        res.status(500).json({ error: error.message });
+      }
     });
 
     this.app.get('/api/staking/rewards/stats', (req, res) => {
