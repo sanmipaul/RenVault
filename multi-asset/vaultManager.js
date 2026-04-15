@@ -75,8 +75,23 @@ class VaultManager {
   }
 
   async callContract(functionName, args, senderKey) {
+    if (!functionName || typeof functionName !== 'string') {
+      throw new Error('callContract requires a non-empty functionName string');
+    }
+    if (!Array.isArray(args)) {
+      throw new Error('callContract requires args to be an array');
+    }
     // Contract call implementation
-    return { success: true, txId: 'mock-tx-id' };
+    const result = { success: true, txId: 'mock-tx-id' };
+
+    if (!result.txId || typeof result.txId !== 'string' || result.txId.trim().length === 0) {
+      throw new Error(`callContract returned an empty txId for function "${functionName}"`);
+    }
+    if (!result.success) {
+      throw new Error(`Contract call to "${functionName}" failed`);
+    }
+
+    return result;
   }
 
   async readContract(functionName, args) {
