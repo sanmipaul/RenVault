@@ -226,7 +226,7 @@ export class SessionBackup {
       const backups = await this.getAllBackups();
       return backups.map(backup => backup.metadata).sort((a, b) => b.timestamp - a.timestamp);
     } catch (error) {
-      console.error('Failed to list backups:', error);
+      logger.error('Failed to list backups:', error instanceof Error ? error : new Error(String(error)));
       return [];
     }
   }
@@ -244,10 +244,10 @@ export class SessionBackup {
       }
 
       localStorage.setItem(this.BACKUP_KEY, JSON.stringify(filteredBackups));
-      console.log(`Backup deleted: ${backupId}`);
+      logger.info(`Backup deleted: ${backupId}`);
       return true;
     } catch (error) {
-      console.error('Failed to delete backup:', error);
+      logger.error('Failed to delete backup:', error instanceof Error ? error : new Error(String(error)));
       return false;
     }
   }
@@ -311,7 +311,7 @@ export class SessionBackup {
         newestBackup: Math.max(...timestamps)
       };
     } catch (error) {
-      console.error('Failed to get backup stats:', error);
+      logger.error('Failed to get backup stats:', error instanceof Error ? error : new Error(String(error)));
       return {
         totalBackups: 0,
         totalSize: 0,
@@ -402,7 +402,7 @@ export class SessionBackup {
       const stored = localStorage.getItem(this.BACKUP_KEY);
       return stored ? JSON.parse(stored) : [];
     } catch (error) {
-      console.error('Failed to load backups:', error);
+      logger.error('Failed to load backups:', error instanceof Error ? error : new Error(String(error)));
       return [];
     }
   }
@@ -420,10 +420,10 @@ export class SessionBackup {
 
       if (validBackups.length !== backups.length) {
         localStorage.setItem(this.BACKUP_KEY, JSON.stringify(validBackups));
-        console.log(`Cleaned up ${backups.length - validBackups.length} old backups`);
+        logger.info(`Cleaned up ${backups.length - validBackups.length} old backups`);
       }
     } catch (error) {
-      console.error('Failed to cleanup old backups:', error);
+      logger.error('Failed to cleanup old backups:', error instanceof Error ? error : new Error(String(error)));
     }
   }
 
