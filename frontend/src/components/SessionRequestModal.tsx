@@ -13,6 +13,7 @@ interface Props {
 
 export const SessionRequestModal: React.FC<Props> = ({ request, onClose }) => {
   const [loading, setLoading] = useState(false);
+  const [signingError, setSigningError] = useState<string | null>(null);
 
   if (!request) return null;
 
