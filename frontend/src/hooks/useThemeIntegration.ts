@@ -59,7 +59,7 @@ async function initializeThemeSystem() {
     // Apply CSS variables to root
     applyCSSVariablesToRoot(currentMode);
   } catch (error) {
-    console.error('Failed to initialize theme system:', error);
+    logger.error('Failed to initialize theme system:', error);
   }
 }
 
@@ -82,7 +82,7 @@ export function updateAllThemeStyles(mode: 'light' | 'dark') {
     // Update AppKit theme
     updateAppKitTheme(mode);
   } catch (error) {
-    console.error('Failed to update theme styles:', error);
+    logger.error('Failed to update theme styles:', error);
   }
 }
 
@@ -210,18 +210,18 @@ export function injectThemeStyles() {
 export function setupThemeListeners() {
   // Listen for AppKit theme changes
   window.addEventListener('appkit-theme-change', (event: Event) => {
-    console.log('AppKit theme changed:', (event as CustomEvent).detail);
+    logger.info('AppKit theme changed:', (event as CustomEvent).detail);
   });
 
   // Listen for custom theme changes
   window.addEventListener('themechange', (event: Event) => {
-    console.log('Theme changed to:', (event as CustomEvent<{ mode: string }>).detail.mode);
+    logger.info('Theme changed to:', (event as CustomEvent<{ mode: string }>).detail.mode);
   });
 
   // Listen for media query changes
   const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
   darkModeQuery.addEventListener('change', (e) => {
-    console.log('System theme preference changed to:', e.matches ? 'dark' : 'light');
+    logger.info('System theme preference changed to:', e.matches ? 'dark' : 'light');
   });
 }
 
