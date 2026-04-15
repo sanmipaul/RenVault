@@ -51,10 +51,8 @@ class VaultManager {
         : [assetInfo.contract, amount];
 
       const result = await this.callContract(functionName, functionArgs, senderKey);
-      console.log(`Withdrawal successful for ${asset}: ${result.txId}`);
       return result;
     } catch (error) {
-      console.error(`Withdrawal failed for ${asset}:`, error.message);
       throw error;
     }
   }
