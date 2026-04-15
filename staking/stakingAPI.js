@@ -64,6 +64,10 @@ class StakingAPI {
     this.app.post('/api/staking/claim', (req, res) => {
       try {
         const { userAddress } = req.body;
+        const addressCheck = validateAddress(userAddress);
+        if (!addressCheck.valid) {
+          return res.status(400).json({ error: addressCheck.error });
+        }
         const result = this.stakingManager.claimRewards(userAddress);
         res.json(result);
       } catch (error) {
