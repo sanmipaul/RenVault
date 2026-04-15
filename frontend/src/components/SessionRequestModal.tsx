@@ -65,6 +65,7 @@ export const SessionRequestModal: React.FC<Props> = ({ request, onClose }) => {
   const handleReject = async () => {
     try {
       setLoading(true);
+      setSigningError(null);
       const service = WalletKitService.getInstance();
       await service.rejectSessionRequest(topic, id, getSdkError('USER_REJECTED'));
       logger.info('Session request rejected');
