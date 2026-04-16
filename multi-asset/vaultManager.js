@@ -1,5 +1,6 @@
 // Multi-Asset Vault Manager
 const { AssetRegistry } = require('./assetRegistry');
+const { logger } = require('./logger');
 
 class VaultManager {
   constructor(stacksApi) {
@@ -9,7 +10,7 @@ class VaultManager {
   }
 
   async depositAsset(asset, amount, senderKey) {
-    console.log(`Initiating deposit for ${amount} ${asset}...`);
+    logger.info(`Initiating deposit for ${amount} ${asset}...`);
     const assetInfo = this.registry.getAsset(asset);
     if (!assetInfo) throw new Error(`Asset ${asset} not supported by registry`);
 
@@ -20,16 +21,16 @@ class VaultManager {
         : [assetInfo.contract, amount];
 
       const result = await this.callContract(functionName, functionArgs, senderKey);
-      console.log(`Deposit successful for ${asset}: ${result.txId}`);
+      logger.info(`Deposit successful for ${asset}: ${result.txId}`);
       return result;
     } catch (error) {
-      console.error(`Deposit failed for ${asset}:`, error.message);
+      logger.error(`Deposit failed for ${asset}:`, error.message);
       throw error;
     }
   }
 
   async withdrawAsset(asset, amount, senderKey) {
-    console.log(`Initiating withdrawal for ${amount} ${asset}...`);
+    logger.info(`Initiating withdrawal for ${amount} ${asset}...`);
     const assetInfo = this.registry.getAsset(asset);
     if (!assetInfo) throw new Error(`Asset ${asset} not supported by registry`);
 
@@ -40,10 +41,10 @@ class VaultManager {
         : [assetInfo.contract, amount];
 
       const result = await this.callContract(functionName, functionArgs, senderKey);
-      console.log(`Withdrawal successful for ${asset}: ${result.txId}`);
+      logger.info(`Withdrawal successful for ${asset}: ${result.txId}`);
       return result;
     } catch (error) {
-      console.error(`Withdrawal failed for ${asset}:`, error.message);
+      logger.error(`Withdrawal failed for ${asset}:`, error.message);
       throw error;
     }
   }
