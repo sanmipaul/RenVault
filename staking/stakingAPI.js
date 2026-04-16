@@ -2,6 +2,16 @@
 const express = require('express');
 const { StakingManager } = require('./stakingManager');
 const { RewardsDistributor } = require('./rewardsDistributor');
+const {
+  validateAddress,
+  validateAmount,
+  validateRate,
+  clampLimit,
+  MAX_LEADERBOARD_LIMIT,
+  MAX_HISTORY_LIMIT,
+  DEFAULT_LEADERBOARD_LIMIT,
+  DEFAULT_HISTORY_LIMIT,
+} = require('./inputValidator');
 
 class StakingAPI {
   constructor(port = 3010) {
@@ -13,12 +23,28 @@ class StakingAPI {
   }
 
   setupRoutes() {
-    this.app.use(express.json());
+    this.app.use(express.json({ limit: '10kb' }));
+
+    // Enforce application/json Content-Type on all POST requests
+    this.app.use((req, res, next) => {
+      if (req.method === 'POST' && !req.is('application/json')) {
+        return res.status(415).json({ error: 'Content-Type must be application/json' });
+      }
+      next();
+    });
 
     this.app.post('/api/staking/stake', (req, res) => {
       try {
         const { userAddress, amount } = req.body;
-        const result = this.stakingManager.stake(userAddress, amount);
+        const addressCheck = validateAddress(userAddress);
+        if (!addressCheck.valid) {
+          return res.status(400).json({ error: addressCheck.error });
+        }
+        const amountCheck = validateAmount(amount);
+        if (!amountCheck.valid) {
+          return res.status(400).json({ error: amountCheck.error });
+        }
+        const result = this.stakingManager.stake(userAddress, amountCheck.value);
         res.json(result);
       } catch (error) {
         res.status(400).json({ error: error.message });
@@ -28,7 +54,15 @@ class StakingAPI {
     this.app.post('/api/staking/unstake', (req, res) => {
       try {
         const { userAddress, amount } = req.body;
-        const result = this.stakingManager.unstake(userAddress, amount);
+        const addressCheck = validateAddress(userAddress);
+        if (!addressCheck.valid) {
+          return res.status(400).json({ error: addressCheck.error });
+        }
+        const amountCheck = validateAmount(amount);
+        if (!amountCheck.valid) {
+          return res.status(400).json({ error: amountCheck.error });
+        }
+        const result = this.stakingManager.unstake(userAddress, amountCheck.value);
         res.json(result);
       } catch (error) {
         res.status(400).json({ error: error.message });
@@ -38,6 +72,10 @@ class StakingAPI {
     this.app.post('/api/staking/claim', (req, res) => {
       try {
         const { userAddress } = req.body;
+        const addressCheck = validateAddress(userAddress);
+        if (!addressCheck.valid) {
+          return res.status(400).json({ error: addressCheck.error });
+        }
         const result = this.stakingManager.claimRewards(userAddress);
         res.json(result);
       } catch (error) {
@@ -46,30 +84,54 @@ class StakingAPI {
     });
 
     this.app.get('/api/staking/info/:userAddress', (req, res) => {
-      const info = this.stakingManager.getStakeInfo(req.params.userAddress);
-      res.json(info);
+      try {
+        const addressCheck = validateAddress(req.params.userAddress);
+        if (!addressCheck.valid) {
+          return res.status(400).json({ error: addressCheck.error });
+        }
+        const info = this.stakingManager.getStakeInfo(req.params.userAddress);
+        res.json(info);
+      } catch (error) {
+        res.status(400).json({ error: error.message });
+      }
     });
 
     this.app.get('/api/staking/stats', (req, res) => {
-      const stats = this.stakingManager.getGlobalStats();
-      res.json(stats);
+      try {
+        const stats = this.stakingManager.getGlobalStats();
+        res.json(stats);
+      } catch (error) {
+        res.status(500).json({ error: error.message });
+      }
     });
 
     this.app.get('/api/staking/leaderboard', (req, res) => {
-      const limit = parseInt(req.query.limit) || 10;
-      const leaderboard = this.stakingManager.getTopStakers(limit);
-      res.json({ leaderboard });
+      try {
+        const limit = clampLimit(req.query.limit, 1, MAX_LEADERBOARD_LIMIT, DEFAULT_LEADERBOARD_LIMIT);
+        const leaderboard = this.stakingManager.getTopStakers(limit);
+        res.json({ leaderboard });
+      } catch (error) {
+        res.status(500).json({ error: error.message });
+      }
     });
 
     this.app.get('/api/staking/rewards/history', (req, res) => {
-      const limit = parseInt(req.query.limit) || 50;
-      const history = this.rewardsDistributor.getDistributionHistory(limit);
-      res.json({ history });
+      try {
+        const limit = clampLimit(req.query.limit, 1, MAX_HISTORY_LIMIT, DEFAULT_HISTORY_LIMIT);
+        const history = this.rewardsDistributor.getDistributionHistory(limit);
+        res.json({ history });
+      } catch (error) {
+        res.status(500).json({ error: error.message });
+      }
     });
 
     this.app.get('/api/staking/rewards/stats', (req, res) => {
-      const stats = this.rewardsDistributor.getDistributionStats();
-      res.json(stats);
+      try {
+        const stats = this.rewardsDistributor.getDistributionStats();
+        res.json(stats);
+      } catch (error) {
+        res.status(500).json({ error: error.message });
+      }
     });
 
     this.app.post('/api/staking/rewards/distribute', async (req, res) => {
@@ -99,7 +161,11 @@ class StakingAPI {
     this.app.post('/api/staking/settings/reward-rate', (req, res) => {
       try {
         const { rate } = req.body;
-        const newRate = this.stakingManager.updateRewardRate(rate);
+        const rateCheck = validateRate(rate);
+        if (!rateCheck.valid) {
+          return res.status(400).json({ error: rateCheck.error });
+        }
+        const newRate = this.stakingManager.updateRewardRate(rateCheck.value);
         res.json({ rewardRate: newRate });
       } catch (error) {
         res.status(400).json({ error: error.message });
@@ -109,7 +175,11 @@ class StakingAPI {
     this.app.post('/api/staking/settings/min-stake', (req, res) => {
       try {
         const { amount } = req.body;
-        const newMinStake = this.stakingManager.updateMinStake(amount);
+        const amountCheck = validateAmount(amount);
+        if (!amountCheck.valid) {
+          return res.status(400).json({ error: amountCheck.error });
+        }
+        const newMinStake = this.stakingManager.updateMinStake(amountCheck.value);
         res.json({ minStake: newMinStake });
       } catch (error) {
         res.status(400).json({ error: error.message });

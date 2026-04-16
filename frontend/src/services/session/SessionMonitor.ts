@@ -1,6 +1,7 @@
 // services/session/SessionMonitor.ts
 import { SessionManager } from './SessionManager';
 import { WalletSession } from './SessionStorageService';
+import { logger } from '../../utils/logger';
 
 export interface SessionEvent {
   type: 'created' | 'restored' | 'expired' | 'extended' | 'cleared' | 'reconnected' | 'failed';
@@ -52,7 +53,7 @@ export class SessionMonitor {
       this.events = this.events.slice(-this.maxEvents);
     }
 
-    console.log(`Session event recorded: ${event.type}`, event);
+    logger.info(`Session event recorded: ${event.type}`);
   }
 
   // Get recent events
@@ -173,17 +174,29 @@ export class SessionMonitor {
     this.events = this.events.filter(event => event.timestamp > cutoffTime);
   }
 
+  /**
+   * Replace the in-memory event log with a restored set.
+   * Existing events are discarded; the restored array is capped at maxEvents.
+   */
+  importEvents(restoredEvents: SessionEvent[]): void {
+    this.events = restoredEvents.slice(-this.maxEvents);
+  }
+
+  /** Remove every in-memory event (used before an import). */
+  clearAllEvents(): void {
+    this.events = [];
+  }
+
   // Start periodic metrics collection
   private startPeriodicMetricsCollection(): void {
     // Collect metrics every hour
     setInterval(() => {
       const metrics = this.getMetrics();
-      console.log('Session metrics:', metrics);
+      logger.info('Session metrics collected');
 
-      // Log warnings for concerning metrics
       const health = this.getHealthReport();
       if (health.status !== 'healthy') {
-        console.warn('Session health issues detected:', health.issues);
+        logger.warn('Session health issues detected: ' + health.issues.join(', '));
       }
     }, 60 * 60 * 1000); // 1 hour
   }

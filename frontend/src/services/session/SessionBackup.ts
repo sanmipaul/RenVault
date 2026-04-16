@@ -1,8 +1,9 @@
 // services/session/SessionBackup.ts
-import { SessionMonitor } from './SessionMonitor';
+import { SessionMonitor, SessionEvent } from './SessionMonitor';
 import { exportSessionData, ExportOptions } from '../../utils/sessionExport';
 import { generateSecureBackupId } from '../../utils/crypto';
 import { encryptForStorage, decryptFromStorage, hashData } from '../../utils/encryption';
+import { logger } from '../../utils/logger';
 
 export interface BackupOptions {
   includeEvents: boolean;
@@ -31,10 +32,20 @@ export interface BackupResult {
   error?: string;
 }
 
+export interface RestoreResult {
+  success: boolean;
+  eventsRestored: number;
+  backupId: string;
+  restoredAt: number;
+  error?: string;
+}
+
 export class SessionBackup {
   private static instance: SessionBackup;
   private readonly BACKUP_KEY = 'renvault_session_backups';
+  private readonly RESTORE_HISTORY_KEY = 'renvault_restore_history';
   private readonly MAX_BACKUPS = 10;
+  private readonly MAX_RESTORE_EVENTS = 1000;
   private readonly VERSION = '1.0.0';
 
   private constructor() {}
@@ -58,7 +69,7 @@ export class SessionBackup {
     retentionDays: 30
   }): Promise<BackupResult> {
     try {
-      console.log('Creating session data backup...');
+      logger.info('Creating session data backup...');
 
       // Export data
       const exportOptions: ExportOptions = {
@@ -109,7 +120,7 @@ export class SessionBackup {
       // Cleanup old backups
       await this.cleanupOldBackups();
 
-      console.log(`Backup created successfully: ${backupId}`);
+      logger.info(`Backup created successfully: ${backupId}`);
 
       return {
         success: true,
@@ -117,7 +128,7 @@ export class SessionBackup {
         size: data.length
       };
     } catch (error) {
-      console.error('Failed to create backup:', error);
+      logger.error('Failed to create backup:', error instanceof Error ? error : new Error(String(error)));
       return {
         success: false,
         id: '',
@@ -128,55 +139,100 @@ export class SessionBackup {
   }
 
   /**
-   * Restore session data from backup
+   * Restore session data from backup.
    * @param backupId The backup ID to restore
    * @param password Optional password for encrypted backups
    */
-  async restoreBackup(backupId: string, password?: string): Promise<boolean> {
+  async restoreBackup(backupId: string, password?: string): Promise<RestoreResult> {
+    const failResult = (error: string): RestoreResult => ({
+      success: false,
+      eventsRestored: 0,
+      backupId,
+      restoredAt: Date.now(),
+      error,
+    });
+
     try {
-      console.log(`Restoring backup: ${backupId}`);
+      if (!backupId || typeof backupId !== 'string' || backupId.trim().length === 0) {
+        return failResult('backupId must be a non-empty string');
+      }
 
       const backup = await this.getBackup(backupId);
-      if (!backup) {
-        throw new Error('Backup not found');
-      }
+      if (!backup) return failResult('Backup not found');
+
+      // Version compatibility check
+      this.assertVersionCompatible(backup.metadata.version);
 
       let data = backup.data;
 
-      // Verify checksum using secure SHA-256 hash
+      // Verify checksum
       const checksum = await this.generateChecksum(data);
       if (checksum !== backup.metadata.checksum) {
-        throw new Error('Backup data integrity check failed');
+        return failResult('Backup data integrity check failed — checksum mismatch');
       }
 
-      // Decrypt if encrypted (requires password)
+      // Decrypt if needed
       if (backup.metadata.options.encrypt) {
-        if (!password) {
-          throw new Error('Password is required to restore encrypted backup');
-        }
+        if (!password) return failResult('Password is required to restore encrypted backup');
         data = await this.decryptData(data, password);
       }
 
-      // Decompress if compressed
+      // Decompress if needed
       if (backup.metadata.options.compress) {
         data = await this.decompressData(data);
       }
 
-      // Parse and restore data
-      const sessionData = JSON.parse(data);
+      // Parse and validate structure
+      const sessionData: unknown = JSON.parse(data);
+      this.validateRestoredStructure(sessionData);
 
-      // Here you would typically restore the data to the session services
-      // For now, we'll just validate the structure
-      if (sessionData.metrics && sessionData.events && sessionData.healthReport) {
-        console.log('Backup data validated and ready for restoration');
-        // TODO: Implement actual data restoration
-        return true;
-      } else {
-        throw new Error('Invalid backup data structure');
+      // Restore events into SessionMonitor
+      const monitor = SessionMonitor.getInstance();
+      const rawEvents: unknown[] = Array.isArray(sessionData.events) ? sessionData.events : [];
+      const validEvents = this.filterValidEvents(rawEvents);
+
+      if (validEvents.length < rawEvents.length) {
+        logger.warn(
+          `Backup ${backupId}: ${rawEvents.length - validEvents.length} malformed events were discarded`
+        );
       }
+
+      const capped = validEvents.slice(-this.MAX_RESTORE_EVENTS);
+      if (capped.length < validEvents.length) {
+        logger.warn(
+          `Backup ${backupId}: event count capped at ${this.MAX_RESTORE_EVENTS} (had ${validEvents.length})`
+        );
+      }
+
+      monitor.clearAllEvents();
+      monitor.importEvents(capped);
+
+      // Record the restoration as a new session event
+      monitor.recordEvent({
+        type: 'restored',
+        metadata: {
+          backupId,
+          eventsRestored: capped.length,
+          backupTimestamp: backup.metadata.timestamp,
+        },
+      });
+
+      const result: RestoreResult = {
+        success: true,
+        eventsRestored: capped.length,
+        backupId,
+        restoredAt: Date.now(),
+      };
+
+      logger.info(`Restore complete: ${capped.length} events restored from backup ${backupId}`);
+      this.storeRestoreRecord(result);
+      return result;
     } catch (error) {
-      console.error('Failed to restore backup:', error);
-      return false;
+      const msg = error instanceof Error ? error.message : 'Unknown error during restoration';
+      logger.error(`Restore failed for backup ${backupId}: ${msg}`);
+      const result = failResult(msg);
+      this.storeRestoreRecord(result);
+      return result;
     }
   }
 
@@ -188,7 +244,7 @@ export class SessionBackup {
       const backups = await this.getAllBackups();
       return backups.map(backup => backup.metadata).sort((a, b) => b.timestamp - a.timestamp);
     } catch (error) {
-      console.error('Failed to list backups:', error);
+      logger.error('Failed to list backups:', error instanceof Error ? error : new Error(String(error)));
       return [];
     }
   }
@@ -206,12 +262,45 @@ export class SessionBackup {
       }
 
       localStorage.setItem(this.BACKUP_KEY, JSON.stringify(filteredBackups));
-      console.log(`Backup deleted: ${backupId}`);
+      logger.info(`Backup deleted: ${backupId}`);
       return true;
     } catch (error) {
-      console.error('Failed to delete backup:', error);
+      logger.error('Failed to delete backup:', error instanceof Error ? error : new Error(String(error)));
       return false;
     }
+  }
+
+  /**
+   * Verify the integrity of a stored backup without restoring it.
+   * Returns true when the checksum matches, false otherwise.
+   */
+  async verifyBackupIntegrity(backupId: string): Promise<boolean> {
+    try {
+      const backup = await this.getBackup(backupId);
+      if (!backup) return false;
+      const checksum = await this.generateChecksum(backup.data);
+      return checksum === backup.metadata.checksum;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Return the history of all restore operations (most recent first)
+   */
+  getRestorationHistory(): RestoreResult[] {
+    try {
+      const raw = localStorage.getItem(this.RESTORE_HISTORY_KEY);
+      const history: RestoreResult[] = raw ? JSON.parse(raw) : [];
+      return history.slice().reverse();
+    } catch {
+      return [];
+    }
+  }
+
+  /** Clear the stored restoration history */
+  clearRestorationHistory(): void {
+    localStorage.removeItem(this.RESTORE_HISTORY_KEY);
   }
 
   /**
@@ -245,7 +334,7 @@ export class SessionBackup {
         newestBackup: Math.max(...timestamps)
       };
     } catch (error) {
-      console.error('Failed to get backup stats:', error);
+      logger.error('Failed to get backup stats:', error instanceof Error ? error : new Error(String(error)));
       return {
         totalBackups: 0,
         totalSize: 0,
@@ -255,7 +344,63 @@ export class SessionBackup {
     }
   }
 
+  // ---------------------------------------------------------------------------
+  // Type guards and validators
+  // ---------------------------------------------------------------------------
+
+  private validateRestoredStructure(data: unknown): asserts data is {
+    events?: unknown[];
+    metrics?: unknown;
+    healthReport?: unknown;
+  } {
+    if (!data || typeof data !== 'object') {
+      throw new Error('Backup data is not a valid object');
+    }
+    const d = data as Record<string, unknown>;
+    if (d.events !== undefined && !Array.isArray(d.events)) {
+      throw new Error('Backup "events" field must be an array');
+    }
+  }
+
+  private isValidSessionEvent(e: unknown): e is SessionEvent {
+    if (!e || typeof e !== 'object') return false;
+    const ev = e as Record<string, unknown>;
+    const validTypes = ['created', 'restored', 'expired', 'extended', 'cleared', 'reconnected', 'failed'];
+    return typeof ev.type === 'string'
+      && validTypes.includes(ev.type)
+      && typeof ev.timestamp === 'number'
+      && Number.isFinite(ev.timestamp)
+      && ev.timestamp > 0;
+  }
+
+  private assertVersionCompatible(backupVersion: string): void {
+    const [bMajor] = backupVersion.split('.').map(Number);
+    const [cMajor] = this.VERSION.split('.').map(Number);
+    if (bMajor !== cMajor) {
+      throw new Error(
+        `Backup version ${backupVersion} is incompatible with current version ${this.VERSION}`
+      );
+    }
+  }
+
+  private filterValidEvents(raw: unknown[]): SessionEvent[] {
+    return raw.filter((e): e is SessionEvent => this.isValidSessionEvent(e));
+  }
+
   // Private helper methods
+
+  private storeRestoreRecord(result: RestoreResult): void {
+    try {
+      const raw = localStorage.getItem(this.RESTORE_HISTORY_KEY);
+      const history: RestoreResult[] = raw ? JSON.parse(raw) : [];
+      history.push(result);
+      // Keep the last 50 restore records
+      if (history.length > 50) history.splice(0, history.length - 50);
+      localStorage.setItem(this.RESTORE_HISTORY_KEY, JSON.stringify(history));
+    } catch {
+      // Non-fatal — best-effort record keeping
+    }
+  }
 
   private async storeBackup(backup: { metadata: BackupMetadata; data: string }): Promise<void> {
     const backups = await this.getAllBackups();
@@ -278,9 +423,16 @@ export class SessionBackup {
   private async getAllBackups(): Promise<{ metadata: BackupMetadata; data: string }[]> {
     try {
       const stored = localStorage.getItem(this.BACKUP_KEY);
-      return stored ? JSON.parse(stored) : [];
+      if (!stored) return [];
+      const parsed = JSON.parse(stored);
+      if (!Array.isArray(parsed)) {
+        logger.warn('Backup store is corrupted; resetting to empty list');
+        localStorage.removeItem(this.BACKUP_KEY);
+        return [];
+      }
+      return parsed;
     } catch (error) {
-      console.error('Failed to load backups:', error);
+      logger.error('Failed to load backups:', error instanceof Error ? error : new Error(String(error)));
       return [];
     }
   }
@@ -298,10 +450,10 @@ export class SessionBackup {
 
       if (validBackups.length !== backups.length) {
         localStorage.setItem(this.BACKUP_KEY, JSON.stringify(validBackups));
-        console.log(`Cleaned up ${backups.length - validBackups.length} old backups`);
+        logger.info(`Cleaned up ${backups.length - validBackups.length} old backups`);
       }
     } catch (error) {
-      console.error('Failed to cleanup old backups:', error);
+      logger.error('Failed to cleanup old backups:', error instanceof Error ? error : new Error(String(error)));
     }
   }
 
