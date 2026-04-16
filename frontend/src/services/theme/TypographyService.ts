@@ -4,6 +4,7 @@
  */
 
 import { typography } from '../../config/appkit-theme';
+import { logger } from '../../utils/logger';
 
 export interface FontLoadOptions {
   preload?: boolean;
@@ -59,7 +60,7 @@ export class TypographyService {
 
       this.fontsLoaded.add('google-fonts');
     } catch (error) {
-      console.error('Failed to load fonts:', error);
+      logger.error('Failed to load fonts:', error);
       // Fallback to system fonts
     }
   }

@@ -3,6 +3,8 @@
  * Provides comprehensive error handling and recovery strategies
  */
 
+import { logger } from '../../utils/logger';
+
 export type ErrorSeverity = 'low' | 'medium' | 'high' | 'critical';
 export type ErrorCategory = 'network' | 'validation' | 'wallet' | 'transaction' | 'unknown';
 
@@ -362,9 +364,12 @@ export class MultiChainErrorHandler {
    * Log error
    */
   private static logError(error: AppError): void {
-    const logFn = error.severity === 'critical' ? console.error : console.warn;
-
-    logFn(`[${error.severity.toUpperCase()}] ${error.code}: ${error.message}`, error.context);
+    const msg = `[${error.severity.toUpperCase()}] ${error.code}: ${error.message}`;
+    if (error.severity === 'critical' || error.severity === 'high') {
+      logger.error(msg, error.context);
+    } else {
+      logger.warn(msg, error.context);
+    }
   }
 
   /**
