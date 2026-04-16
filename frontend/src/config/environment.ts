@@ -1,3 +1,4 @@
+import { logger } from '../utils/logger';
 import { isValidStacksAddress, isMainnetAddress } from '../utils/stacksAddress';
 
 export const environment = {
@@ -68,7 +69,7 @@ export const validateEnvironment = () => {
   }
 
   if (warnings.length > 0) {
-    console.warn(`Environment warnings: ${warnings.join(', ')}`);
+    logger.warn(`Environment warnings: ${warnings.join(', ')}`);
   }
 
   if (errors.length > 0) {

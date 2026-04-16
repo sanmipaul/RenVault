@@ -26,7 +26,7 @@ export const copyToClipboard = async (text: string): Promise<boolean> => {
       return success;
     }
   } catch (err) {
-    console.error('Failed to copy to clipboard:', err);
+    logger.error('Failed to copy to clipboard:', err);
     return false;
   }
 };

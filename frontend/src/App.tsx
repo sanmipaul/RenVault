@@ -1,3 +1,4 @@
+import { logger } from './utils/logger';
 import React, { useState, useEffect, useMemo } from 'react';
 import { useDebounce } from './hooks/useDebounce';
 import { useLocalStorage } from './hooks/useLocalStorage';
@@ -66,7 +67,7 @@ const trackAnalytics = async (event: string, data: Record<string, unknown>) => {
       body: JSON.stringify(data)
     });
   } catch (error) {
-    console.warn('Analytics tracking failed:', error);
+    logger.warn('Analytics tracking failed:', error);
   }
 };
 
@@ -231,7 +232,7 @@ function AppContent() {
     localStorage.removeItem(APP_CONFIG.tfaEnabledKey);
     TwoFactorSecureStorage.clearAll();
     setTfaEnabled(false);
-    console.info('[RenVault] 2FA encrypted storage cleared on wallet disconnect');
+    logger.info('[RenVault] 2FA encrypted storage cleared on wallet disconnect');
     // Clear all connection-related state
     setBalance('0');
     setPoints('0');
@@ -359,9 +360,9 @@ function AppContent() {
       if (networkMismatch) {
         setStatus('Unable to fetch data: Please switch to mainnet');
       } else if (ContractErrorMapper.isContractError(error)) {
-        console.warn('Contract error fetching stats:', ContractErrorMapper.toStatusMessage(error, CONTRACT_NAME));
+        logger.warn('Contract error fetching stats:', ContractErrorMapper.toStatusMessage(error, CONTRACT_NAME));
       } else {
-        console.error('Error fetching stats:', error);
+        logger.error('Error fetching stats:', error);
       }
       const duration = Date.now() - startTime;
       trackAnalytics('performance', { operation: 'fetch-user-stats', duration });
@@ -876,7 +877,7 @@ function App() {
         await AppKitService.init();
         setAppKitInitialized(true);
       } catch (error) {
-        console.error('Failed to initialize AppKit:', error);
+        logger.error('Failed to initialize AppKit:', error);
         setAppKitError('Failed to initialize wallet service. Please refresh the page.');
       }
     };

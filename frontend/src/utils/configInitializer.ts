@@ -1,3 +1,4 @@
+import { logger } from './logger';
 import { validateBrandingConfig } from './brandingValidator';
 import { validateChainConfig } from './chainValidator';
 import { validateModalConfig } from './modalValidator';
@@ -10,7 +11,7 @@ export const initializeConfiguration = (): boolean => {
   if (!validateChainConfig(supportedChains.stacksTestnet)) errors.push('Invalid Stacks testnet configuration');
   if (!validateModalConfig(modalConfig)) errors.push('Invalid modal configuration');
   if (errors.length > 0) {
-    console.error('Configuration initialization failed:', errors);
+    logger.error('Configuration initialization failed:', errors);
     return false;
   }
   return true;

@@ -1,3 +1,4 @@
+import { logger } from '../utils/logger';
 import { useState, useCallback } from 'react';
 
 /**
@@ -27,7 +28,7 @@ export function useSessionStorage<T>(
         sessionStorage.setItem(key, JSON.stringify(next));
         setStoredValue(next);
       } catch (error) {
-        console.warn(`useSessionStorage: failed to write key "${key}"`, error);
+        logger.warn(`useSessionStorage: failed to write key "${key}"`, error);
       }
     },
     [key, readValue]
@@ -38,7 +39,7 @@ export function useSessionStorage<T>(
       sessionStorage.removeItem(key);
       setStoredValue(initialValue);
     } catch (error) {
-      console.warn(`useSessionStorage: failed to remove key "${key}"`, error);
+      logger.warn(`useSessionStorage: failed to remove key "${key}"`, error);
     }
   }, [key, initialValue]);
 

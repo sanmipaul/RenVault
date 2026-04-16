@@ -136,7 +136,7 @@ export class TransactionService {
         postConditionMode: details.postConditionMode || PostConditionMode.Allow,
         sponsored: details.isSponsored,
         onFinish: (data: import('../../types/wallet').SignedTransactionResult) => {
-          console.log('Transaction signed:', data);
+          logger.info('Transaction signed:', data);
         },
         onCancel: () => {
           throw new WalletError(
@@ -161,7 +161,7 @@ export class TransactionService {
 
       return signedTransaction;
     } catch (error) {
-      console.error('Transaction signing failed:', error);
+      logger.error('Transaction signing failed:', error);
       if (error instanceof WalletError) {
         throw error;
       }

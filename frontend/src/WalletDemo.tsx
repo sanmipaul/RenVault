@@ -23,7 +23,7 @@ const AppContent: React.FC = () => {
       // Additional logout logic if needed
       setShowDisconnectModal(false);
     } catch (err) {
-      console.error('Logout failed:', err);
+      logger.error('Logout failed:', err);
     }
   };
 

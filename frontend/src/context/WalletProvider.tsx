@@ -1,7 +1,7 @@
+import { logger } from './utils/logger';
 import React, { createContext, useContext, ReactNode, useEffect, useState } from 'react';
 import { useAppKitAccount } from '@reown/appkit/react';
-import { WalletProvider as WalletProviderBase, WalletProviderType, StacksContractCallOptions, SignedTransactionResult, WalletConnection } from '../types/wallet';
-import { AppKitWalletConfig } from '../services/wallet/WalletProviderLoader';
+import { WalletProvider as WalletProviderBase, WalletProviderType } from '../types/wallet';
 import { WalletKitService } from '../services/walletkit-service';
 import NotificationService from '../services/notificationService';
 import SponsorshipService, { SponsorshipQuota } from '../services/SponsorshipService';
@@ -15,9 +15,9 @@ interface WalletContextType {
   currentProvider: WalletProviderBase | null;
   selectedProviderType: WalletProviderType | null;
   setSelectedProvider: (type: WalletProviderType) => void;
-  connect: (walletId?: string) => Promise<WalletConnection>;
+  connect: (walletId?: string) => Promise<any>;
   disconnect: () => Promise<void>;
-  signTransaction: (tx: StacksContractCallOptions) => Promise<SignedTransactionResult>;
+  signTransaction: (tx: any) => Promise<any>;
   signMessage: (message: string) => Promise<string>;
   isLoading: boolean;
   error: Error | null;
@@ -33,16 +33,16 @@ interface WalletContextType {
   sponsorshipQuota: SponsorshipQuota | null;
   isEligibleForSponsorship: (operation: string, value?: number) => Promise<boolean>;
   // AppKit Custom Wallet Support
-  appKitWallets: WalletProviderBase[];
-  availableWallets: WalletProviderBase[];
-  installedWallets: WalletProviderBase[];
+  appKitWallets: any[];
+  availableWallets: any[];
+  installedWallets: any[];
   isWalletInstalled: (walletId: string) => boolean;
-  connectWithFallback: (walletId: string) => Promise<WalletConnection>;
+  connectWithFallback: (walletId: string) => Promise<any>;
   // Wallet installation
   getInstallationLink: (walletId: string) => string;
   openWalletInstallation: (walletId: string) => Promise<void>;
   // Error handling
-  walletError: Error | null;
+  walletError: any;
   clearError: () => void;
   // Deep linking
   handleDeepLinkReturn: () => void;
@@ -59,9 +59,9 @@ export const WalletProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   const userId = address ?? fallbackId;
   const [sponsorshipQuota, setSponsorshipQuota] = useState<SponsorshipQuota | null>(null);
   const [currentStacksAdapter, setCurrentStacksAdapter] = useState<StacksConnectorAdapter | null>(null);
-  const [appKitWallets, setAppKitWallets] = useState<AppKitWalletConfig[]>([]);
-  const [installedWallets, setInstalledWallets] = useState<AppKitWalletConfig[]>([]);
-  const [walletError, setWalletError] = useState<Error | null>(null);
+  const [appKitWallets, setAppKitWallets] = useState<any[]>([]);
+  const [installedWallets, setInstalledWallets] = useState<any[]>([]);
+  const [walletError, setWalletError] = useState<any>(null);
   const [isLoadingWallets, setIsLoadingWallets] = useState(false);
 
   // Initialize AppKit wallets
@@ -85,7 +85,7 @@ export const WalletProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
         return stopMonitoring;
       } catch (error) {
-        console.error('Failed to initialize AppKit wallets:', error);
+        logger.error('Failed to initialize AppKit wallets:', error);
       } finally {
         setIsLoadingWallets(false);
       }
@@ -154,7 +154,7 @@ export const WalletProvider: React.FC<{ children: ReactNode }> = ({ children }) 
           unsubRequestExpiration();
         };
       } catch (error) {
-        console.error('Failed to initialize WalletKit events:', error);
+        logger.error('Failed to initialize WalletKit events:', error);
         const notificationService = NotificationService.getInstance(userId);
         notificationService.notifyConnectionError(error instanceof Error ? error.message : 'Unknown connection error');
       }
@@ -172,9 +172,9 @@ export const WalletProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       
       // Attempt suggested action if available and recoverable
       if (error.recoverable && error.suggestedAction) {
-        console.log(`Attempting recovery for ${error.type}...`);
+        logger.info(`Attempting recovery for ${error.type}...`);
         error.suggestedAction().catch(err => {
-          console.error('Recovery action failed:', err);
+          logger.error('Recovery action failed:', err);
         });
       }
     });
@@ -183,7 +183,7 @@ export const WalletProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   }, []);
 
   const setSelectedProvider = (type: WalletProviderType) => {
-    console.log('Provider selection:', type);
+    logger.info('Provider selection:', type);
   };
 
   const connect = async (walletId?: string) => {
@@ -243,7 +243,7 @@ export const WalletProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     });
   };
 
-  const signTransaction = async (tx: StacksContractCallOptions): Promise<SignedTransactionResult> => {
+  const signTransaction = async (tx: any) => {
     const middleware = WalletErrorHandler.createMiddleware({
       walletId: currentStacksAdapter?.getWalletId() || 'unknown',
       operation: 'sign',

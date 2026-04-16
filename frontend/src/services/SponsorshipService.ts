@@ -206,7 +206,7 @@ class SponsorshipService {
       value: 1,
       metadata: { txHash, userId: this.userId }
     };
-    console.log('📊 Sponsorship Analytics:', event);
+    logger.debug('Sponsorship analytics', event);
   }
 
   async getPaymasterData(txData: SponsorshipTxData): Promise<PaymasterData> {

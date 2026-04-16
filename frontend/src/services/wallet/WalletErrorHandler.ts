@@ -5,6 +5,7 @@
 
 import { StacksConnectorAdapter } from './StacksConnectorAdapter';
 import { WalletFallbackManager } from './WalletFallbackManager';
+import { logger } from '../../utils/logger';
 
 export enum WalletErrorType {
   WALLET_NOT_INSTALLED = 'WALLET_NOT_INSTALLED',
@@ -59,7 +60,7 @@ export class WalletErrorHandler {
       try {
         listener(walletError);
       } catch (e) {
-        console.error('Error listener failed:', e);
+        logger.error('Error listener failed:', e);
       }
     });
 
@@ -178,7 +179,7 @@ export class WalletErrorHandler {
       case WalletErrorType.TRANSACTION_CANCELLED:
         return async () => {
           // Retry the same operation
-          console.log(`Retrying ${context.operation} for ${context.walletId}`);
+          logger.info(`Retrying ${context.operation} for ${context.walletId}`);
         };
 
       case WalletErrorType.CONNECTION_FAILED:

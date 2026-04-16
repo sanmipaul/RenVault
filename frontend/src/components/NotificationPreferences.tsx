@@ -1,3 +1,4 @@
+import { logger } from '../utils/logger';
 import React, { useState, useEffect } from 'react';
 import { getNotificationsUrl } from '../config/api';
 import './NotificationPreferences.css';
@@ -95,7 +96,7 @@ const NotificationPreferencesComponent: React.FC<NotificationPreferencesProps> =
         throw new Error('Failed to save preferences');
       }
     } catch (error) {
-      console.error('Error saving preferences:', error);
+      logger.error('Error saving preferences:', error);
       setMessage('❌ Failed to save preferences. Please try again.');
     } finally {
       setLoading(false);
@@ -130,7 +131,7 @@ const NotificationPreferencesComponent: React.FC<NotificationPreferencesProps> =
           throw new Error('Failed to subscribe to push notifications');
         }
       } catch (error) {
-        console.error('Error subscribing to push notifications:', error);
+        logger.error('Error subscribing to push notifications:', error);
         setMessage('❌ Failed to enable push notifications.');
       }
     } else {

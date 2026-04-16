@@ -193,7 +193,7 @@ export class ChainSwitchService {
       try {
         listener(event);
       } catch (error) {
-        console.error('Error in chain switch listener:', error);
+        logger.error('Error in chain switch listener:', error);
       }
     });
   }
@@ -208,7 +208,7 @@ export class ChainSwitchService {
         timestamp: Date.now(),
       }));
     } catch (error) {
-      console.error('Failed to save active chain:', error);
+      logger.error('Failed to save active chain:', error);
     }
   }
 
@@ -225,14 +225,14 @@ export class ChainSwitchService {
         }
       }
     } catch (error) {
-      console.error('Failed to load active chain:', error);
+      logger.error('Failed to load active chain:', error);
     }
   }
 
   /**
    * Validate chain type
    */
-  private static isValidChain(chain: unknown): boolean {
+  private static isValidChain(chain: any): boolean {
     const validChains = ['stacks', 'stacks-testnet', 'ethereum', 'polygon', 'arbitrum', 'sepolia'];
     return validChains.includes(chain);
   }

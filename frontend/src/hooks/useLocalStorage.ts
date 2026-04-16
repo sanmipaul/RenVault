@@ -1,3 +1,4 @@
+import { logger } from '../utils/logger';
 import { useState, useCallback, useEffect } from 'react';
 
 /**
@@ -35,7 +36,7 @@ export function useLocalStorage<T>(
         // Notify other hook instances on the same page
         window.dispatchEvent(new StorageEvent('storage', { key, newValue: JSON.stringify(next) }));
       } catch (error) {
-        console.warn(`useLocalStorage: failed to write key "${key}"`, error);
+        logger.warn(`useLocalStorage: failed to write key "${key}"`, error);
       }
     },
     [key, readValue]
@@ -47,7 +48,7 @@ export function useLocalStorage<T>(
       setStoredValue(initialValue);
       window.dispatchEvent(new StorageEvent('storage', { key, newValue: null }));
     } catch (error) {
-      console.warn(`useLocalStorage: failed to remove key "${key}"`, error);
+      logger.warn(`useLocalStorage: failed to remove key "${key}"`, error);
     }
   }, [key, initialValue]);
 

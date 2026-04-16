@@ -6,10 +6,6 @@
 import { ChainSwitchService } from './ChainSwitchService';
 import type { ChainType } from '../../config/multi-chain-config';
 
-interface EvmProvider {
-  request(args: { method: string; params?: unknown[] }): Promise<unknown[]>;
-}
-
 export interface WalletProvider {
   name: string;
   chainType: ChainType;
@@ -109,7 +105,7 @@ export class MultiChainWalletProviderService {
         });
       }
     } catch (error) {
-      console.error('Error initializing wallet providers:', error);
+      logger.error('Error initializing wallet providers:', error);
     }
   }
 
@@ -123,7 +119,7 @@ export class MultiChainWalletProviderService {
   /**
    * Connect to EVM chain
    */
-  private static async connectEvm(chainType: ChainType, provider: EvmProvider): Promise<void> {
+  private static async connectEvm(chainType: ChainType, provider: any): Promise<void> {
     try {
       if (!provider) {
         throw new Error('Ethereum provider not available');
@@ -143,9 +139,9 @@ export class MultiChainWalletProviderService {
             method: 'wallet_switchEthereumChain',
             params: [{ chainId: chainId }],
           });
-        } catch (switchError: unknown) {
+        } catch (switchError: any) {
           // Chain not added, try to add it
-          if (switchError instanceof Object && 'code' in switchError && (switchError as { code: number }).code === 4902) {
+          if (switchError.code === 4902) {
             await this.addChainToWallet(provider, chainType);
           }
         }
@@ -162,7 +158,7 @@ export class MultiChainWalletProviderService {
         this.notifyListeners();
       }
     } catch (error) {
-      console.error(`Error connecting to ${chainType}:`, error);
+      logger.error(`Error connecting to ${chainType}:`, error);
       throw error;
     }
   }
@@ -211,7 +207,7 @@ export class MultiChainWalletProviderService {
         this.notifyListeners();
       }
     } catch (error) {
-      console.error('Error connecting to Stacks:', error);
+      logger.error('Error connecting to Stacks:', error);
       throw error;
     }
   }
@@ -251,8 +247,8 @@ export class MultiChainWalletProviderService {
   /**
    * Add chain to wallet
    */
-  private static async addChainToWallet(provider: EvmProvider, chainType: ChainType): Promise<void> {
-    const chainConfigs: Record<string, Record<string, unknown>> = {
+  private static async addChainToWallet(provider: any, chainType: ChainType): Promise<void> {
+    const chainConfigs: Record<string, any> = {
       polygon: {
         chainId: '0x89',
         chainName: 'Polygon Mainnet',
@@ -351,7 +347,7 @@ export class MultiChainWalletProviderService {
       try {
         listener({ ...this.currentWallet });
       } catch (error) {
-        console.error('Error in wallet change listener:', error);
+        logger.error('Error in wallet change listener:', error);
       }
     });
   }

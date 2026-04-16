@@ -5,6 +5,7 @@
 
 import * as React from 'react';
 import { StacksConnectorAdapter } from './StacksConnectorAdapter';
+import { logger } from '../../utils/logger';
 
 export type ConnectionStatus = 'connected' | 'connecting' | 'disconnected' | 'error' | 'unknown';
 
@@ -294,7 +295,7 @@ export class WalletConnectionStateManager {
 
       return JSON.parse(saved);
     } catch (error) {
-      console.error('Failed to parse saved session:', error);
+      logger.error('Failed to parse saved session:', error);
       return null;
     }
   }
@@ -307,7 +308,7 @@ export class WalletConnectionStateManager {
       localStorage.setItem(this.SESSION_STORAGE_KEY, JSON.stringify(session));
       this.notifySessionListeners(session);
     } catch (error) {
-      console.error('Failed to save session:', error);
+      logger.error('Failed to save session:', error);
     }
   }
 
@@ -319,7 +320,7 @@ export class WalletConnectionStateManager {
       localStorage.removeItem(this.SESSION_STORAGE_KEY);
       this.notifySessionListeners(null);
     } catch (error) {
-      console.error('Failed to clear session:', error);
+      logger.error('Failed to clear session:', error);
     }
   }
 
@@ -388,7 +389,7 @@ export class WalletConnectionStateManager {
       try {
         listener({ ...this.state });
       } catch (error) {
-        console.error('Listener error:', error);
+        logger.error('Listener error:', error);
       }
     });
   }
@@ -401,7 +402,7 @@ export class WalletConnectionStateManager {
       try {
         listener(session);
       } catch (error) {
-        console.error('Session listener error:', error);
+        logger.error('Session listener error:', error);
       }
     });
   }

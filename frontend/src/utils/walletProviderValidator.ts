@@ -18,14 +18,14 @@ export const validateWalletProvider = (provider: unknown): provider is WalletPro
 
 export const safeConnectWallet = async (provider: unknown): Promise<boolean> => {
   if (!validateWalletProvider(provider)) {
-    console.error('Invalid wallet provider');
+    logger.error('Invalid wallet provider');
     return false;
   }
   try {
     await provider.connect();
     return true;
   } catch (error) {
-    console.error('Wallet connection failed:', error);
+    logger.error('Wallet connection failed:', error);
     return false;
   }
 };

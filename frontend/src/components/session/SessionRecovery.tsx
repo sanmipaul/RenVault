@@ -37,7 +37,7 @@ export const SessionRecovery: React.FC<SessionRecoveryProps> = ({
       const backupList = await sessionBackup.listBackups();
       setBackups(backupList);
     } catch (error) {
-      console.error('Failed to load backups:', error);
+      logger.error('Failed to load backups:', error);
       onRecoveryError?.('Failed to load backup list');
     } finally {
       setIsLoading(false);
@@ -49,7 +49,7 @@ export const SessionRecovery: React.FC<SessionRecoveryProps> = ({
       const stats = await sessionBackup.getBackupStats();
       setBackupStats(stats);
     } catch (error) {
-      console.error('Failed to load backup stats:', error);
+      logger.error('Failed to load backup stats:', error);
     }
   };
 
@@ -68,12 +68,12 @@ export const SessionRecovery: React.FC<SessionRecoveryProps> = ({
       if (result.success) {
         await loadBackups();
         await loadBackupStats();
-        console.log('Backup created successfully');
+        logger.info('Backup created successfully');
       } else {
         onRecoveryError?.(result.error || 'Failed to create backup');
       }
     } catch (error) {
-      console.error('Backup creation failed:', error);
+      logger.error('Backup creation failed:', error);
       onRecoveryError?.('Backup creation failed');
     } finally {
       setIsCreatingBackup(false);
@@ -88,12 +88,12 @@ export const SessionRecovery: React.FC<SessionRecoveryProps> = ({
       const success = await sessionBackup.restoreBackup(backupId);
       if (success) {
         onRecoveryComplete?.();
-        console.log('Backup restored successfully');
+        logger.info('Backup restored successfully');
       } else {
         onRecoveryError?.('Failed to restore backup');
       }
     } catch (error) {
-      console.error('Backup restoration failed:', error);
+      logger.error('Backup restoration failed:', error);
       onRecoveryError?.('Backup restoration failed');
     } finally {
       setIsRestoring(false);
@@ -108,12 +108,12 @@ export const SessionRecovery: React.FC<SessionRecoveryProps> = ({
       if (success) {
         await loadBackups();
         await loadBackupStats();
-        console.log('Backup deleted successfully');
+        logger.info('Backup deleted successfully');
       } else {
         onRecoveryError?.('Failed to delete backup');
       }
     } catch (error) {
-      console.error('Backup deletion failed:', error);
+      logger.error('Backup deletion failed:', error);
       onRecoveryError?.('Backup deletion failed');
     }
   };

@@ -2,6 +2,7 @@
 import { WalletProviderType } from '../../types/wallet';
 import { SessionStorageService, WalletSession } from './SessionStorageService';
 import { SessionMonitor } from './SessionMonitor';
+import { logger } from '../../utils/logger';
 
 export interface SessionManagerConfig {
   autoReconnect: boolean;
@@ -56,15 +57,15 @@ export class SessionManager {
       const storedSession = this.sessionStorage.getStoredSession();
 
       if (!storedSession) {
-        console.log('No stored session found');
+        logger.debug('No stored session found');
         return false;
       }
 
-      console.log('Attempting to restore wallet session...');
+      logger.info('Attempting to restore wallet session...');
 
       if (this.onSessionRestored) {
         await this.onSessionRestored(storedSession);
-        console.log('Wallet session restored successfully');
+        logger.info('Wallet session restored successfully');
         this.sessionMonitor.recordEvent({
           type: 'restored',
           sessionId: storedSession.sessionId,
@@ -75,7 +76,7 @@ export class SessionManager {
 
       return false;
     } catch (error) {
-      console.error('Failed to restore wallet session:', error);
+      logger.error('Failed to restore wallet session:', error);
       this.sessionStorage.clearSession();
       this.sessionMonitor.recordEvent({
         type: 'failed',
@@ -142,7 +143,7 @@ export class SessionManager {
 
   // Handle wallet disconnection
   async handleDisconnection(providerType: WalletProviderType): Promise<void> {
-    console.log(`Wallet disconnected: ${providerType}`);
+    logger.info(`Wallet disconnected: ${providerType}`);
 
     if (this.config.autoReconnect && this.reconnectAttempts < this.config.maxReconnectAttempts) {
       this.attemptReconnection();
@@ -154,13 +155,13 @@ export class SessionManager {
   // Attempt to reconnect wallet
   private async attemptReconnection(): Promise<void> {
     if (this.reconnectAttempts >= this.config.maxReconnectAttempts) {
-      console.log('Max reconnection attempts reached');
+      logger.warn('Max reconnection attempts reached');
       this.clearSession();
       return;
     }
 
     this.reconnectAttempts++;
-    console.log(`Attempting reconnection (${this.reconnectAttempts}/${this.config.maxReconnectAttempts})...`);
+    logger.info(`Attempting reconnection (${this.reconnectAttempts}/${this.config.maxReconnectAttempts})...`);
 
     // Clear any existing timer
     if (this.reconnectTimer) {
@@ -172,7 +173,7 @@ export class SessionManager {
       try {
         const success = await this.attemptSessionRestore();
         if (success) {
-          console.log('Reconnection successful');
+          logger.info('Reconnection successful');
           this.resetReconnectAttempts();
           this.sessionMonitor.recordEvent({
             type: 'reconnected',
@@ -184,7 +185,7 @@ export class SessionManager {
           if (this.reconnectAttempts < this.config.maxReconnectAttempts) {
             this.attemptReconnection();
           } else {
-            console.log('Reconnection failed - max attempts reached');
+            logger.warn('Reconnection failed - max attempts reached');
             this.clearSession();
             this.sessionMonitor.recordEvent({
               type: 'failed',
@@ -193,7 +194,7 @@ export class SessionManager {
           }
         }
       } catch (error) {
-        console.error('Reconnection attempt failed:', error);
+        logger.error('Reconnection attempt failed:', error);
         if (this.reconnectAttempts < this.config.maxReconnectAttempts) {
           this.attemptReconnection();
         } else {

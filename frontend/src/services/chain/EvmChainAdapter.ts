@@ -141,7 +141,7 @@ export class EvmChainAdapter {
       }
       throw new Error('Failed to get gas price');
     } catch (error) {
-      console.error('Error fetching gas price:', error);
+      logger.error('Error fetching gas price:', error);
       throw error;
     }
   }
@@ -168,7 +168,7 @@ export class EvmChainAdapter {
       }
       throw new Error('Failed to estimate gas');
     } catch (error) {
-      console.error('Error estimating gas:', error);
+      logger.error('Error estimating gas:', error);
       throw error;
     }
   }
@@ -199,7 +199,7 @@ export class EvmChainAdapter {
       }
       throw new Error('Failed to get balance');
     } catch (error) {
-      console.error('Error fetching balance:', error);
+      logger.error('Error fetching balance:', error);
       throw error;
     }
   }
