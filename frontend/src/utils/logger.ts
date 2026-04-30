@@ -34,6 +34,38 @@ export class ConsoleTransport implements LogTransport {
   }
 }
 
+export class BufferTransport implements LogTransport {
+  private entries: LogEntry[] = [];
+  private readonly maxSize: number;
+
+  constructor(maxSize: number = 500) {
+    this.maxSize = maxSize;
+  }
+
+  write(entry: LogEntry): void {
+    this.entries.push(entry);
+    if (this.entries.length > this.maxSize) {
+      this.entries.shift();
+    }
+  }
+
+  getEntries(): ReadonlyArray<LogEntry> {
+    return [...this.entries];
+  }
+
+  getEntriesByLevel(level: LogLevel): LogEntry[] {
+    return this.entries.filter(e => e.level === level);
+  }
+
+  clear(): void {
+    this.entries = [];
+  }
+
+  export(): string {
+    return JSON.stringify(this.entries, null, 2);
+  }
+}
+
 export interface LoggerOptions {
   minLevel?: LogLevel;
   context?: string;
