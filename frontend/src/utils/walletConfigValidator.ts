@@ -9,6 +9,7 @@ import {
 } from './urlValidator';
 
 const VALID_PLATFORMS: SupportedPlatform[] = ['chrome', 'firefox', 'safari', 'edge', 'ios', 'android'];
+const SUPPORTED_CHAINS = ['stacks:1', 'stacks:2147483648'];
 const WALLET_ID_PATTERN = /^[a-z0-9-]+$/;
 const MAX_WALLET_NAME_LENGTH = 64;
 const MAX_WALLET_ID_LENGTH = 32;
@@ -35,23 +36,13 @@ export const validateWalletName = (name: string): WalletConfigError[] => {
   return errors;
 };
 
-const pushError = (
-  errors: WalletConfigError[],
-  field: string,
-  message: string
-): void => {
+const pushError = (errors: WalletConfigError[], field: string, message: string): void => {
   errors.push({ field, message, severity: 'error' });
 };
 
-const pushWarning = (
-  warnings: WalletConfigError[],
-  field: string,
-  message: string
-): void => {
+const pushWarning = (warnings: WalletConfigError[], field: string, message: string): void => {
   warnings.push({ field, message, severity: 'warning' });
 };
-
-const SUPPORTED_CHAINS = ['stacks:1', 'stacks:2147483648'];
 
 const validateChains = (
   chains: string[] | undefined,
@@ -120,11 +111,7 @@ const validateDownloadUrls = (
     const url = downloadUrls[platform];
     if (url !== undefined && url !== '') {
       if (!isValidDownloadUrl(url)) {
-        pushError(
-          errors,
-          `downloadUrls.${platform}`,
-          `Download URL for ${platform} must be a valid HTTPS URL`
-        );
+        pushError(errors, `downloadUrls.${platform}`, `Download URL for ${platform} must be a valid HTTPS URL`);
       }
     }
   }
@@ -141,6 +128,7 @@ const validateMobileConfig = (
   }
   if (mobile.native && !isValidMobileNativeUrl(mobile.native)) {
     pushError(errors, 'mobile.native', 'Mobile native URL must be a valid deep link (e.g. wallet://)');
+  }
   if (mobile.universal && !isValidMobileUniversalUrl(mobile.universal)) {
     pushError(errors, 'mobile.universal', 'Mobile universal URL must be a valid HTTPS URL');
   }
@@ -193,11 +181,8 @@ export const validateWalletConfig = (config: CustomWalletConfig): ValidationResu
   const errors: WalletConfigError[] = [];
   const warnings: WalletConfigError[] = [];
 
-  const idErrors = validateWalletId(config.id);
-  errors.push(...idErrors);
-
-  const nameErrors = validateWalletName(config.name);
-  errors.push(...nameErrors);
+  errors.push(...validateWalletId(config.id));
+  errors.push(...validateWalletName(config.name));
 
   validateImageUrl(config.imageUrl, errors, warnings);
   validateHomepage(config.homepage, errors, warnings);
@@ -209,3 +194,25 @@ export const validateWalletConfig = (config: CustomWalletConfig): ValidationResu
 
   return { valid: errors.length === 0, errors, warnings };
 };
+
+export interface BatchValidationResult {
+  walletId: string;
+  result: ValidationResult;
+}
+
+export const validateWalletConfigBatch = (configs: CustomWalletConfig[]): BatchValidationResult[] => {
+  return configs.map(config => ({
+    walletId: config.id,
+    result: validateWalletConfig(config),
+  }));
+};
+
+export const hasValidationErrors = (result: ValidationResult): boolean => result.errors.length > 0;
+
+export const hasValidationWarnings = (result: ValidationResult): boolean => result.warnings.length > 0;
+
+export const getErrorFields = (result: ValidationResult): string[] =>
+  result.errors.map(e => e.field);
+
+export const getWarningFields = (result: ValidationResult): string[] =>
+  result.warnings.map(w => w.field);
