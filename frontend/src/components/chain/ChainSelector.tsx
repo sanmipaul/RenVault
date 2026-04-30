@@ -78,11 +78,11 @@ export const ChainSelector: React.FC<ChainSelectorProps> = ({
   React.useEffect(() => {
     const chain = ChainSwitchService.getActiveChain();
     if (chain) {
-      setActiveChain(chain.type);
+      setActiveChain(chain);
     }
 
-    const unsubscribe = ChainSwitchService.onChainSwitch(newChain => {
-      setActiveChain(newChain.type);
+    const unsubscribe = ChainSwitchService.onChainSwitch(event => {
+      setActiveChain(event.newChain);
     });
 
     return () => {
@@ -102,7 +102,7 @@ export const ChainSelector: React.FC<ChainSelectorProps> = ({
         onChainChange(chainType);
       }
     } catch (error) {
-      console.error('Error switching chain:', error);
+      logger.error('Error switching chain:', error);
     } finally {
       setLoading(false);
     }
@@ -221,7 +221,7 @@ export const ChainSelector: React.FC<ChainSelectorProps> = ({
         </div>
       )}
 
-      <style jsx>{`
+      <style>{`
         .chain-selector {
           position: relative;
           display: inline-block;

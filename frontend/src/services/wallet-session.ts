@@ -1,12 +1,14 @@
-import { logger } from '../utils/logger';
-
-const log = logger.child('WalletSessionManager');
+export interface WalletSessionData {
+  [key: string]: unknown;
+  timestamp: number;
+  lastActive: number;
+}
 
 export class WalletSessionManager {
-  private sessions: Map<string, any> = new Map();
+  private sessions: Map<string, WalletSessionData> = new Map();
   private readonly STORAGE_KEY = 'renvault_wallet_sessions';
 
-  saveSession(address: string, data: any) {
+  saveSession(address: string, data: Record<string, unknown>) {
     this.sessions.set(address, {
       ...data,
       timestamp: Date.now(),
@@ -15,7 +17,7 @@ export class WalletSessionManager {
     this.persistToStorage();
   }
 
-  getSession(address: string) {
+  getSession(address: string): WalletSessionData | undefined {
     return this.sessions.get(address);
   }
 
@@ -24,7 +26,7 @@ export class WalletSessionManager {
     this.persistToStorage();
   }
 
-  getAllSessions() {
+  getAllSessions(): [string, WalletSessionData][] {
     return Array.from(this.sessions.entries());
   }
 
@@ -41,7 +43,7 @@ export class WalletSessionManager {
     try {
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(Array.from(this.sessions.entries())));
     } catch (e) {
-      log.error('Failed to persist sessions', e instanceof Error ? e : new Error(String(e)));
+      logger.error('Failed to persist sessions:', e);
     }
   }
 
@@ -49,12 +51,12 @@ export class WalletSessionManager {
     try {
       const data = localStorage.getItem(this.STORAGE_KEY);
       if (data) {
-        const entries = JSON.parse(data);
+        const entries = JSON.parse(data) as [string, WalletSessionData][];
         this.sessions = new Map(entries);
         log.debug('Sessions loaded from storage', { count: this.sessions.size });
       }
     } catch (e) {
-      log.error('Failed to load sessions', e instanceof Error ? e : new Error(String(e)));
+      logger.error('Failed to load sessions:', e);
     }
   }
 

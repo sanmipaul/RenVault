@@ -1,3 +1,4 @@
+import { logger } from '../utils/logger';
 import { generateSecureId } from '../utils/crypto';
 import {
   Notification,
@@ -65,9 +66,9 @@ class NotificationService {
 
     try {
       const audio = new Audio(priority === 'high' ? '/sounds/alert.mp3' : '/sounds/notification.mp3');
-      audio.play().catch(e => console.warn('Audio play failed:', e));
+      audio.play().catch(e => logger.warn('Audio play failed:', e));
     } catch (error) {
-      console.warn('Failed to play notification sound:', error);
+      logger.warn('Failed to play notification sound:', error);
     }
   }
 
@@ -208,7 +209,7 @@ class NotificationService {
   // Subscribe to push notifications
   async subscribeToPushNotifications(): Promise<boolean> {
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-      console.warn('Push notifications not supported');
+      logger.warn('Push notifications not supported');
       return false;
     }
 
@@ -218,7 +219,7 @@ class NotificationService {
 
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: this.urlBase64ToUint8Array(process.env.REACT_APP_VAPID_PUBLIC_KEY || '')
+        applicationServerKey: this.urlBase64ToUint8Array(process.env.REACT_APP_VAPID_PUBLIC_KEY || '') as unknown as BufferSource
       });
 
       const response = await fetch(`${this.baseUrl}/subscribe-push`, {
@@ -234,14 +235,14 @@ class NotificationService {
       });
 
       if (response.ok) {
-        console.log('✅ Successfully subscribed to push notifications');
+        logger.info('✅ Successfully subscribed to push notifications');
         return true;
       } else {
-        console.error('❌ Failed to subscribe to push notifications');
+        logger.error('❌ Failed to subscribe to push notifications');
         return false;
       }
     } catch (error) {
-      console.error('Error subscribing to push notifications:', error);
+      logger.error('Error subscribing to push notifications:', error);
       return false;
     }
   }
@@ -254,14 +255,14 @@ class NotificationService {
       });
 
       if (response.ok) {
-        console.log('✅ Successfully unsubscribed from push notifications');
+        logger.info('✅ Successfully unsubscribed from push notifications');
         return true;
       } else {
-        console.error('❌ Failed to unsubscribe from push notifications');
+        logger.error('❌ Failed to unsubscribe from push notifications');
         return false;
       }
     } catch (error) {
-      console.error('Error unsubscribing from push notifications:', error);
+      logger.error('Error unsubscribing from push notifications:', error);
       return false;
     }
   }
@@ -281,14 +282,14 @@ class NotificationService {
       });
 
       if (response.ok) {
-        console.log('✅ Notification preferences updated');
+        logger.info('✅ Notification preferences updated');
         return true;
       } else {
-        console.error('❌ Failed to update notification preferences');
+        logger.error('❌ Failed to update notification preferences');
         return false;
       }
     } catch (error) {
-      console.error('Error updating notification preferences:', error);
+      logger.error('Error updating notification preferences:', error);
       return false;
     }
   }
@@ -337,12 +338,12 @@ class NotificationService {
       });
 
       if (response.ok) {
-        console.log(`✅ Test ${endpoint} notification sent`);
+        logger.info(`✅ Test ${endpoint} notification sent`);
       } else {
-        console.error(`❌ Failed to send test ${endpoint} notification`);
+        logger.error(`❌ Failed to send test ${endpoint} notification`);
       }
     } catch (error) {
-      console.error(`Error sending test ${endpoint} notification:`, error);
+      logger.error(`Error sending test ${endpoint} notification:`, error);
     }
   }
 

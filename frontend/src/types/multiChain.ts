@@ -69,7 +69,7 @@ export interface ConnectWalletParams {
 export interface WalletConnectError {
   code: string;
   message: string;
-  details?: any;
+  details?: Record<string, unknown>;
 }
 
 // ============================================================================
@@ -204,7 +204,7 @@ export interface AppError {
   category: ErrorCategory;
   severity: ErrorSeverity;
   timestamp: number;
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
   recovery?: RecoveryStrategy;
 }
 
@@ -304,7 +304,7 @@ export interface UseChainSwitchReturn {
   switchChain: (chainType: ChainType) => Promise<void>;
   isStacks: boolean;
   isEvm: boolean;
-  adapter: any;
+  adapter: ChainAdapter | null;
   allChains: Chain[];
   evmChains: Chain[];
   stacksChains: Chain[];
@@ -344,7 +344,7 @@ export interface UseAsyncReturn<T> {
   execute: () => Promise<T>;
   status: 'idle' | 'pending' | 'success' | 'error';
   value: T | null;
-  error: any;
+  error: Error | null;
 }
 
 // ============================================================================
@@ -385,7 +385,7 @@ export interface AccessibleFormProps {
 export interface ChainAdapter {
   getChainId(): string;
   getChainNamespace(): string;
-  getNetwork(): any;
+  getNetwork(): unknown;
   isTestnet(): boolean;
   getMetadata(): ChainMetadata;
   getRpcUrl(): string;
@@ -399,7 +399,7 @@ export interface EvmChainAdapterMethods extends ChainAdapter {
   toWei(amount: string): string;
   fromWei(wei: string | number): number;
   getGasPrice(): Promise<string>;
-  estimateGas(tx: any): Promise<string>;
+  estimateGas(tx: Record<string, unknown>): Promise<string>;
   getBalance(address: string): Promise<string>;
   getNumericChainId(): number;
 }
@@ -441,19 +441,4 @@ export type AsyncFunction<T> = () => Promise<T>;
 export type Listener<T> = (value: T) => void;
 export type Unsubscribe = () => void;
 
-// ============================================================================
-// Export all types as a namespace
-// ============================================================================
-
-export namespace MultiChain {
-  export type {
-    ChainType,
-    Chain,
-    Token,
-    Balance,
-    Transaction,
-    TransactionStatus,
-    WalletState,
-    AppError,
-  };
-}
+// Types are already exported individually above

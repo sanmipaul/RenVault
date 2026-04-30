@@ -9,6 +9,11 @@ export class TransactionBatchProcessor {
   }
 
   add(transaction: TransactionDetails): void {
+    if (this.batch.length >= this.maxBatchSize) {
+      throw new Error(
+        `Batch is full (max ${this.maxBatchSize}). Call getBatch() and clear() before adding more transactions.`
+      );
+    }
     this.batch.push(transaction);
   }
 

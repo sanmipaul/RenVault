@@ -5,6 +5,10 @@ class LiquidityMining {
   }
 
   createProgram(poolId, rewardToken, rewardRate, duration) {
+    if (!poolId || typeof poolId !== 'string') throw new Error('poolId is required');
+    if (!rewardToken || typeof rewardToken !== 'string') throw new Error('rewardToken is required');
+    if (typeof rewardRate !== 'number' || rewardRate <= 0) throw new Error('rewardRate must be a positive number');
+    if (typeof duration !== 'number' || duration <= 0) throw new Error('duration must be a positive number');
     this.programs.set(poolId, {
       rewardToken,
       rewardRate,
@@ -15,15 +19,23 @@ class LiquidityMining {
   }
 
   stake(poolId, user, amount) {
+    if (!poolId || typeof poolId !== 'string') throw new Error('poolId is required');
+    if (!user || typeof user !== 'string') throw new Error('user is required');
+    if (typeof amount !== 'number' || amount <= 0) throw new Error('amount must be a positive number');
     const key = `${poolId}-${user}`;
-    const current = this.userStakes.get(key) || { amount: 0, rewardDebt: 0, lastUpdate: Date.now() };
-    
+    // Capture a single timestamp so that calculatePending and lastUpdate
+    // both use exactly the same moment. Two separate Date.now() calls could
+    // yield different values, creating a tiny window of rewards that would
+    // never be paid out or banked.
+    const now = Date.now();
+    const current = this.userStakes.get(key) || { amount: 0, rewardDebt: 0, lastUpdate: now };
+
     const pending = this.calculatePending(poolId, user);
-    
+
     this.userStakes.set(key, {
       amount: current.amount + amount,
       rewardDebt: current.rewardDebt + pending,
-      lastUpdate: Date.now()
+      lastUpdate: now
     });
 
     const program = this.programs.get(poolId);
@@ -39,7 +51,7 @@ class LiquidityMining {
     
     if (!stake || !program || program.totalStaked === 0) return 0;
 
-    const timeElapsed = Math.min(Date.now(), program.endTime) - stake.lastUpdate;
+    const timeElapsed = Math.max(0, Math.min(Date.now(), program.endTime) - stake.lastUpdate);
     const userShare = stake.amount / program.totalStaked;
     const rewards = (timeElapsed / 1000) * program.rewardRate * userShare;
     
@@ -50,13 +62,18 @@ class LiquidityMining {
     const pending = this.calculatePending(poolId, user);
     const key = `${poolId}-${user}`;
     const stake = this.userStakes.get(key);
-    
+
     if (stake) {
+      // rewardDebt holds rewards banked during previous stake() calls.
+      // It must be included in the payout before being cleared, otherwise
+      // every intermediate stake operation permanently forfeits those rewards.
+      const totalPayout = pending + stake.rewardDebt;
       stake.rewardDebt = 0;
       stake.lastUpdate = Date.now();
       this.userStakes.set(key, stake);
+      return totalPayout;
     }
-    
+
     return pending;
   }
 

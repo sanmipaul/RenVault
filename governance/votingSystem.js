@@ -7,6 +7,8 @@ class VotingSystem {
   }
 
   setStakingBalance(user, balance) {
+    if (!user || typeof user !== 'string') throw new Error('user is required');
+    if (typeof balance !== 'number' || balance < 0) throw new Error('balance must be a non-negative number');
     this.stakingBalances.set(user, balance);
     this.updateVotingPower(user);
   }
@@ -14,10 +16,12 @@ class VotingSystem {
   updateVotingPower(user) {
     const balance = this.stakingBalances.get(user) || 0;
     const power = Math.floor(balance / 1000000); // 1 voting power per 1M STX
-    this.votingPower.set(user, Math.max(1, power));
+    this.votingPower.set(user, power);
   }
 
   delegate(delegator, delegate) {
+    if (!delegator || typeof delegator !== 'string') throw new Error('delegator is required');
+    if (!delegate || typeof delegate !== 'string') throw new Error('delegate is required');
     if (delegator === delegate) throw new Error('Cannot delegate to self');
     
     this.delegations.set(delegator, delegate);
@@ -30,15 +34,15 @@ class VotingSystem {
   }
 
   getVotingPower(user) {
-    let totalPower = this.votingPower.get(user) || 1;
-    
+    let totalPower = this.votingPower.get(user) || 0;
+
     // Add delegated power
     for (const [delegator, delegate] of this.delegations.entries()) {
       if (delegate === user) {
-        totalPower += this.votingPower.get(delegator) || 1;
+        totalPower += this.votingPower.get(delegator) || 0;
       }
     }
-    
+
     return totalPower;
   }
 
@@ -56,7 +60,7 @@ class VotingSystem {
       user,
       delegatedTo,
       delegatedFrom,
-      ownPower: this.votingPower.get(user) || 1,
+      ownPower: this.votingPower.get(user) || 0,
       totalPower: this.getVotingPower(user)
     };
   }

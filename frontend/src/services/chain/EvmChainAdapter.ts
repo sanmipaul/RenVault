@@ -3,10 +3,8 @@
  * Implements AppKit chain adapter for EVM-compatible chains
  */
 
-import { ChainAdapter } from '@reown/appkit-core';
-import { useContractRead, useContractWrite, useAccount, useSwitchNetwork } from 'wagmi';
-import { getChainConfig, isTestnet, getChainMetadata } from '../config/multi-chain-config';
-import type { ChainType } from '../config/multi-chain-config';
+import { getChainConfig, isTestnet, getChainMetadata } from '../../config/multi-chain-config';
+import type { ChainType } from '../../config/multi-chain-config';
 
 export interface EvmAdapterConfig {
   chainId: ChainType;
@@ -17,7 +15,7 @@ export interface EvmAdapterConfig {
 /**
  * EVM Chain Adapter for AppKit
  */
-export class EvmChainAdapter implements ChainAdapter {
+export class EvmChainAdapter {
   private chainId: ChainType;
   private rpcUrl: string;
   private explorerUrl: string;
@@ -143,7 +141,7 @@ export class EvmChainAdapter implements ChainAdapter {
       }
       throw new Error('Failed to get gas price');
     } catch (error) {
-      console.error('Error fetching gas price:', error);
+      logger.error('Error fetching gas price:', error);
       throw error;
     }
   }
@@ -170,7 +168,7 @@ export class EvmChainAdapter implements ChainAdapter {
       }
       throw new Error('Failed to estimate gas');
     } catch (error) {
-      console.error('Error estimating gas:', error);
+      logger.error('Error estimating gas:', error);
       throw error;
     }
   }
@@ -201,7 +199,7 @@ export class EvmChainAdapter implements ChainAdapter {
       }
       throw new Error('Failed to get balance');
     } catch (error) {
-      console.error('Error fetching balance:', error);
+      logger.error('Error fetching balance:', error);
       throw error;
     }
   }

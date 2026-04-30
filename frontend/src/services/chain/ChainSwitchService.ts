@@ -11,8 +11,8 @@ import {
   createArbitrumAdapter,
   createSepoliaAdapter,
 } from './EvmChainAdapter';
-import { getChainConfig, getAllStacksChains, getAllEvmChains } from '../config/multi-chain-config';
-import type { ChainType } from '../config/multi-chain-config';
+import { getChainConfig, getAllStacksChains, getAllEvmChains } from '../../config/multi-chain-config';
+import type { ChainType } from '../../config/multi-chain-config';
 
 export type ChainAdapter = StacksChainAdapter | EvmChainAdapter;
 
@@ -193,7 +193,7 @@ export class ChainSwitchService {
       try {
         listener(event);
       } catch (error) {
-        console.error('Error in chain switch listener:', error);
+        logger.error('Error in chain switch listener:', error);
       }
     });
   }
@@ -208,7 +208,7 @@ export class ChainSwitchService {
         timestamp: Date.now(),
       }));
     } catch (error) {
-      console.error('Failed to save active chain:', error);
+      logger.error('Failed to save active chain:', error);
     }
   }
 
@@ -225,7 +225,7 @@ export class ChainSwitchService {
         }
       }
     } catch (error) {
-      console.error('Failed to load active chain:', error);
+      logger.error('Failed to load active chain:', error);
     }
   }
 

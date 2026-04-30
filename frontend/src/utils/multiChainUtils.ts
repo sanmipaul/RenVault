@@ -181,17 +181,15 @@ export function isValidEvmAddress(address: string): boolean {
 /**
  * Is valid Stacks address
  */
-export function isValidStacksAddress(address: string): boolean {
-  return /^(SP|ST)[0-9A-Z]{31}$/.test(address);
-}
+export { isValidStacksAddress } from './stacksAddress';
 
 /**
  * Validate URL
+ * @deprecated Use isValidUrl from urlValidator.ts instead
  */
 export function isValidUrl(url: string): boolean {
   try {
     new URL(url);
-
     return true;
   } catch {
     return false;
@@ -228,7 +226,7 @@ export async function copyToClipboard(text: string): Promise<boolean> {
 /**
  * Debounce function
  */
-export function debounce<T extends (...args: any[]) => any>(
+export function debounce<T extends (...args: unknown[]) => unknown>(
   func: T,
   wait: number
 ): (...args: Parameters<T>) => void {
@@ -243,7 +241,7 @@ export function debounce<T extends (...args: any[]) => any>(
 /**
  * Throttle function
  */
-export function throttle<T extends (...args: any[]) => any>(
+export function throttle<T extends (...args: unknown[]) => unknown>(
   func: T,
   limit: number
 ): (...args: Parameters<T>) => void {

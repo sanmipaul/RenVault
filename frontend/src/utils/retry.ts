@@ -2,6 +2,7 @@ export interface RetryOptions {
   maxRetries: number;
   delayMs: number;
   backoffMultiplier: number;
+  onRetry?: (attempt: number, error: Error) => void;
 }
 
 export const retryWithBackoff = async <T>(
@@ -15,6 +16,7 @@ export const retryWithBackoff = async <T>(
     } catch (error) {
       lastError = error as Error;
       if (i < options.maxRetries - 1) {
+        options.onRetry?.(i + 1, lastError);
         await new Promise(resolve => setTimeout(resolve, options.delayMs * Math.pow(options.backoffMultiplier, i)));
       }
     }

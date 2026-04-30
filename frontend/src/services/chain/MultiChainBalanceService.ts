@@ -6,7 +6,7 @@
 import { ChainSwitchService } from './ChainSwitchService';
 import { EvmChainAdapter } from './EvmChainAdapter';
 import { StacksChainAdapter } from './StacksChainAdapter';
-import type { ChainType } from '../config/multi-chain-config';
+import type { ChainType } from '../../config/multi-chain-config';
 
 export interface Balance {
   chainType: ChainType;
@@ -67,7 +67,7 @@ export class MultiChainBalanceService {
       // Placeholder for now
       return null;
     } catch (error) {
-      console.error(`Error fetching ${chainType} balance:`, error);
+      logger.error(`Error fetching ${chainType} balance:`, error);
       return null;
     }
   }
@@ -158,7 +158,7 @@ export class MultiChainBalanceService {
       try {
         listener(balances);
       } catch (error) {
-        console.error('Error in balance update listener:', error);
+        logger.error('Error in balance update listener:', error);
       }
     });
   }
@@ -244,7 +244,7 @@ export const useMultiChainBalance = (address?: string) => {
         setLoading(false);
       })
       .catch(err => {
-        setError(err.message);
+        setError(err instanceof Error ? err.message : 'Unknown error');
         setLoading(false);
       });
 

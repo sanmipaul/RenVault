@@ -1,6 +1,6 @@
 {
   "name": "renvault-leaderboard",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "RenVault leaderboard and gamification system",
   "main": "api.js",
   "scripts": {
@@ -11,5 +11,18 @@
     "@stacks/transactions": "^6.5.4",
     "@stacks/network": "^6.5.4",
     "express": "^4.18.0"
-  }
+  },
+  "author": "RenVault Team",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sanmipaul/RenVault.git"
+  },
+  "homepage": "https://github.com/sanmipaul/RenVault#readme",
+  "keywords": [
+    "stacks",
+    "bitcoin",
+    "defi",
+    "clarity",
+    "renvault"
+  ]
 }

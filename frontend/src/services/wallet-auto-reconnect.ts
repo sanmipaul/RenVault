@@ -1,7 +1,5 @@
-import { sessionManager } from './wallet-session';
 import { logger } from '../utils/logger';
-
-const log = logger.child('WalletAutoReconnect');
+import { sessionManager, WalletSessionData } from './wallet-session';
 
 export class WalletAutoReconnect {
   private reconnectAttempts = 0;
@@ -33,8 +31,9 @@ export class WalletAutoReconnect {
     return false;
   }
 
-  private async reconnect(walletType: string, session: any) {
-    log.debug(`Reconnecting ${walletType}...`);
+  private async reconnect(walletType: string, session: WalletSessionData) {
+    // Implement wallet-specific reconnection logic
+    logger.info(`Reconnecting ${walletType}...`);
     sessionManager.updateLastActive(session.address);
   }
 

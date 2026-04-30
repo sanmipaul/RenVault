@@ -1,5 +1,6 @@
 // services/session/SessionStorageService.ts
 import { WalletProviderType } from '../../types/wallet';
+import { logger } from '../../utils/logger';
 
 export interface WalletSession {
   providerType: WalletProviderType;
@@ -49,9 +50,9 @@ export class SessionStorageService {
       const encryptedSession = this.encryptSession(fullSession);
 
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(encryptedSession));
-      console.log('Wallet session stored securely');
+      logger.info('Wallet session stored securely');
     } catch (error) {
-      console.error('Failed to store wallet session:', error);
+      logger.error('Failed to store wallet session:', error);
       throw new Error('Failed to store wallet session');
     }
   }
@@ -73,7 +74,7 @@ export class SessionStorageService {
 
       return session;
     } catch (error) {
-      console.error('Failed to retrieve wallet session:', error);
+      logger.error('Failed to retrieve wallet session:', error);
       this.clearSession(); // Clear corrupted data
       return null;
     }
@@ -89,9 +90,9 @@ export class SessionStorageService {
   clearSession(): void {
     try {
       localStorage.removeItem(this.STORAGE_KEY);
-      console.log('Wallet session cleared');
+      logger.info('Wallet session cleared');
     } catch (error) {
-      console.error('Failed to clear wallet session:', error);
+      logger.error('Failed to clear wallet session:', error);
     }
   }
 
@@ -100,8 +101,15 @@ export class SessionStorageService {
     const session = this.getStoredSession();
     if (!session) return;
 
-    session.metadata = { ...session.metadata, ...metadata };
-    this.storeSession(session);
+    // Write directly so the existing expiresAt and sessionId are preserved.
+    // Calling storeSession() here would regenerate both, silently resetting
+    // the session expiry and issuing a new session ID on every metadata update.
+    const updated: WalletSession = {
+      ...session,
+      metadata: { ...session.metadata, ...metadata }
+    };
+    const encryptedSession = this.encryptSession(updated);
+    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(encryptedSession));
   }
 
   // Extend session expiration
@@ -124,9 +132,12 @@ export class SessionStorageService {
     return Date.now() > session.expiresAt;
   }
 
-  // Generate unique session ID
+  // Generate cryptographically secure unique session ID
   private generateSessionId(): string {
-    return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    const randomPart = Array.from(crypto.getRandomValues(new Uint8Array(16)))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
+    return 'session_' + Date.now() + '_' + randomPart;
   }
 
   // Simple encryption for sensitive session data (in production, use proper encryption)
@@ -213,9 +224,9 @@ export class SessionStorageService {
         localStorage.removeItem(key);
       });
 
-      console.log('All wallet data cleared');
+      logger.info('All wallet data cleared');
     } catch (error) {
-      console.error('Failed to clear wallet data:', error);
+      logger.error('Failed to clear wallet data:', error);
     }
   }
 
@@ -236,9 +247,8 @@ export class SessionStorageService {
       // Check expiration
       return !this.isSessionExpired(session);
     } catch (error) {
-      console.error('Session integrity check failed:', error);
+      logger.error('Session integrity check failed:', error);
       return false;
     }
   }
-}
 }

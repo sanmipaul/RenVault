@@ -10,9 +10,10 @@ import { TransactionRecovery } from '../../utils/transactionRecovery';
 import { TransactionTimeout } from '../../utils/transactionTimeout';
 import { TransactionErrorHandler } from '../../utils/transactionErrorHandler';
 import { retryWithBackoff } from '../../utils/retry';
-import { validateTransactionDetails } from '../../utils/transactionValidator';
+import { validateTransactionDetails, validateContractName } from '../../utils/transactionValidator';
 import { TransactionStatus } from '../../types/transactionState';
 import {
+  ClarityValue,
   makeContractCall,
   broadcastTransaction,
   AnchorMode,
@@ -20,12 +21,14 @@ import {
   uintCV
 } from '@stacks/transactions';
 import { StacksMainnet } from '@stacks/network';
+import { isValidStacksAddress, isValidStacksContractId, splitContractId } from '../../utils/stacksAddress';
+import { environment } from '../../config/environment';
 
 export interface TransactionDetails {
   contractAddress: string;
   contractName: string;
   functionName: string;
-  functionArgs: any[];
+  functionArgs: ClarityValue[];
   amount: number;
   fee?: number;
   network: string;
@@ -38,7 +41,7 @@ export interface TransactionDetails {
 
 export interface SignedTransaction {
   txId: string;
-  signedTx: any;
+  signedTx: import('../../types/wallet').SignedTransactionResult;
   details: TransactionDetails;
 }
 
@@ -53,7 +56,7 @@ export class TransactionService {
   private timeout = new TransactionTimeout();
 
   private constructor() {
-    this.walletManager = WalletManager.getInstance();
+    this.walletManager = new WalletManager();
   }
 
   static getInstance(): TransactionService {
@@ -66,9 +69,18 @@ export class TransactionService {
   async prepareDepositTransaction(
     amount: number,
     isSponsored: boolean = false,
-    contractAddress: string = 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.ren-vault'
+    contractAddress: string = environment.contracts.renVaultAddress,
+    contractName: string = environment.contracts.renVaultName
   ): Promise<TransactionDetails> {
     try {
+      // Accept a fully-qualified contract identifier as contractAddress and
+      // split it automatically so callers don't have to do it themselves.
+      if (isValidStacksContractId(contractAddress)) {
+        const parts = splitContractId(contractAddress)!;
+        contractAddress = parts.principal;
+        contractName = parts.contractName;
+      }
+
       if (amount <= 0) {
         throw new WalletError(WalletErrorCode.INVALID_TRANSACTION, 'Deposit amount must be greater than 0');
       }
@@ -78,10 +90,13 @@ export class TransactionService {
       if (!this.isValidStacksAddress(contractAddress)) {
         throw new WalletError(WalletErrorCode.INVALID_TRANSACTION, 'Invalid contract address format');
       }
+      if (!validateContractName(contractName)) {
+        throw new WalletError(WalletErrorCode.INVALID_TRANSACTION, 'Invalid contract name: must start with a letter or digit and contain only lowercase letters, digits, and hyphens');
+      }
       const microAmount = Math.floor(amount * 1000000);
       const details: TransactionDetails = {
         contractAddress,
-        contractName: 'ren-vault',
+        contractName,
         functionName: 'deposit',
         functionArgs: [uintCV(microAmount)],
         amount: microAmount,
@@ -111,7 +126,7 @@ export class TransactionService {
       }
 
       // Create the contract call transaction
-      const txOptions: any = {
+      const txOptions: import('../../types/wallet').StacksContractCallOptions = {
         contractAddress: details.contractAddress,
         contractName: details.contractName,
         functionName: details.functionName,
@@ -120,8 +135,8 @@ export class TransactionService {
         anchorMode: details.anchorMode || AnchorMode.Any,
         postConditionMode: details.postConditionMode || PostConditionMode.Allow,
         sponsored: details.isSponsored,
-        onFinish: (data: any) => {
-          console.log('Transaction signed:', data);
+        onFinish: (data: import('../../types/wallet').SignedTransactionResult) => {
+          logger.info('Transaction signed:', data);
         },
         onCancel: () => {
           throw new WalletError(
@@ -146,29 +161,35 @@ export class TransactionService {
 
       return signedTransaction;
     } catch (error) {
-      console.error('Transaction signing failed:', error);
+      logger.error('Transaction signing failed:', error);
       if (error instanceof WalletError) {
         throw error;
       }
       throw new WalletError(
         WalletErrorCode.TRANSACTION_SIGNING_FAILED,
-        `Failed to sign transaction: ${error.message}`
+        `Failed to sign transaction: ${(error as Error).message}`
       );
     }
   }
 
   async broadcastTransaction(signedTx: SignedTransaction): Promise<string> {
     const txId = signedTx.txId;
+    const broadcastStart = Date.now();
     try {
       this.stateManager.setState(txId, TransactionStatus.BROADCASTING);
       this.monitor.recordTransaction();
       const result = await retryWithBackoff(async () => {
-        const response = await broadcastTransaction({ transaction: signedTx.signedTx, network: this.network });
+        const response = await broadcastTransaction(signedTx.signedTx, this.network);
         if (response.error) throw new Error(response.error);
         return response.txid || txId;
+      }, {
+        maxRetries: 3,
+        delayMs: 1000,
+        backoffMultiplier: 2,
+        onRetry: () => { this.monitor.recordRetry(); }
       });
       this.stateManager.setState(txId, TransactionStatus.CONFIRMED);
-      this.monitor.recordSuccess(Date.now());
+      this.monitor.recordSuccess(Date.now() - broadcastStart);
       TransactionRecovery.removePendingTransaction(txId);
       return result;
     } catch (error) {
@@ -199,10 +220,7 @@ export class TransactionService {
   }
 
   private isValidStacksAddress(address: string): boolean {
-    // Basic Stacks address validation
-    // Stacks addresses start with SP, SM, or ST and are 28-30 characters long
-    const stacksAddressRegex = /^(SP|SM|ST)[0-9A-Z]{26,28}$/;
-    return stacksAddressRegex.test(address);
+    return isValidStacksAddress(address);
   }
 
   getTransactionState(txId: string) {

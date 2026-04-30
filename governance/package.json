@@ -1,6 +1,6 @@
 {
   "name": "renvault-governance",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Governance system for RenVault DAO",
   "main": "governanceAPI.js",
   "scripts": {
@@ -9,7 +9,18 @@
   "dependencies": {
     "express": "^4.18.0"
   },
-  "keywords": ["governance", "dao", "voting", "proposals"],
+  "keywords": [
+    "stacks",
+    "bitcoin",
+    "defi",
+    "clarity",
+    "renvault"
+  ],
   "author": "RenVault Team",
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sanmipaul/RenVault.git"
+  },
+  "homepage": "https://github.com/sanmipaul/RenVault#readme"
 }

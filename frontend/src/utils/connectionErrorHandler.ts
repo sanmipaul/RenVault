@@ -1,14 +1,16 @@
 export class ConnectionErrorHandler {
-  static isRetryable(error: any): boolean {
+  static isRetryable(error: unknown): boolean {
     const retryableErrors = ['network', 'timeout', 'connection', 'ECONNREFUSED'];
-    return retryableErrors.some(msg => error?.message?.toLowerCase().includes(msg));
+    const msg = error instanceof Error ? error.message.toLowerCase() : '';
+    return retryableErrors.some(term => msg.includes(term));
   }
 
-  static getErrorMessage(error: any): string {
-    return error?.message || 'Unknown connection error';
+  static getErrorMessage(error: unknown): string {
+    if (error instanceof Error) return error.message;
+    return 'Unknown connection error';
   }
 
-  static handleError(error: any, context: string): Error {
+  static handleError(error: unknown, context: string): Error {
     const message = `${context}: ${this.getErrorMessage(error)}`;
     return new Error(message);
   }

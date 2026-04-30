@@ -31,7 +31,7 @@ export class ConnectionMonitor {
       log.debug('Health check passed', { connected });
     } catch (error) {
       this.isHealthy = false;
-      log.error('Health check failed', error instanceof Error ? error : new Error(String(error)));
+      logger.error('Health check failed:', error);
     }
   }
 

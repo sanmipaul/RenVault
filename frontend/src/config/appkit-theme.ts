@@ -41,9 +41,11 @@ export const renvaultColors = {
   background: '#ffffff',
   backgroundAlt: '#f8f9fa',
   surface: '#ffffff',
+  surfaceAlt: '#f8f9fa',
   surfaceVariant: '#f5f5f5',
   
   // Text Colors
+  text: '#1a1a1a',
   textPrimary: '#1a1a1a',
   textSecondary: '#666666',
   textTertiary: '#999999',
@@ -94,8 +96,10 @@ export const darkModeColors = {
   background: '#1a1a1a',
   backgroundAlt: '#2d2d2d',
   surface: '#242424',
+  surfaceAlt: '#2d2d2d',
   surfaceVariant: '#3a3a3a',
   
+  text: '#ffffff',
   textPrimary: '#ffffff',
   textSecondary: '#cccccc',
   textTertiary: '#999999',
@@ -167,6 +171,7 @@ export const borderRadius = {
   md: '12px',
   lg: '16px',
   xl: '20px',
+  '2xl': '24px',
   full: '9999px',
 };
 

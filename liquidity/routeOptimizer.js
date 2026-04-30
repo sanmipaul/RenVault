@@ -5,6 +5,11 @@ class RouteOptimizer {
   }
 
   addPool(poolId, tokenA, tokenB, reserveA, reserveB) {
+    if (!poolId || typeof poolId !== 'string') throw new Error('poolId is required');
+    if (!tokenA || !tokenB) throw new Error('tokenA and tokenB are required');
+    if (tokenA === tokenB) throw new Error('tokenA and tokenB must be different');
+    if (typeof reserveA !== 'number' || reserveA <= 0) throw new Error('reserveA must be a positive number');
+    if (typeof reserveB !== 'number' || reserveB <= 0) throw new Error('reserveB must be a positive number');
     this.pools.set(poolId, { tokenA, tokenB, reserveA, reserveB });
   }
 

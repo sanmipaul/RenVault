@@ -1,101 +1,20 @@
 import { environment } from '../config/environment';
 
-export enum LogLevel {
-  DEBUG = 0,
-  INFO = 1,
-  WARN = 2,
-  ERROR = 3,
-  SILENT = 4,
-}
+export type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'silent';
 
-export interface LogEntry {
-  level: LogLevel;
-  levelName: string;
-  message: string;
-  context?: string;
-  data?: unknown;
-  error?: Error;
-  timestamp: string;
-}
+const LEVEL_RANK: Record<LogLevel, number> = {
+  debug: 0,
+  info: 1,
+  warn: 2,
+  error: 3,
+  silent: 4,
+};
 
-export interface LogTransport {
-  write(entry: LogEntry): void;
-}
-
-export class ConsoleTransport implements LogTransport {
-  write(entry: LogEntry): void {
-    const prefix = `[${entry.timestamp}] [${entry.levelName}]${entry.context ? ` [${entry.context}]` : ''} ${entry.message}`;
-    switch (entry.level) {
-      case LogLevel.DEBUG: console.debug(prefix, entry.data ?? ''); break;
-      case LogLevel.INFO: console.log(prefix, entry.data ?? ''); break;
-      case LogLevel.WARN: console.warn(prefix, entry.data ?? ''); break;
-      case LogLevel.ERROR: console.error(prefix, entry.error, entry.data ?? ''); break;
-    }
-  }
-}
-
-export class BufferTransport implements LogTransport {
-  private entries: LogEntry[] = [];
-  private readonly maxSize: number;
-
-  constructor(maxSize: number = 500) {
-    this.maxSize = maxSize;
-  }
-
-  write(entry: LogEntry): void {
-    this.entries.push(entry);
-    if (this.entries.length > this.maxSize) {
-      this.entries.shift();
-    }
-  }
-
-  getEntries(): ReadonlyArray<LogEntry> {
-    return [...this.entries];
-  }
-
-  getEntriesByLevel(level: LogLevel): LogEntry[] {
-    return this.entries.filter(e => e.level === level);
-  }
-
-  clear(): void {
-    this.entries = [];
-  }
-
-  export(): string {
-    return JSON.stringify(this.entries, null, 2);
-  }
-}
-
-export class FilterTransport implements LogTransport {
-  private inner: LogTransport;
-  private minLevel: LogLevel;
-
-  constructor(inner: LogTransport, minLevel: LogLevel) {
-    this.inner = inner;
-    this.minLevel = minLevel;
-  }
-
-  write(entry: LogEntry): void {
-    if (entry.level >= this.minLevel) {
-      this.inner.write(entry);
-    }
-  }
-}
-
-export interface LoggerOptions {
-  minLevel?: LogLevel;
-  context?: string;
-  bufferSize?: number;
-  enableBuffer?: boolean;
-  transports?: LogTransport[];
-}
-
-const LEVEL_NAMES: Record<LogLevel, string> = {
-  [LogLevel.DEBUG]: 'DEBUG',
-  [LogLevel.INFO]: 'INFO',
-  [LogLevel.WARN]: 'WARN',
-  [LogLevel.ERROR]: 'ERROR',
-  [LogLevel.SILENT]: 'SILENT',
+const LOG_LEVELS = {
+  ERROR: 'ERROR',
+  WARN: 'WARN',
+  INFO: 'INFO',
+  DEBUG: 'DEBUG',
 };
 
 const DEFAULT_MIN_LEVEL_DEV = LogLevel.DEBUG;
@@ -103,19 +22,11 @@ const DEFAULT_MIN_LEVEL_PROD = LogLevel.WARN;
 const DEFAULT_BUFFER_SIZE = 200;
 
 class Logger {
-  private minLevel: LogLevel;
-  private context: string | undefined;
-  private buffer: LogEntry[] = [];
-  private bufferSize: number;
-  private enableBuffer: boolean;
-  private transports: LogTransport[];
+  private isDev = environment.isDev;
+  private minLevel: LogLevel = environment.isDev ? 'debug' : 'info';
 
-  constructor(options: LoggerOptions = {}) {
-    this.minLevel = options.minLevel ?? (environment.isDev ? DEFAULT_MIN_LEVEL_DEV : DEFAULT_MIN_LEVEL_PROD);
-    this.context = options.context;
-    this.bufferSize = options.bufferSize ?? DEFAULT_BUFFER_SIZE;
-    this.enableBuffer = options.enableBuffer ?? true;
-    this.transports = options.transports ?? [new ConsoleTransport()];
+  private shouldLog(level: LogLevel): boolean {
+    return LEVEL_RANK[level] >= LEVEL_RANK[this.minLevel];
   }
 
   addTransport(transport: LogTransport): void {
@@ -167,6 +78,36 @@ class Logger {
         // never let a transport crash the app
       }
     }
+  setLevel(level: LogLevel): void {
+    this.minLevel = level;
+  }
+
+  silence(): void {
+    this.minLevel = 'silent';
+  }
+
+  error(message: string, error?: unknown): void {
+    if (!this.shouldLog('error')) return;
+    const msg = this.formatMessage(LOG_LEVELS.ERROR, message);
+    console.error(msg, error);
+  }
+
+  warn(message: string, extra?: unknown): void {
+    if (!this.shouldLog('warn')) return;
+    const msg = this.formatMessage(LOG_LEVELS.WARN, message);
+    console.warn(msg, extra);
+  }
+
+  info(message: string): void {
+    if (!this.shouldLog('info')) return;
+    const msg = this.formatMessage(LOG_LEVELS.INFO, message);
+    console.log(msg);
+  }
+
+  debug(message: string, data?: unknown): void {
+    if (!this.isDev || !this.shouldLog('debug')) return;
+    const msg = this.formatMessage(LOG_LEVELS.DEBUG, message);
+    console.debug(msg, data);
   }
 
   debug(message: string, data?: unknown): void {

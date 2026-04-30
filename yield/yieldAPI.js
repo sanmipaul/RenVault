@@ -36,12 +36,13 @@ class YieldAPI {
       const { userAddress } = req.params;
       const { balance, riskTolerance } = req.query;
       
+      const parsedBalance = parseInt(balance);
       const allocation = this.optimizer.optimizeAllocation(
-        parseInt(balance), 
+        parsedBalance,
         riskTolerance || 'medium'
       );
-      
-      res.json({ allocation, expectedYield: this.optimizer.calculateExpectedYield(balance, allocation) });
+
+      res.json({ allocation, expectedYield: this.optimizer.calculateExpectedYield(parsedBalance, allocation) });
     });
 
     this.app.post('/api/yield/rebalance', async (req, res) => {

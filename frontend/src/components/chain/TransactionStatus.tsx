@@ -184,29 +184,7 @@ export const TransactionStatus: React.FC<TransactionStatusProps> = ({
 
     setTransactions(displayTransactions);
 
-    // Subscribe to transaction updates
-    const unsubscribe = MultiChainTransactionService.onTransactionUpdate?.(() => {
-      const updated = MultiChainTransactionService.getTransactionsByAddress(address)
-        .slice(0, maxTransactions)
-        .map(tx => ({
-          id: tx.id,
-          chainType: tx.chainType,
-          type: tx.type,
-          from: tx.from,
-          to: tx.to,
-          amount: tx.amount,
-          status: tx.status,
-          hash: tx.hash,
-          timestamp: tx.timestamp,
-          currency: tx.currency,
-        }));
-
-      setTransactions(updated);
-    });
-
-    return () => {
-      unsubscribe?.();
-    };
+    return () => {};
   }, [address, maxTransactions]);
 
   const filteredTransactions =
@@ -303,7 +281,7 @@ export const TransactionStatus: React.FC<TransactionStatusProps> = ({
         </div>
       )}
 
-      <style jsx>{`
+      <style>{`
         .transaction-status-container {
           display: flex;
           flex-direction: column;

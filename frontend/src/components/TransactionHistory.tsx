@@ -1,7 +1,8 @@
 // components/TransactionHistory.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { TransactionHistoryService, TransactionHistoryItem } from '../services/transaction/TransactionHistoryService';
 import { useWallet } from '../hooks/useWallet';
+import { useTransactionExport } from '../hooks/useTransactionExport';
 import SponsoredBadge from './common/SponsoredBadge';
 import './TransactionHistory.css';
 
@@ -22,11 +23,9 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ address }) => {
   const [dateTo, setDateTo] = useState('');
   const pageSize = 20;
 
-  useEffect(() => {
-    fetchTransactions();
-  }, [address]);
+  const { exporting, exportError, exportCurrentPage, exportAll } = useTransactionExport();
 
-  const fetchTransactions = async () => {
+  const fetchTransactions = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -35,17 +34,25 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ address }) => {
       setTransactions(result.transactions);
       setTotal(result.total);
     } catch (err) {
-      setError(err.message);
+      setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setLoading(false);
     }
-  };
+  }, [address, page]);
+
+  useEffect(() => {
+    setPage(0);
+  }, [address]);
+
+  useEffect(() => {
+    fetchTransactions();
+  }, [fetchTransactions]);
 
   const filteredAndSortedTransactions = transactions
     .filter(tx => {
       if (filter !== 'all' && tx.type !== filter) return false;
       if (dateFrom && tx.timestamp < new Date(dateFrom).getTime() / 1000) return false;
-      if (dateTo && tx.timestamp > new Date(dateTo).getTime() / 1000) return false;
+      if (dateTo && tx.timestamp > (new Date(dateTo).setHours(23, 59, 59, 999)) / 1000) return false;
       return true;
     })
     .sort((a, b) => {
@@ -58,35 +65,51 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ address }) => {
   const formatDate = (timestamp: number) => {
     return new Date(timestamp * 1000).toLocaleString();
   };
-  const exportToCSV = () => {
-    const csvContent = [
-      ['Type', 'Amount', 'Status', 'Date', 'TxID', 'Sponsored'],
-      ...filteredAndSortedTransactions.map(tx => [
-        tx.type,
-        formatAmount(tx.amount),
-        tx.status,
-        formatDate(tx.timestamp),
-        tx.txId,
-        tx.isSponsored ? 'Yes' : 'No',
-      ]),
-    ].map(row => row.join(',')).join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'transaction-history.csv';
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
   if (loading) return <div>Loading transaction history...</div>;
   if (error) return <div>Error: {error}</div>;
 
   return (
     <div className="transaction-history">
       <h3>Transaction History</h3>
-      <button onClick={exportToCSV} className="export-btn">Export to CSV</button>
+      <div className="export-toolbar" role="group" aria-label="Export transaction history">
+        <button
+          className="export-btn"
+          onClick={() => exportCurrentPage(filteredAndSortedTransactions, 'csv', address)}
+          disabled={exporting || filteredAndSortedTransactions.length === 0}
+          aria-label="Export current page as CSV"
+        >
+          Export CSV
+        </button>
+        <button
+          className="export-btn"
+          onClick={() => exportCurrentPage(filteredAndSortedTransactions, 'json', address)}
+          disabled={exporting || filteredAndSortedTransactions.length === 0}
+          aria-label="Export current page as JSON"
+        >
+          Export JSON
+        </button>
+        <button
+          className="export-btn export-btn--all"
+          onClick={() => exportAll(address, 'csv')}
+          disabled={exporting}
+          aria-label="Export all transactions as CSV"
+          aria-busy={exporting}
+        >
+          {exporting ? 'Exporting...' : 'Export All (CSV)'}
+        </button>
+        <button
+          className="export-btn export-btn--all"
+          onClick={() => exportAll(address, 'json')}
+          disabled={exporting}
+          aria-label="Export all transactions as JSON"
+          aria-busy={exporting}
+        >
+          {exporting ? 'Exporting...' : 'Export All (JSON)'}
+        </button>
+        {exportError && (
+          <span className="export-error" role="alert">{exportError}</span>
+        )}
+      </div>
       <div className="filters">
         <label>
           Filter:
@@ -120,6 +143,13 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ address }) => {
           <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
         </label>
       </div>
+      {filteredAndSortedTransactions.length === 0 && (
+        <div className="no-transactions">
+          {transactions.length === 0
+            ? 'No transactions found for this address.'
+            : 'No transactions match the current filters.'}
+        </div>
+      )}
       <table>
         <thead>
           <tr>
@@ -155,7 +185,7 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ address }) => {
         <button onClick={() => setPage(Math.max(0, page - 1))} disabled={page === 0}>
           Previous
         </button>
-        <span>Page {page + 1} of {Math.ceil(total / pageSize)}</span>
+        <span>Page {page + 1} of {Math.max(1, Math.ceil(total / pageSize))}</span>
         <button onClick={() => setPage(page + 1)} disabled={(page + 1) * pageSize >= total}>
           Next
         </button>

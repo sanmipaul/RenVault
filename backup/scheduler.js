@@ -8,11 +8,25 @@ class BackupScheduler {
   }
 
   addUser(address) {
+    if (!address || typeof address !== 'string') {
+      throw new TypeError('address must be a non-empty string');
+    }
     this.knownUsers.add(address);
   }
 
+  removeUser(address) {
+    this.knownUsers.delete(address);
+  }
+
   addUsers(addresses) {
-    addresses.forEach(addr => this.knownUsers.add(addr));
+    if (!Array.isArray(addresses)) {
+      throw new TypeError('addresses must be an array');
+    }
+    addresses.forEach(addr => {
+      if (addr && typeof addr === 'string') {
+        this.knownUsers.add(addr);
+      }
+    });
   }
 
   async createScheduledBackup() {
@@ -32,6 +46,10 @@ class BackupScheduler {
   }
 
   start(intervalHours = 24) {
+    if (this.isRunning) {
+      console.warn('Backup scheduler is already running. Call stop() before starting again.');
+      return;
+    }
     this.isRunning = true;
     const intervalMs = intervalHours * 60 * 60 * 1000;
     
@@ -44,23 +62,32 @@ class BackupScheduler {
       }
     };
     
-    // Create initial backup
-    this.createScheduledBackup();
-    
+    // Create initial backup — await inside an IIFE so the Promise is not
+    // abandoned; unhandled rejections would crash modern Node.js processes.
+    (async () => {
+      await this.createScheduledBackup();
+    })().catch(err => console.error('Initial backup failed:', err.message));
+
     // Schedule recurring backups
-    setTimeout(backup, intervalMs);
+    this.initialTimeoutId = setTimeout(backup, intervalMs);
   }
 
   stop() {
     this.isRunning = false;
-    console.log('⏹️ Backup scheduler stopped');
+    if (this.initialTimeoutId) {
+      clearTimeout(this.initialTimeoutId);
+      this.initialTimeoutId = null;
+    }
+    console.log('Backup scheduler stopped');
   }
 
   getStatus() {
+    // Do not expose the full user address list in the status response —
+    // the /api/backup/schedule/status endpoint is unauthenticated and
+    // returning all enrolled addresses would leak wallet identities.
     return {
       running: this.isRunning,
-      userCount: this.knownUsers.size,
-      users: Array.from(this.knownUsers)
+      userCount: this.knownUsers.size
     };
   }
 }

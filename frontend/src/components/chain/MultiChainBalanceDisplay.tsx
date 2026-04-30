@@ -110,7 +110,7 @@ const ChainBalanceDisplay: React.FC<ChainBalanceDisplayProps> = ({
 
       <div className="chain-balance-network">{chainInfo.name}</div>
 
-      <style jsx>{`
+      <style>{`
         .chain-balance-card {
           padding: 16px;
           background: white;
@@ -225,11 +225,11 @@ export const MultiChainBalanceDisplay: React.FC<BalanceDisplayProps> = ({
   React.useEffect(() => {
     const chain = ChainSwitchService.getActiveChain();
     if (chain) {
-      setActiveChain(chain.type);
+      setActiveChain(chain);
     }
 
-    const unsubscribe = ChainSwitchService.onChainSwitch(newChain => {
-      setActiveChain(newChain.type);
+    const unsubscribe = ChainSwitchService.onChainSwitch(event => {
+      setActiveChain(event.newChain);
     });
 
     return () => {
@@ -330,7 +330,7 @@ export const MultiChainBalanceDisplay: React.FC<BalanceDisplayProps> = ({
         </div>
       )}
 
-      <style jsx>{`
+      <style>{`
         .balance-display-container {
           display: flex;
           flex-direction: column;

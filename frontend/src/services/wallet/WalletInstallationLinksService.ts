@@ -3,9 +3,10 @@
  * Provides "Get Wallet" links and installation information for uninstalled wallets
  */
 
-import { CustomWalletConfig, stacksWallets, getWalletConfig } from '../config/customWallets';
+import { CustomWalletConfig, stacksWallets, getWalletConfig } from '../../config/customWallets';
 import { WalletInstallationDetector } from './WalletInstallationDetector';
 import { WalletDeepLinkManager } from './WalletDeepLinkManager';
+import { logger } from '../../utils/logger';
 
 export interface WalletInstallationLink {
   walletId: string;
@@ -241,7 +242,7 @@ export class WalletInstallationLinksService {
     }
 
     // Log locally
-    console.log(`[Wallet Installation] User clicked install for ${walletId} from ${source}`);
+    logger.info(`[Wallet Installation] User clicked install for ${walletId} from ${source}`);
   }
 
   /**

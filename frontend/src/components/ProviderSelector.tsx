@@ -5,8 +5,7 @@ import { WalletProviderType } from '../types/wallet';
 import HardwareWalletConnector from './HardwareWalletConnector';
 
 const ProviderSelector: React.FC = () => {
-  const { walletManager, selectedProviderType, setSelectedProvider } = useWallet();
-  const providers = walletManager.getAvailableProviders();
+  const { availableWallets, selectedProviderType, setSelectedProvider } = useWallet();
 
   const isHardwareWallet = (type: string) => type === 'ledger' || type === 'trezor';
 
@@ -14,7 +13,7 @@ const ProviderSelector: React.FC = () => {
     <div className="provider-selector">
       <h3>Select Wallet Provider</h3>
       <div className="provider-list">
-        {providers.map((provider) => (
+        {availableWallets.map((provider) => (
           <div key={provider.id}>
             <button
               className={`provider-button ${selectedProviderType === provider.id ? 'selected' : ''}`}

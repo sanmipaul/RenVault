@@ -2,8 +2,9 @@ const WebSocket = require('ws');
 const http = require('http');
 
 class ChainhooksWebSocketServer {
-  constructor(port = 3007) {
-    this.port = port;
+  constructor(port = process.env.WS_PORT || 3007, host = process.env.WS_HOST || '0.0.0.0') {
+    this.port = Number(port);
+    this.host = host;
     this.server = http.createServer();
     this.wss = new WebSocket.Server({ server: this.server });
     this.clients = new Map();
@@ -42,8 +43,8 @@ class ChainhooksWebSocketServer {
       });
     });
 
-    this.server.listen(this.port, () => {
-      console.log(`🔌 WebSocket server running on port ${this.port}`);
+    this.server.listen(this.port, this.host, () => {
+      console.log(`🔌 WebSocket server running on ${this.host}:${this.port}`);
     });
   }
 

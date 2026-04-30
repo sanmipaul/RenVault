@@ -1,4 +1,6 @@
+import { logger } from './logger';
 import { environment } from '../config/environment';
+import { isValidHttpsUrl, isValidUrl } from './urlValidator';
 
 export interface EnvironmentValidation {
   isValid: boolean;
@@ -20,6 +22,12 @@ export const validateEnvironmentVariables = (): EnvironmentValidation => {
 
   if (!environment.walletConnect.appUrl) {
     warnings.push('REACT_APP_URL is not set, using default');
+  } else if (!isValidUrl(environment.walletConnect.appUrl)) {
+    errors.push('REACT_APP_URL is not a valid URL');
+  }
+
+  if (environment.walletConnect.appIcon && !isValidUrl(environment.walletConnect.appIcon)) {
+    errors.push('REACT_APP_ICON must be a valid URL when set');
   }
 
   if (
@@ -42,15 +50,15 @@ export const logEnvironmentValidation = () => {
   const validation = validateEnvironmentVariables();
 
   if (!validation.isValid) {
-    console.error('Environment Validation Errors:');
-    validation.errors.forEach((error) => console.error(`  - ${error}`));
+    logger.error('Environment Validation Errors:');
+    validation.errors.forEach((error) => logger.error(`  - ${error}`));
     throw new Error('Invalid environment configuration');
   }
 
   if (validation.warnings.length > 0) {
-    console.warn('Environment Validation Warnings:');
-    validation.warnings.forEach((warning) => console.warn(`  - ${warning}`));
+    logger.warn('Environment Validation Warnings:');
+    validation.warnings.forEach((warning) => logger.warn(`  - ${warning}`));
   }
 
-  console.log('Environment validation passed');
+  logger.info('Environment validation passed');
 };

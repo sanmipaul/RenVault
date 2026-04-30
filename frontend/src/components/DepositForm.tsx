@@ -5,6 +5,7 @@ import { useWallet } from '../hooks/useWallet';
 import { useSponsorship } from '../hooks/useSponsorship';
 import { WalletError } from '../utils/wallet-errors';
 import { getFriendlyErrorMessage } from '../utils/wallet-errors';
+import { SignedTransactionResult } from '../types/wallet';
 import TransactionSuccess from './TransactionSuccess';
 import TransactionSigner from './TransactionSigner';
 import SponsoredBadge from './common/SponsoredBadge';
@@ -87,7 +88,7 @@ const DepositForm: React.FC<DepositFormProps> = ({
     }
   };
 
-  const handleTransactionSigned = async (signedTx: any) => {
+  const handleTransactionSigned = async (signedTx: SignedTransactionResult) => {
     try {
       const transactionService = TransactionService.getInstance();
       const txId = await transactionService.broadcastTransaction(signedTx);
@@ -139,6 +140,8 @@ const DepositForm: React.FC<DepositFormProps> = ({
       />
     );
   }
+
+  if (transactionDetails) {
     return (
       <TransactionSigner
         details={transactionDetails}

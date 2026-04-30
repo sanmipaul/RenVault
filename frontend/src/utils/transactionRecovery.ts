@@ -1,4 +1,4 @@
-import { SignedTransaction } from '../../services/transaction/TransactionService';
+import { SignedTransaction } from '../services/transaction/TransactionService';
 
 export class TransactionRecovery {
   private static readonly STORAGE_KEY = 'pending_transactions';
@@ -9,7 +9,7 @@ export class TransactionRecovery {
     localStorage.setItem(this.STORAGE_KEY, JSON.stringify(pending));
   }
 
-  static getPendingTransactions(): any[] {
+  static getPendingTransactions(): (SignedTransaction & { savedAt: number })[] {
     const stored = localStorage.getItem(this.STORAGE_KEY);
     return stored ? JSON.parse(stored) : [];
   }

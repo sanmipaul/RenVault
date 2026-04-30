@@ -19,6 +19,9 @@ export class ReconnectionStrategy {
   }
 
   getNextDelay(): number {
+    if (!this.canRetry()) {
+      throw new Error('Max reconnection attempts reached');
+    }
     const delay = Math.min(
       this.config.initialDelay * Math.pow(this.config.backoffMultiplier, this.currentAttempt),
       this.config.maxDelay
@@ -29,6 +32,10 @@ export class ReconnectionStrategy {
 
   canRetry(): boolean {
     return this.currentAttempt < this.config.maxAttempts;
+  }
+
+  getRemainingAttempts(): number {
+    return Math.max(0, this.config.maxAttempts - this.currentAttempt);
   }
 
   reset(): void {
