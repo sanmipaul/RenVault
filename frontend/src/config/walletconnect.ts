@@ -155,6 +155,9 @@ export const customWalletsConfig = {
     if (!validation.valid) {
       console.error(`Wallet ${wallet.id} validation failed:`, validation.errors);
     }
+    if (validation.warnings && validation.warnings.length > 0) {
+      console.warn(`Wallet ${wallet.id} validation warnings:`, validation.warnings);
+    }
     return {
       id: wallet.id,
       name: wallet.name,
