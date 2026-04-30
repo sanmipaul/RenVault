@@ -1,3 +1,13 @@
+import { isValidHttpsUrl, extractDomain } from '../utils/urlValidator';
+
+const TRUSTED_DOWNLOAD_DOMAINS = [
+  'chrome.google.com',
+  'addons.mozilla.org',
+  'apps.apple.com',
+  'microsoftedge.microsoft.com',
+  'play.google.com',
+];
+
 export class WalletSecurityValidator {
   private trustedDomains = ['renvault.app', 'localhost'];
   private suspiciousPatterns = ['phishing', 'scam', 'fake'];
@@ -19,6 +29,12 @@ export class WalletSecurityValidator {
     } catch {
       return false;
     }
+  }
+
+  isTrustedDownloadUrl(url: string): boolean {
+    if (!isValidHttpsUrl(url)) return false;
+    const domain = extractDomain(url);
+    return domain !== null && TRUSTED_DOWNLOAD_DOMAINS.some(d => domain === d || domain.endsWith(`.${d}`));
   }
 
   checkSuspiciousActivity(url: string): boolean {
