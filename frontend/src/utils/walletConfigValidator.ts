@@ -51,6 +51,24 @@ const pushWarning = (
   warnings.push({ field, message, severity: 'warning' });
 };
 
+const SUPPORTED_CHAINS = ['stacks:1', 'stacks:2147483648'];
+
+const validateChains = (
+  chains: string[] | undefined,
+  errors: WalletConfigError[],
+  warnings: WalletConfigError[]
+): void => {
+  if (!chains || chains.length === 0) {
+    pushWarning(warnings, 'chains', 'No chains configured; wallet may not connect to any network');
+    return;
+  }
+  for (const chain of chains) {
+    if (!SUPPORTED_CHAINS.includes(chain)) {
+      pushWarning(warnings, 'chains', `Chain "${chain}" is not a recognised Stacks chain`);
+    }
+  }
+};
+
 const validateImageUrl = (
   imageUrl: string | undefined,
   errors: WalletConfigError[],
@@ -183,6 +201,7 @@ export const validateWalletConfig = (config: CustomWalletConfig): ValidationResu
 
   validateImageUrl(config.imageUrl, errors, warnings);
   validateHomepage(config.homepage, errors, warnings);
+  validateChains(config.chains, errors, warnings);
   validateDownloadUrls(config.downloadUrls, errors, warnings);
   validateMobileConfig(config.mobile, errors, warnings);
   validateDesktopConfig(config.desktop, errors, warnings);
