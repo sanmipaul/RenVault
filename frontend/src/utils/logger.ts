@@ -66,6 +66,22 @@ export class BufferTransport implements LogTransport {
   }
 }
 
+export class FilterTransport implements LogTransport {
+  private inner: LogTransport;
+  private minLevel: LogLevel;
+
+  constructor(inner: LogTransport, minLevel: LogLevel) {
+    this.inner = inner;
+    this.minLevel = minLevel;
+  }
+
+  write(entry: LogEntry): void {
+    if (entry.level >= this.minLevel) {
+      this.inner.write(entry);
+    }
+  }
+}
+
 export interface LoggerOptions {
   minLevel?: LogLevel;
   context?: string;
