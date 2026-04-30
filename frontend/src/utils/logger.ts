@@ -90,12 +90,6 @@ class Logger {
     return level >= this.minLevel;
   }
 
-  private formatMessage(levelName: string, message: string): string {
-    const timestamp = new Date().toISOString();
-    const ctx = this.context ? ` [${this.context}]` : '';
-    return `[${timestamp}] [${levelName}]${ctx} ${message}`;
-  }
-
   private record(entry: LogEntry): void {
     if (!this.enableBuffer) return;
     this.buffer.push(entry);
