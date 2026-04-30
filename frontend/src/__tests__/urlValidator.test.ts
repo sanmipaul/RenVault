@@ -12,6 +12,9 @@ import {
   isValidMobileNativeUrl,
   getUrlValidationError,
   sanitizeUrl,
+  normalizeUrl,
+  extractDomain,
+  isSameDomain,
 } from '../utils/urlValidator';
 
 describe('isValidUrl', () => {
@@ -84,4 +87,21 @@ describe('getUrlValidationError', () => {
 describe('sanitizeUrl', () => {
   it('trims whitespace', () => expect(sanitizeUrl('  https://example.com  ')).toBe('https://example.com'));
   it('removes internal spaces', () => expect(sanitizeUrl('https://exam ple.com')).toBe('https://example.com'));
+});
+
+describe('normalizeUrl', () => {
+  it('removes trailing slash from path', () => expect(normalizeUrl('https://example.com/path/')).toBe('https://example.com/path'));
+  it('keeps root slash', () => expect(normalizeUrl('https://example.com/')).toBe('https://example.com/'));
+  it('returns sanitized string for invalid URL', () => expect(normalizeUrl('  not-a-url  ')).toBe('not-a-url'));
+});
+
+describe('extractDomain', () => {
+  it('extracts hostname from https URL', () => expect(extractDomain('https://wallet.hiro.so/install')).toBe('wallet.hiro.so'));
+  it('returns null for invalid URL', () => expect(extractDomain('not-a-url')).toBeNull());
+});
+
+describe('isSameDomain', () => {
+  it('returns true for same domain', () => expect(isSameDomain('https://example.com/a', 'https://example.com/b')).toBe(true));
+  it('returns false for different domains', () => expect(isSameDomain('https://example.com', 'https://other.com')).toBe(false));
+  it('returns false when either URL is invalid', () => expect(isSameDomain('not-a-url', 'https://example.com')).toBe(false));
 });
