@@ -2,6 +2,7 @@ import { customWalletsConfig } from '../config/walletconnect';
 import { validateWalletConfig, validateWalletConfigBatch } from './walletConfigValidator';
 import { stacksWallets } from '../config/customWallets';
 import { ValidationResult } from '../types/walletConfig';
+import { configMonitor } from './configMonitor';
 
 export const getSafeWalletConfig = (walletId: string) => {
   try {
@@ -42,5 +43,14 @@ export const getWalletsWithWarnings = () => {
 export const isWalletConfigValid = (walletId: string): boolean => {
   const wallet = stacksWallets.find(w => w.id === walletId);
   if (!wallet) return false;
-  return validateWalletConfig(wallet).valid;
+  const result = validateWalletConfig(wallet);
+  if (result.valid) {
+    configMonitor.recordValidationSuccess();
+  } else {
+    configMonitor.recordValidationError();
+  }
+  if (result.warnings.length > 0) {
+    configMonitor.recordValidationWarning();
+  }
+  return result.valid;
 };
