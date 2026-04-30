@@ -187,11 +187,11 @@ export function isValidStacksAddress(address: string): boolean {
 
 /**
  * Validate URL
+ * @deprecated Use isValidUrl from urlValidator.ts instead
  */
 export function isValidUrl(url: string): boolean {
   try {
     new URL(url);
-
     return true;
   } catch {
     return false;
