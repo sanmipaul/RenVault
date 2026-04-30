@@ -111,7 +111,10 @@ const validateDesktopConfig = (
   errors: WalletConfigError[],
   warnings: WalletConfigError[]
 ): void => {
-  if (!desktop) return;
+  if (!desktop) {
+    pushError(errors, 'desktop', 'Desktop configuration is required');
+    return;
+  }
   if (desktop.native && !isValidMobileNativeUrl(desktop.native)) {
     pushError(errors, 'desktop.native', 'Desktop native URL must be a valid deep link (e.g. wallet://)');
   }
