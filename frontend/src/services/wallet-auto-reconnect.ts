@@ -8,20 +8,26 @@ export class WalletAutoReconnect {
 
   async attemptReconnect(walletType: string, address: string) {
     const session = sessionManager.getSession(address);
-    if (!session) return false;
+    if (!session) {
+      log.warn('No session found for address, skipping reconnect', { address });
+      return false;
+    }
 
     while (this.reconnectAttempts < this.maxAttempts) {
       try {
         await this.reconnect(walletType, session);
+        log.info('Reconnect successful', { walletType, attempt: this.reconnectAttempts + 1 });
         this.reconnectAttempts = 0;
         return true;
       } catch (error) {
         this.reconnectAttempts++;
+        log.warn('Reconnect attempt failed', { walletType, attempt: this.reconnectAttempts, maxAttempts: this.maxAttempts });
         if (this.reconnectAttempts < this.maxAttempts) {
           await this.delay(this.reconnectDelay * this.reconnectAttempts);
         }
       }
     }
+    log.error('All reconnect attempts exhausted', undefined, { walletType, maxAttempts: this.maxAttempts });
     return false;
   }
 

@@ -15,7 +15,6 @@ export class WalletEventEmitter {
       this.listeners.set(event, new Set());
     }
     this.listeners.get(event)!.add(callback);
-
     return () => this.off(event, callback);
   }
 

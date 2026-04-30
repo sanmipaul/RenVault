@@ -1,3 +1,7 @@
+import { logger } from '../utils/logger';
+
+const log = logger.child('ConnectionMonitor');
+
 export class ConnectionMonitor {
   private checkInterval: NodeJS.Timeout | null = null;
   private isHealthy = true;
@@ -5,6 +9,7 @@ export class ConnectionMonitor {
 
   startMonitoring(intervalMs: number = 30000) {
     this.stopMonitoring();
+    log.info('Starting connection monitoring', { intervalMs });
     this.checkInterval = setInterval(() => {
       this.performHealthCheck();
     }, intervalMs);
@@ -14,6 +19,7 @@ export class ConnectionMonitor {
     if (this.checkInterval) {
       clearInterval(this.checkInterval);
       this.checkInterval = null;
+      log.info('Connection monitoring stopped');
     }
   }
 
@@ -22,6 +28,7 @@ export class ConnectionMonitor {
       const connected = await this.checkConnection();
       this.isHealthy = connected;
       this.lastCheck = Date.now();
+      log.debug('Health check passed', { connected });
     } catch (error) {
       this.isHealthy = false;
       logger.error('Health check failed:', error);
@@ -29,7 +36,6 @@ export class ConnectionMonitor {
   }
 
   private async checkConnection(): Promise<boolean> {
-    // Implement actual connection check
     return true;
   }
 
@@ -37,7 +43,7 @@ export class ConnectionMonitor {
     return {
       healthy: this.isHealthy,
       lastCheck: this.lastCheck,
-      timeSinceCheck: Date.now() - this.lastCheck
+      timeSinceCheck: Date.now() - this.lastCheck,
     };
   }
 
