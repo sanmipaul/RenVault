@@ -3,6 +3,7 @@ import {
   validateWalletId,
   validateWalletName,
   validateWalletConfigBatch,
+  validateWalletConfigStrict,
   hasValidationErrors,
   hasValidationWarnings,
   getErrorFields,
@@ -232,5 +233,42 @@ describe('helper utilities', () => {
 
   it('getErrorFields returns empty array for valid config', () => {
     expect(getErrorFields(validateWalletConfig(validWallet))).toHaveLength(0);
+  });
+});
+
+describe('validateWalletConfigStrict', () => {
+  it('fails when warnings exist (strict mode)', () => {
+    const { homepage: _, ...noHomepage } = validWallet;
+    const result = validateWalletConfigStrict(noHomepage as CustomWalletConfig);
+    expect(result.valid).toBe(false);
+    expect(result.warnings).toHaveLength(0);
+    expect(result.errors.some(e => e.field === 'homepage')).toBe(true);
+  });
+
+  it('passes for a fully complete config with no warnings', () => {
+    const fullWallet: CustomWalletConfig = {
+      ...validWallet,
+      description: 'A test wallet',
+      imageAlt: 'Test Wallet Logo',
+    };
+    const result = validateWalletConfigStrict(fullWallet);
+    expect(result.valid).toBe(true);
+  });
+});
+
+describe('validateWalletConfig - description and imageAlt', () => {
+  it('warns when description is missing', () => {
+    const result = validateWalletConfig({ ...validWallet, description: undefined });
+    expect(getWarningFields(result)).toContain('description');
+  });
+
+  it('warns when description exceeds 256 chars', () => {
+    const result = validateWalletConfig({ ...validWallet, description: 'a'.repeat(257) });
+    expect(getWarningFields(result)).toContain('description');
+  });
+
+  it('warns when imageAlt is missing', () => {
+    const result = validateWalletConfig({ ...validWallet, imageAlt: undefined });
+    expect(getWarningFields(result)).toContain('imageAlt');
   });
 });
