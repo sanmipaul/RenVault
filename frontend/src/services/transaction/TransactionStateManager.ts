@@ -21,7 +21,11 @@ export class TransactionStateManager {
   incrementRetry(txId: string): void {
     const state = this.states.get(txId);
     if (state) {
-      state.retryCount++;
+      this.states.set(txId, {
+        ...state,
+        retryCount: state.retryCount + 1,
+        timestamp: Date.now()
+      });
     }
   }
 

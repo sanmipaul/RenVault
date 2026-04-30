@@ -4,9 +4,9 @@
  */
 
 import React from 'react';
-import { ThemeSwitchService, useTheme } from '../services/theme/ThemeSwitchService';
-import { ThemePersistenceService, useThemePersistence } from '../services/theme/ThemePersistenceService';
-import { renvaultColors, darkModeColors } from '../config/appkit-theme';
+import { ThemeSwitchService, useTheme } from '../../services/theme/ThemeSwitchService';
+import { ThemePersistenceService, useThemePersistence } from '../../services/theme/ThemePersistenceService';
+import { renvaultColors, darkModeColors } from '../../config/appkit-theme';
 
 export interface ThemePreviewProps {
   onThemeChange?: (mode: 'light' | 'dark') => void;
@@ -39,7 +39,7 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({
     <div
       style={{
         background: colors.background,
-        color: colors.text,
+        color: colors.textPrimary,
         padding: compact ? '12px' : '24px',
         borderRadius: '12px',
         border: `1px solid ${colors.border}`,
@@ -80,7 +80,7 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({
           <ColorSwatch label="Error" color={colors.error} />
           <ColorSwatch label="Warning" color={colors.warning} />
           <ColorSwatch label="Info" color={colors.info} />
-          <ColorSwatch label="Text" color={colors.text} />
+          <ColorSwatch label="Text" color={colors.textPrimary} />
           <ColorSwatch label="Surface" color={colors.surface} />
           <ColorSwatch label="Border" color={colors.border} />
         </div>
@@ -100,7 +100,7 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({
               onChange={e => setFontFamily(e.target.value as 'inter' | 'poppins' | 'system')}
               style={{
                 background: colors.surface,
-                color: colors.text,
+                color: colors.textPrimary,
                 border: `1px solid ${colors.border}`,
                 padding: '6px 8px',
                 borderRadius: '4px',
@@ -123,7 +123,7 @@ export const ThemePreview: React.FC<ThemePreviewProps> = ({
               onChange={e => setFontSize(e.target.value as 'sm' | 'base' | 'lg')}
               style={{
                 background: colors.surface,
-                color: colors.text,
+                color: colors.textPrimary,
                 border: `1px solid ${colors.border}`,
                 padding: '6px 8px',
                 borderRadius: '4px',
@@ -217,7 +217,7 @@ export const ThemeTestSuite: React.FC = () => {
     <div
       style={{
         background: colors.background,
-        color: colors.text,
+        color: colors.textPrimary,
         padding: '24px',
       }}
     >

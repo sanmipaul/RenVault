@@ -1,3 +1,4 @@
+import { logger } from '../utils/logger';
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { WalletConfigError } from '../types/walletConfig';
 
@@ -23,7 +24,7 @@ export class WalletConfigErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('Wallet configuration error:', error, errorInfo);
+    logger.error('Wallet configuration error:', error, errorInfo);
   }
 
   render() {

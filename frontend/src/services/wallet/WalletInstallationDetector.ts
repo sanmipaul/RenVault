@@ -3,7 +3,8 @@
  * Detects available wallets and their installation status
  */
 
-import { CustomWalletConfig, stacksWallets, getWalletConfig } from '../config/customWallets';
+import React from 'react';
+import { CustomWalletConfig, stacksWallets, getWalletConfig } from '../../config/customWallets';
 
 export interface WalletAvailability {
   walletId: string;

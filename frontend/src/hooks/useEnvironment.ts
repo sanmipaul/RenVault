@@ -1,3 +1,4 @@
+import { logger } from '../utils/logger';
 import { useEffect } from 'react';
 import { environment } from '../config/environment';
 import { validateEnvironmentVariables, logEnvironmentValidation } from '../utils/env-validator';
@@ -7,7 +8,7 @@ export const useEnvironment = () => {
     try {
       logEnvironmentValidation();
     } catch (error) {
-      console.error('Failed to validate environment:', error);
+      logger.error('Failed to validate environment:', error);
       throw error;
     }
   }, []);

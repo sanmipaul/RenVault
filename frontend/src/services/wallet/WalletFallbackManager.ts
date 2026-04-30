@@ -5,7 +5,7 @@
 
 import { StacksConnectorAdapter } from './StacksConnectorAdapter';
 import { WalletInstallationDetector } from './WalletInstallationDetector';
-import { CustomWalletConfig, stacksWallets } from '../config/customWallets';
+import { CustomWalletConfig, stacksWallets } from '../../config/customWallets';
 
 export interface FallbackStrategy {
   type: 'none' | 'install-prompt' | 'alternative-wallet' | 'walletconnect';
@@ -224,11 +224,11 @@ export class WalletFallbackManager {
    * Create a retry strategy with exponential backoff
    */
   static createRetryStrategy(
-    operation: () => Promise<any>,
+    operation: () => Promise<unknown>,
     maxRetries: number = 3,
     baseDelayMs: number = 1000
   ): {
-    execute: () => Promise<any>;
+    execute: () => Promise<unknown>;
     getCurrentRetry: () => number;
   } {
     let retryCount = 0;
@@ -260,9 +260,9 @@ export class WalletFallbackManager {
   static setupErrorRecovery(
     onFallback: (result: WalletFallbackResult) => void,
     onSuccess: (walletId: string) => void
-  ): void {
-    // Listen for wallet connection errors
-    window.addEventListener('error', (event: ErrorEvent) => {
+  ): () => void {
+    // Named handler so it can be removed on cleanup
+    const errorHandler = (event: ErrorEvent) => {
       if (event.message.includes('wallet')) {
         const result: WalletFallbackResult = {
           success: false,
@@ -275,7 +275,9 @@ export class WalletFallbackManager {
         };
         onFallback(result);
       }
-    });
+    };
+
+    window.addEventListener('error', errorHandler);
 
     // Monitor wallet availability changes
     const stopMonitoring = WalletInstallationDetector.startMonitoring(() => {
@@ -284,7 +286,8 @@ export class WalletFallbackManager {
     });
 
     return () => {
-      // Cleanup
+      // Remove the error listener to prevent accumulation across calls
+      window.removeEventListener('error', errorHandler);
       stopMonitoring();
     };
   }

@@ -1,3 +1,5 @@
+import { logger } from '../utils/logger';
+
 export interface WalletPreferences {
   defaultWallet?: string;
   autoConnect: boolean;
@@ -22,7 +24,7 @@ export class WalletPreferenceManager {
         this.preferences = { ...this.preferences, ...JSON.parse(stored) };
       }
     } catch (e) {
-      console.error('Failed to load preferences:', e);
+      logger.error('Failed to load preferences:', e);
     }
   }
 
@@ -31,7 +33,7 @@ export class WalletPreferenceManager {
     try {
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.preferences));
     } catch (e) {
-      console.error('Failed to save preferences:', e);
+      logger.error('Failed to save preferences:', e);
     }
   }
 

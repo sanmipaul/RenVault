@@ -1,17 +1,26 @@
 // Multi-Asset Vault Manager
 const { AssetRegistry } = require('./assetRegistry');
+const { AssetValidator } = require('./assetValidator');
 
 class VaultManager {
   constructor(stacksApi) {
+    if (!stacksApi) {
+      throw new Error('VaultManager requires a valid stacksApi instance');
+    }
     this.stacksApi = stacksApi;
     this.registry = new AssetRegistry();
     this.contractAddress = 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.multi-asset-vault';
   }
 
   async depositAsset(asset, amount, senderKey) {
-    console.log(`Initiating deposit for ${amount} ${asset}...`);
-    const assetInfo = this.registry.getAsset(asset);
-    if (!assetInfo) throw new Error(`Asset ${asset} not supported by registry`);
+    if (!AssetValidator.isValidSymbol(asset)) {
+      throw new Error(`Invalid asset symbol: "${asset}"`);
+    }
+    if (!AssetValidator.validateSenderKey(senderKey)) {
+      throw new Error('senderKey must be a valid 64-character hex private key');
+    }
+    const assetInfo = this.registry.getAssetOrThrow(asset);
+    AssetValidator.validateDeposit(asset, amount);
 
     try {
       const functionName = assetInfo.type === 'native' ? 'deposit-stx' : 'deposit-sip010';
@@ -20,18 +29,23 @@ class VaultManager {
         : [assetInfo.contract, amount];
 
       const result = await this.callContract(functionName, functionArgs, senderKey);
-      console.log(`Deposit successful for ${asset}: ${result.txId}`);
       return result;
     } catch (error) {
-      console.error(`Deposit failed for ${asset}:`, error.message);
       throw error;
     }
   }
 
   async withdrawAsset(asset, amount, senderKey) {
-    console.log(`Initiating withdrawal for ${amount} ${asset}...`);
-    const assetInfo = this.registry.getAsset(asset);
-    if (!assetInfo) throw new Error(`Asset ${asset} not supported by registry`);
+    if (!AssetValidator.isValidSymbol(asset)) {
+      throw new Error(`Invalid asset symbol: "${asset}"`);
+    }
+    if (!AssetValidator.validateSenderKey(senderKey)) {
+      throw new Error('senderKey must be a valid 64-character hex private key');
+    }
+    if (!AssetValidator.validateAmount(amount)) {
+      throw new Error('Withdrawal amount must be a positive finite number');
+    }
+    const assetInfo = this.registry.getAssetOrThrow(asset);
 
     try {
       const functionName = assetInfo.type === 'native' ? 'withdraw-stx' : 'withdraw-sip010';
@@ -40,27 +54,52 @@ class VaultManager {
         : [assetInfo.contract, amount];
 
       const result = await this.callContract(functionName, functionArgs, senderKey);
-      console.log(`Withdrawal successful for ${asset}: ${result.txId}`);
       return result;
     } catch (error) {
-      console.error(`Withdrawal failed for ${asset}:`, error.message);
       throw error;
     }
   }
 
   async getBalance(user, asset) {
-    const assetInfo = this.registry.getAsset(asset);
+    if (!AssetValidator.validateStacksAddress(user)) {
+      throw new Error(`Invalid Stacks address: "${user}"`);
+    }
+    if (!AssetValidator.isValidSymbol(asset)) {
+      throw new Error(`Invalid asset symbol: "${asset}"`);
+    }
+    const assetInfo = this.registry.getAssetOrThrow(asset);
     const assetContract = assetInfo.type === 'native' ? 'STX' : assetInfo.contract;
-    
+
     return await this.readContract('get-asset-balance', [user, assetContract]);
   }
 
   async callContract(functionName, args, senderKey) {
+    if (!functionName || typeof functionName !== 'string') {
+      throw new Error('callContract requires a non-empty functionName string');
+    }
+    if (!Array.isArray(args)) {
+      throw new Error('callContract requires args to be an array');
+    }
     // Contract call implementation
-    return { success: true, txId: 'mock-tx-id' };
+    const result = { success: true, txId: 'mock-tx-id' };
+
+    if (!result.txId || typeof result.txId !== 'string' || result.txId.trim().length === 0) {
+      throw new Error(`callContract returned an empty txId for function "${functionName}"`);
+    }
+    if (!result.success) {
+      throw new Error(`Contract call to "${functionName}" failed`);
+    }
+
+    return result;
   }
 
   async readContract(functionName, args) {
+    if (!functionName || typeof functionName !== 'string') {
+      throw new Error('readContract requires a non-empty functionName string');
+    }
+    if (!Array.isArray(args)) {
+      throw new Error('readContract requires args to be an array');
+    }
     // Contract read implementation
     return { success: true, result: 0 };
   }

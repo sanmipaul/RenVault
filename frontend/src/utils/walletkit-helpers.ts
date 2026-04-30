@@ -1,4 +1,9 @@
-import { isValidDeepLinkUrl, isValidHttpsUrl } from './urlValidator';
+export interface WalletRedirectMetadata {
+  redirect?: {
+    native?: string;
+    universal?: string;
+  };
+}
 
 export const getWalletConnectUri = (): string | null => {
   const params = new URLSearchParams(window.location.search);
@@ -13,11 +18,11 @@ export const getRequestParams = () => {
   };
 };
 
-export const isNativeApp = (metadata: any): boolean => {
+export const isNativeApp = (metadata: WalletRedirectMetadata): boolean => {
   return metadata?.redirect !== undefined;
 };
 
-export const handleRedirect = (metadata: any) => {
+export const handleRedirect = (metadata: WalletRedirectMetadata) => {
   if (!metadata?.redirect) return;
 
   const { native, universal } = metadata.redirect;

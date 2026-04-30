@@ -1,3 +1,4 @@
+import { logger } from '../utils/logger';
 import React, { useEffect, useState, useCallback } from 'react';
 import { useAppKit } from '@reown/appkit/react';
 import WalletRecommendations from './WalletRecommendations';
@@ -79,7 +80,7 @@ const CustomWalletModal: React.FC<CustomWalletModalProps> = ({
   const handleWalletSelect = useCallback(
     (id: string) => {
       // Track wallet selection for analytics
-      console.log('Wallet selected:', id);
+      logger.info('Wallet selected:', id);
       // Open AppKit modal
       open();
       onClose();

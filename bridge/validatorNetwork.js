@@ -7,7 +7,9 @@ class ValidatorNetwork {
   }
 
   registerValidator(address, stake, publicKey) {
-    if (stake < this.validatorStake) {
+    if (!address || typeof address !== 'string') throw new Error('address is required');
+    if (!publicKey || typeof publicKey !== 'string') throw new Error('publicKey is required');
+    if (typeof stake !== 'number' || stake < this.validatorStake) {
       throw new Error('Insufficient stake');
     }
 
@@ -40,6 +42,7 @@ class ValidatorNetwork {
   }
 
   slashValidator(address, amount) {
+    if (typeof amount !== 'number' || amount <= 0) throw new Error('slash amount must be a positive number');
     const validator = this.validators.get(address);
     if (!validator) return false;
 

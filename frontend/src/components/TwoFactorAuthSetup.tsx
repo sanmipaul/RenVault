@@ -1,6 +1,6 @@
 // Two-Factor Authentication Setup Component
 import React, { useState, useEffect } from 'react';
-import QRCode from 'qrcode.react';
+import { QRCodeSVG as QRCode } from 'qrcode.react';
 import './TwoFactorAuth.css';
 
 interface TwoFactorAuthProps {

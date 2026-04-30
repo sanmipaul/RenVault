@@ -66,7 +66,7 @@ export class BalanceService {
       this.balances.set(address, newBalance);
       return newBalance;
     } catch (error) {
-      console.error('Failed to fetch balance:', error);
+      logger.error('Failed to fetch balance:', error);
       throw error;
     }
   }
@@ -81,7 +81,7 @@ export class BalanceService {
       const data = await response.json();
       return data.stx.balance || '0';
     } catch (error) {
-      console.error('Error fetching STX balance:', error);
+      logger.error('Error fetching STX balance:', error);
       // Fallback to mock data
       return '1000000';
     }
@@ -101,7 +101,7 @@ export class BalanceService {
       try {
         await this.getBalance(address, provider);
       } catch (error) {
-        console.error('Auto-refresh failed:', error);
+        logger.error('Auto-refresh failed:', error);
       }
     }, intervalMs);
 
@@ -126,7 +126,7 @@ export class BalanceService {
 
     // For now, use polling as WebSocket implementation would require specific Stacks node WebSocket support
     // This is a placeholder for future WebSocket implementation
-    console.log('WebSocket updates not yet implemented, using polling');
+    logger.info('WebSocket updates not yet implemented, using polling');
   }
 
   stopWebSocketUpdates(address: string): void {
@@ -153,7 +153,7 @@ export class BalanceService {
           await this.getBalance(address, provider);
         }
       } catch (error) {
-        console.error('Error refreshing balance:', error);
+        logger.error('Error refreshing balance:', error);
       }
     }, intervalMs);
 
@@ -206,16 +206,16 @@ export class BalanceService {
     const tokensChanged = JSON.stringify(oldBalance.tokens) !== JSON.stringify(newBalance.tokens);
 
     if (stxChanged || tokensChanged) {
-      console.log('Balance changed for address:', address);
+      logger.info('Balance changed for address:', address);
       // Could emit events or call callbacks here
       // For now, just log the changes
       if (stxChanged) {
         const oldStx = parseInt(oldBalance.stx) / 1000000;
         const newStx = parseInt(newBalance.stx) / 1000000;
-        console.log(`STX balance changed: ${oldStx} → ${newStx}`);
+        logger.info(`STX balance changed: ${oldStx} → ${newStx}`);
       }
       if (tokensChanged) {
-        console.log('Token balances changed');
+        logger.info('Token balances changed');
       }
     }
   }

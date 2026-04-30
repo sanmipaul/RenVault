@@ -36,7 +36,7 @@ export const SessionMaintenance: React.FC<SessionMaintenanceProps> = ({
       const cleanupStats = await sessionCleanup.getCleanupStats();
       setStats(cleanupStats);
     } catch (error) {
-      console.error('Failed to load cleanup stats:', error);
+      logger.error('Failed to load cleanup stats:', error);
       onMaintenanceError?.('Failed to load maintenance statistics');
     } finally {
       setIsLoadingStats(false);
@@ -60,10 +60,10 @@ export const SessionMaintenance: React.FC<SessionMaintenanceProps> = ({
       onMaintenanceComplete?.(result);
 
       if (result.errors.length > 0) {
-        console.warn('Cleanup completed with errors:', result.errors);
+        logger.warn('Cleanup completed with errors:', result.errors);
       }
     } catch (error) {
-      console.error('Cleanup failed:', error);
+      logger.error('Cleanup failed:', error);
       onMaintenanceError?.('Session cleanup failed');
     } finally {
       setIsRunning(false);
@@ -78,9 +78,9 @@ export const SessionMaintenance: React.FC<SessionMaintenanceProps> = ({
       await loadStats();
       onMaintenanceComplete?.(result.sessions);
 
-      console.log('Comprehensive cleanup completed:', result);
+      logger.info('Comprehensive cleanup completed:', result);
     } catch (error) {
-      console.error('Comprehensive cleanup failed:', error);
+      logger.error('Comprehensive cleanup failed:', error);
       onMaintenanceError?.('Comprehensive cleanup failed');
     } finally {
       setIsRunning(false);

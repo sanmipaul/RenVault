@@ -15,6 +15,7 @@ class PauseController {
   }
 
   addEmergencyContact(address) {
+    if (!address || typeof address !== 'string') throw new Error('address is required');
     this.emergencyContacts.add(address);
     return { success: true, contact: address };
   }
@@ -104,7 +105,9 @@ class PauseController {
 
     if (this.monitor.shouldTriggerEmergencyPause()) {
       const reason = this.monitor.getEmergencyReason();
-      return this.emergencyPause(reason, 'SYSTEM');
+      this.pauseState = { isPaused: true, reason, timestamp: Date.now(), pausedBy: 'SYSTEM' };
+      this.pauseHistory.push({ action: 'PAUSE', reason, timestamp: Date.now(), by: 'SYSTEM' });
+      return { success: true, message: 'Emergency pause activated', reason, autoPauseTriggered: true };
     }
 
     return { autoPauseTriggered: false, alerts: result.alerts };

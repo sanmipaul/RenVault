@@ -162,3 +162,118 @@ Clarinet.test({
         assertEquals(stats['points'], types.uint(1));
     },
 });
+// ===== vault-factory.clar tests =====
+
+Clarinet.test({
+    name: "User can create a vault and retrieve it",
+    async fn(chain: Chain, accounts: Map<string, Account>) {
+        const wallet1 = accounts.get('wallet_1')!;
+
+        let block = chain.mineBlock([
+            Tx.contractCall('vault-factory', 'create-vault', [], wallet1.address)
+        ]);
+
+        const vaultId = block.receipts[0].result.expectOk().expectUint(1);
+
+        let result = chain.callReadOnlyFn('vault-factory', 'get-user-vault', [types.principal(wallet1.address)], wallet1.address);
+        result.result.expectOk().expectSome().expectUint(1);
+    },
+});
+
+Clarinet.test({
+    name: "User cannot create a second vault (err-vault-exists)",
+    async fn(chain: Chain, accounts: Map<string, Account>) {
+        const wallet1 = accounts.get('wallet_1')!;
+
+        chain.mineBlock([
+            Tx.contractCall('vault-factory', 'create-vault', [], wallet1.address)
+        ]);
+
+        let block = chain.mineBlock([
+            Tx.contractCall('vault-factory', 'create-vault', [], wallet1.address)
+        ]);
+
+        block.receipts[0].result.expectErr(types.uint(201)); // err-vault-exists
+    },
+});
+
+Clarinet.test({
+    name: "Different users can each create one vault",
+    async fn(chain: Chain, accounts: Map<string, Account>) {
+        const wallet1 = accounts.get('wallet_1')!;
+        const wallet2 = accounts.get('wallet_2')!;
+
+        let block = chain.mineBlock([
+            Tx.contractCall('vault-factory', 'create-vault', [], wallet1.address),
+            Tx.contractCall('vault-factory', 'create-vault', [], wallet2.address)
+        ]);
+
+        block.receipts[0].result.expectOk().expectUint(1);
+        block.receipts[1].result.expectOk().expectUint(2);
+
+        let countResult = chain.callReadOnlyFn('vault-factory', 'get-vault-count', [], wallet1.address);
+        countResult.result.expectOk().expectUint(2);
+    },
+});
+
+Clarinet.test({
+    name: "has-vault returns false before and true after creation",
+    async fn(chain: Chain, accounts: Map<string, Account>) {
+        const wallet1 = accounts.get('wallet_1')!;
+
+        let before = chain.callReadOnlyFn('vault-factory', 'has-vault', [types.principal(wallet1.address)], wallet1.address);
+        before.result.expectOk().expectBool(false);
+
+        chain.mineBlock([
+            Tx.contractCall('vault-factory', 'create-vault', [], wallet1.address)
+        ]);
+
+        let after = chain.callReadOnlyFn('vault-factory', 'has-vault', [types.principal(wallet1.address)], wallet1.address);
+        after.result.expectOk().expectBool(true);
+    },
+});
+
+Clarinet.test({
+    name: "Non-owner cannot call remove-vault",
+    async fn(chain: Chain, accounts: Map<string, Account>) {
+        const wallet1 = accounts.get('wallet_1')!;
+
+        chain.mineBlock([
+            Tx.contractCall('vault-factory', 'create-vault', [], wallet1.address)
+        ]);
+
+        let block = chain.mineBlock([
+            Tx.contractCall('vault-factory', 'remove-vault', [types.uint(1)], wallet1.address)
+        ]);
+
+        block.receipts[0].result.expectErr(types.uint(200)); // err-unauthorized
+    },
+});
+
+Clarinet.test({
+    name: "Owner can remove a vault; user can then create another",
+    async fn(chain: Chain, accounts: Map<string, Account>) {
+        const deployer = accounts.get('deployer')!;
+        const wallet1  = accounts.get('wallet_1')!;
+
+        chain.mineBlock([
+            Tx.contractCall('vault-factory', 'create-vault', [], wallet1.address)
+        ]);
+
+        // Owner removes the vault
+        let block = chain.mineBlock([
+            Tx.contractCall('vault-factory', 'remove-vault', [types.uint(1)], deployer.address)
+        ]);
+        block.receipts[0].result.expectOk();
+
+        // has-vault should now be false
+        let hasVault = chain.callReadOnlyFn('vault-factory', 'has-vault', [types.principal(wallet1.address)], wallet1.address);
+        hasVault.result.expectOk().expectBool(false);
+
+        // User can create a fresh vault
+        block = chain.mineBlock([
+            Tx.contractCall('vault-factory', 'create-vault', [], wallet1.address)
+        ]);
+        block.receipts[0].result.expectOk();
+    },
+});

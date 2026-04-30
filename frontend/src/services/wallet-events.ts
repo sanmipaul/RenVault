@@ -1,4 +1,6 @@
-export type WalletEvent = 
+import { logger } from '../utils/logger';
+
+export type WalletEvent =
   | 'connected'
   | 'disconnected'
   | 'accountChanged'
@@ -24,21 +26,21 @@ export class WalletEventEmitter {
     }
   }
 
-  emit(event: WalletEvent, ...args: any[]) {
+  emit(event: WalletEvent, ...args: unknown[]) {
     const callbacks = this.listeners.get(event);
     if (callbacks) {
       callbacks.forEach(callback => {
         try {
           callback(...args);
         } catch (error) {
-          console.error(`Error in ${event} listener:`, error);
+          logger.error(`Error in ${event} listener:`, error);
         }
       });
     }
   }
 
   once(event: WalletEvent, callback: Function) {
-    const wrapper = (...args: any[]) => {
+    const wrapper = (...args: unknown[]) => {
       callback(...args);
       this.off(event, wrapper);
     };

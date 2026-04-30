@@ -1,3 +1,4 @@
+import { logger } from '../utils/logger';
 import { useState, useCallback, useEffect } from 'react';
 import { useAppKit } from '@reown/appkit/react';
 import {
@@ -171,7 +172,7 @@ export const useCustomWalletModal = (
         return JSON.parse(stored);
       }
     } catch (e) {
-      console.warn('Failed to load recent wallets:', e);
+      logger.warn('Failed to load recent wallets:', e);
     }
     return [];
   }, []);
@@ -224,7 +225,7 @@ function saveRecentWallet(walletId: string): void {
     );
     localStorage.setItem('renvault_recent_wallets', JSON.stringify(updated));
   } catch (e) {
-    console.warn('Failed to save recent wallet:', e);
+    logger.warn('Failed to save recent wallet:', e);
   }
 }
 
@@ -234,11 +235,11 @@ function saveRecentWallet(walletId: string): void {
 function trackModalEvent(event: string, data?: Record<string, unknown>): void {
   try {
     // In production, this would send to analytics service
-    console.debug('[RenVault Modal Analytics]', event, data);
+    logger.debug('[RenVault Modal Analytics]', event, data);
 
     // Example: window.gtag?.('event', event, { ...data, category: 'wallet_modal' });
   } catch (e) {
-    console.warn('Failed to track modal event:', e);
+    logger.warn('Failed to track modal event:', e);
   }
 }
 
@@ -247,14 +248,14 @@ function trackModalEvent(event: string, data?: Record<string, unknown>): void {
  */
 function trackWalletSelection(event: WalletSelectionEvent): void {
   try {
-    console.debug('[RenVault Wallet Selection]', event);
+    logger.debug('[RenVault Wallet Selection]', event);
 
     // Example: window.gtag?.('event', 'wallet_selected', {
     //   wallet_id: event.walletId,
     //   source: event.source,
     // });
   } catch (e) {
-    console.warn('Failed to track wallet selection:', e);
+    logger.warn('Failed to track wallet selection:', e);
   }
 }
 

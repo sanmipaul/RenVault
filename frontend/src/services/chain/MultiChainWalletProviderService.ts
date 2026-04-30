@@ -4,7 +4,7 @@
  */
 
 import { ChainSwitchService } from './ChainSwitchService';
-import type { ChainType } from '../config/multi-chain-config';
+import type { ChainType } from '../../config/multi-chain-config';
 
 export interface WalletProvider {
   name: string;
@@ -105,7 +105,7 @@ export class MultiChainWalletProviderService {
         });
       }
     } catch (error) {
-      console.error('Error initializing wallet providers:', error);
+      logger.error('Error initializing wallet providers:', error);
     }
   }
 
@@ -158,7 +158,7 @@ export class MultiChainWalletProviderService {
         this.notifyListeners();
       }
     } catch (error) {
-      console.error(`Error connecting to ${chainType}:`, error);
+      logger.error(`Error connecting to ${chainType}:`, error);
       throw error;
     }
   }
@@ -207,7 +207,7 @@ export class MultiChainWalletProviderService {
         this.notifyListeners();
       }
     } catch (error) {
-      console.error('Error connecting to Stacks:', error);
+      logger.error('Error connecting to Stacks:', error);
       throw error;
     }
   }
@@ -347,7 +347,7 @@ export class MultiChainWalletProviderService {
       try {
         listener({ ...this.currentWallet });
       } catch (error) {
-        console.error('Error in wallet change listener:', error);
+        logger.error('Error in wallet change listener:', error);
       }
     });
   }
@@ -392,7 +392,7 @@ export const useMultiChainWallet = () => {
         setProviders(available);
       })
       .catch(err => {
-        setError(err.message);
+        setError(err instanceof Error ? err.message : 'Unknown error');
       });
 
     return () => {

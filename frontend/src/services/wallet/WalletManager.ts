@@ -1,20 +1,32 @@
 // services/wallet/WalletManager.ts
-import { WalletProvider, WalletProviderType } from '../../types/wallet';
+import { WalletProvider, WalletProviderType, StacksContractCallOptions, SignedTransactionResult, CoSigner, MultiSigConfig, MultiSigTransaction, WalletConnection } from '../../types/wallet';
 import { WalletProviderLoader } from './WalletProviderLoader';
+import { MultiSigWalletProvider } from './MultiSigWalletProvider';
 import { getRandomBytes } from '../../utils/crypto';
 import { encryptForStorage, decryptFromStorage } from '../../utils/encryption';
+import { logger } from '../../utils/logger';
 
 export class WalletManager {
   private providers: Map<WalletProviderType, WalletProvider> = new Map();
   private currentProvider: WalletProvider | null = null;
   private connectionState: { address: string; publicKey: string } | null = null;
-  private connectionCache: Map<string, { data: any; timestamp: number }> = new Map();
+  private connectionCache: Map<string, { data: WalletProvider; timestamp: number }> = new Map();
   private lazyLoadedProviders: Set<WalletProviderType> = new Set();
   private connectionTimeouts: Map<string, NodeJS.Timeout> = new Map();
   private readonly CACHE_TTL = 5 * 60 * 1000; // 5 minutes
   private readonly CONNECTION_TIMEOUT = 10000; // 10 seconds
 
+  private static readonly ALL_PROVIDER_TYPES: WalletProviderType[] = [
+    'leather', 'xverse', 'hiro', 'walletconnect', 'ledger', 'trezor', 'multisig'
+  ];
+
   constructor() {
+    // Mark all non-critical providers for lazy loading
+    WalletManager.ALL_PROVIDER_TYPES.forEach(type => {
+      if (type !== 'leather') {
+        this.lazyLoadedProviders.add(type);
+      }
+    });
     // Initialize critical providers immediately
     this.initializeCriticalProviders();
   }
@@ -25,7 +37,7 @@ export class WalletManager {
       const leatherProvider = await WalletProviderLoader.loadProvider('leather');
       this.providers.set('leather', leatherProvider);
     } catch (error) {
-      console.warn('Failed to load leather provider:', error);
+      logger.warn('Failed to load leather provider:', error);
     }
   }
 
@@ -61,13 +73,13 @@ export class WalletManager {
     return this.connectionState !== null;
   }
 
-  async connect(): Promise<any> {
+  async connect(): Promise<WalletConnection> {
     if (!this.currentProvider) {
       throw new Error('No provider selected');
     }
 
     // Check cache first
-    const cacheKey = `connection-${this.currentProvider.getType()}`;
+    const cacheKey = `connection-${this.currentProvider.id}`;
     const cached = this.connectionCache.get(cacheKey);
     if (cached && (Date.now() - cached.timestamp) < this.CACHE_TTL) {
       this.connectionState = cached.data;
@@ -77,6 +89,7 @@ export class WalletManager {
     // Set connection timeout
     const timeoutPromise = new Promise((_, reject) => {
       const timeout = setTimeout(() => {
+        this.connectionTimeouts.delete(cacheKey);
         reject(new Error('Connection timeout'));
       }, this.CONNECTION_TIMEOUT);
       this.connectionTimeouts.set(cacheKey, timeout);
@@ -89,7 +102,7 @@ export class WalletManager {
       ]);
 
       // Cache the result
-      this.connectionState = result;
+      this.connectionState = result as { address: string; publicKey: string } | null;
       this.connectionCache.set(cacheKey, { data: result, timestamp: Date.now() });
 
       // Clear timeout
@@ -133,7 +146,7 @@ export class WalletManager {
     keysToRemove.forEach(key => localStorage.removeItem(key));
   }
 
-  async signTransaction(tx: any): Promise<any> {
+  async signTransaction(tx: StacksContractCallOptions): Promise<SignedTransactionResult> {
     if (!this.currentProvider) {
       throw new Error('No provider selected');
     }
@@ -174,20 +187,25 @@ export class WalletManager {
       throw new Error('Password is required for recovery');
     }
 
-    const data = JSON.parse(backupData);
+    let data: { encryptedMnemonic: string; address: string; publicKey: string };
+    try {
+      data = JSON.parse(backupData);
+    } catch {
+      throw new Error('Invalid backup data: not valid JSON');
+    }
+
+    if (!data.encryptedMnemonic || !data.address || !data.publicKey) {
+      throw new Error('Invalid backup data: missing required fields');
+    }
 
     // Decrypt mnemonic using AES-GCM
-    const mnemonic = await this.decryptData(data.encryptedMnemonic, password);
+    await this.decryptData(data.encryptedMnemonic, password);
 
     // Restore wallet state
     this.connectionState = {
       address: data.address,
       publicKey: data.publicKey
     };
-
-    // Note: In production, the mnemonic should be used to derive keys
-    // and should never be stored in plain text
-    console.log('Wallet recovered successfully. Mnemonic available for key derivation.');
   }
 
   private generateMnemonic(): string {
@@ -224,7 +242,7 @@ export class WalletManager {
   }
 
   // Multi-Signature Methods
-  setupMultiSigWallet(threshold: number, coSigners: any[]): void {
+  setupMultiSigWallet(threshold: number, coSigners: CoSigner[]): void {
     const multiSigProvider = this.providers.get('multisig') as MultiSigWalletProvider;
     if (!multiSigProvider) {
       throw new Error('Multi-sig provider not available');
@@ -240,12 +258,12 @@ export class WalletManager {
     multiSigProvider.setupMultiSig(config);
   }
 
-  getMultiSigConfig(): any {
+  getMultiSigConfig(): MultiSigConfig | undefined {
     const multiSigProvider = this.providers.get('multisig') as MultiSigWalletProvider;
     return multiSigProvider?.getConfig();
   }
 
-  addCoSigner(coSigner: any): void {
+  addCoSigner(coSigner: CoSigner): void {
     const multiSigProvider = this.providers.get('multisig') as MultiSigWalletProvider;
     if (!multiSigProvider) {
       throw new Error('Multi-sig provider not available');
@@ -266,7 +284,7 @@ export class WalletManager {
     return multiSigProvider?.getPendingTransactions() || [];
   }
 
-  getMultiSigTransactionStatus(txId: string): any {
+  getMultiSigTransactionStatus(txId: string): MultiSigTransaction | undefined {
     const multiSigProvider = this.providers.get('multisig') as MultiSigWalletProvider;
     return multiSigProvider?.getTransactionStatus(txId);
   }
@@ -292,7 +310,7 @@ export class WalletManager {
   async preloadAllProviders(): Promise<void> {
     const preloadPromises = Array.from(this.lazyLoadedProviders).map(type =>
       this.lazyLoadProvider(type).catch(error =>
-        console.warn(`Failed to preload provider ${type}:`, error)
+        logger.warn(`Failed to preload provider ${type}:`, error)
       )
     );
     await Promise.all(preloadPromises);

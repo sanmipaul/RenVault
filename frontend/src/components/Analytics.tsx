@@ -8,8 +8,8 @@ interface AnalyticsProps {
 }
 
 export const Analytics: React.FC<AnalyticsProps> = ({ userId }) => {
-  const [stats, setStats] = useState<any>(null);
-  const [walletStats, setWalletStats] = useState<any>(null);
+  const [stats, setStats] = useState<Record<string, unknown> | null>(null);
+  const [walletStats, setWalletStats] = useState<Record<string, unknown> | null>(null);
   const [loading, setLoading] = useState(true);
   const [optOut, setOptOut] = useState(() => localStorage.getItem('analytics-opt-out') === 'true');
 
@@ -29,7 +29,7 @@ export const Analytics: React.FC<AnalyticsProps> = ({ userId }) => {
       setStats(statsData);
       setWalletStats(walletData);
     } catch (error) {
-      console.error('Failed to fetch analytics:', error);
+      logger.error('Failed to fetch analytics:', error);
     } finally {
       setLoading(false);
     }

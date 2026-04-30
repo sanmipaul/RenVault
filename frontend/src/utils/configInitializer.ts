@@ -1,4 +1,5 @@
-import { validateBrandingConfigDetailed } from './brandingValidator';
+import { logger } from './logger';
+import { validateBrandingConfig } from './brandingValidator';
 import { validateChainConfig } from './chainValidator';
 import { validateModalConfig } from './modalValidator';
 import { renvaultBranding, supportedChains, modalConfig } from '../config/walletconnect';
@@ -24,7 +25,7 @@ export const initializeConfiguration = (): boolean => {
   }
 
   if (errors.length > 0) {
-    console.error('Configuration initialization failed:', errors);
+    logger.error('Configuration initialization failed:', errors);
     return false;
   }
   return true;

@@ -212,9 +212,6 @@
     opacity: 1;
   }
 }
-  transition: background-color 0.2s;
-  position: relative;
-}
 
 .notification-item:hover {
   background: #f8fafc;

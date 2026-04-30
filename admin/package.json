@@ -1,6 +1,6 @@
 {
   "name": "renvault-admin",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "RenVault admin dashboard",
   "main": "server.js",
   "scripts": {
@@ -17,5 +17,18 @@
   },
   "devDependencies": {
     "nodemon": "^3.0.0"
-  }
+  },
+  "author": "RenVault Team",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sanmipaul/RenVault.git"
+  },
+  "homepage": "https://github.com/sanmipaul/RenVault#readme",
+  "keywords": [
+    "stacks",
+    "bitcoin",
+    "defi",
+    "clarity",
+    "renvault"
+  ]
 }

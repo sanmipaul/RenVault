@@ -1,4 +1,6 @@
 const express = require('express');
+const path = require('path');
+const fs = require('fs');
 const DataExporter = require('./dataExporter');
 const RecoveryManager = require('./recoveryManager');
 const BackupScheduler = require('./scheduler');
@@ -9,6 +11,14 @@ const recovery = new RecoveryManager();
 const scheduler = new BackupScheduler();
 
 app.use(express.json());
+
+// Sanitize a path segment supplied by the client (userId, filename, etc.).
+// path.basename strips any leading directory components (e.g. "../../etc/passwd"
+// → "passwd"), and the replace removes characters that have no place in a
+// safe filename, preventing traversal attacks across all file-system endpoints.
+function sanitizeSegment(segment) {
+  return path.basename(String(segment)).replace(/[^a-zA-Z0-9_.\-]/g, '_');
+}
 
 app.post('/api/backup/create', async (req, res) => {
   const { userAddresses } = req.body;
@@ -68,14 +78,14 @@ app.get('/api/backup/schedule/status', (req, res) => {
 // Wallet Backup Endpoints
 app.post('/api/wallet/backup', async (req, res) => {
   const { userId, encryptedBackup } = req.body;
-  
+
   if (!userId || !encryptedBackup) {
     return res.status(400).json({ error: 'User ID and encrypted backup required' });
   }
 
   try {
     // Store encrypted backup securely
-    const filename = `wallet-backup-${userId}-${Date.now()}.enc`;
+    const filename = `wallet-backup-${sanitizeSegment(userId)}-${Date.now()}.enc`;
     const filepath = path.join(__dirname, 'wallet-backups', filename);
     
     if (!fs.existsSync(path.dirname(filepath))) {
@@ -90,15 +100,30 @@ app.post('/api/wallet/backup', async (req, res) => {
   }
 });
 
+// The download route MUST be registered before /:userId.
+// Express matches routes in registration order; if /:userId came first,
+// GET /api/wallet/backup/download/foo would match with userId="download"
+// and never reach the download handler.
+app.get('/api/wallet/backup/download/:filename', (req, res) => {
+  const filename = sanitizeSegment(req.params.filename);
+  const filepath = path.join(__dirname, 'wallet-backups', filename);
+
+  if (!fs.existsSync(filepath)) {
+    return res.status(404).json({ error: 'Backup not found' });
+  }
+
+  res.download(filepath);
+});
+
 app.get('/api/wallet/backup/:userId', (req, res) => {
-  const { userId } = req.params;
-  
+  const userId = sanitizeSegment(req.params.userId);
+
   try {
     const backupDir = path.join(__dirname, 'wallet-backups');
     if (!fs.existsSync(backupDir)) {
       return res.json({ backups: [] });
     }
-    
+
     const backups = fs.readdirSync(backupDir)
       .filter(file => file.startsWith(`wallet-backup-${userId}-`))
       .map(file => {
@@ -111,22 +136,11 @@ app.get('/api/wallet/backup/:userId', (req, res) => {
         };
       })
       .sort((a, b) => b.created - a.created);
-    
+
     res.json({ backups });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
-});
-
-app.get('/api/wallet/backup/download/:filename', (req, res) => {
-  const { filename } = req.params;
-  const filepath = path.join(__dirname, 'wallet-backups', filename);
-  
-  if (!fs.existsSync(filepath)) {
-    return res.status(404).json({ error: 'Backup not found' });
-  }
-  
-  res.download(filepath);
 });
 
 // Multi-Signature Wallet Endpoints
@@ -146,7 +160,7 @@ app.post('/api/multisig/setup', (req, res) => {
       status: 'active'
     };
 
-    const filename = `multisig-${userId}.json`;
+    const filename = `multisig-${sanitizeSegment(userId)}.json`;
     const filepath = path.join(__dirname, 'multisig-wallets', filename);
     
     if (!fs.existsSync(path.dirname(filepath))) {
@@ -162,8 +176,8 @@ app.post('/api/multisig/setup', (req, res) => {
 });
 
 app.get('/api/multisig/:userId', (req, res) => {
-  const { userId } = req.params;
-  
+  const userId = sanitizeSegment(req.params.userId);
+
   try {
     const filepath = path.join(__dirname, 'multisig-wallets', `multisig-${userId}.json`);
     
@@ -210,7 +224,7 @@ app.post('/api/multisig/transaction', (req, res) => {
 });
 
 app.get('/api/multisig/transactions/:userId', (req, res) => {
-  const { userId } = req.params;
+  const userId = sanitizeSegment(req.params.userId);
   
   try {
     const txDir = path.join(__dirname, 'multisig-transactions');

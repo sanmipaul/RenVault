@@ -9,8 +9,14 @@ class BridgeManager {
   }
 
   async initiateBridge(fromChain, toChain, amount, userAddress) {
+    if (!this.supportedChains.includes(fromChain)) {
+      throw new Error('Unsupported source chain');
+    }
     if (!this.supportedChains.includes(toChain)) {
       throw new Error('Unsupported target chain');
+    }
+    if (typeof amount !== 'number' || amount <= 0) {
+      throw new Error('amount must be a positive number');
     }
 
     const txId = this.generateTxId();
@@ -61,7 +67,7 @@ class BridgeManager {
   }
 
   generateTxId() {
-    return crypto.randomBytes(32);
+    return crypto.randomBytes(32).toString('hex');
   }
 
   getTransactionStatus(txId) {

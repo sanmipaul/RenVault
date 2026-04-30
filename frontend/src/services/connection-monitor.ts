@@ -24,7 +24,7 @@ export class ConnectionMonitor {
       this.lastCheck = Date.now();
     } catch (error) {
       this.isHealthy = false;
-      console.error('Health check failed:', error);
+      logger.error('Health check failed:', error);
     }
   }
 

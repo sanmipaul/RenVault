@@ -11,6 +11,9 @@ export class TransactionQueue {
   private queue: QueuedTransaction[] = [];
 
   enqueue(id: string, details: TransactionDetails, priority: number = 0): void {
+    if (this.contains(id)) {
+      throw new Error(`Transaction with id "${id}" is already queued`);
+    }
     this.queue.push({ id, details, timestamp: Date.now(), priority });
     this.queue.sort((a, b) => b.priority - a.priority);
   }
@@ -21,6 +24,21 @@ export class TransactionQueue {
 
   peek(): QueuedTransaction | undefined {
     return this.queue[0];
+  }
+
+  contains(id: string): boolean {
+    return this.queue.some(item => item.id === id);
+  }
+
+  remove(id: string): boolean {
+    const index = this.queue.findIndex(item => item.id === id);
+    if (index === -1) return false;
+    this.queue.splice(index, 1);
+    return true;
+  }
+
+  getAll(): ReadonlyArray<{ id: string; details: TransactionDetails; timestamp: number; priority: number }> {
+    return this.queue;
   }
 
   size(): number {

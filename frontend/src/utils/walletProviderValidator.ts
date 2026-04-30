@@ -8,50 +8,27 @@ export interface WalletProvider {
   disconnect: () => Promise<void>;
 }
 
-export interface WalletProviderValidationResult {
-  valid: boolean;
-  errors: string[];
-}
-
-export const validateWalletProvider = (provider: any): provider is WalletProvider => {
+export const validateWalletProvider = (provider: unknown): provider is WalletProvider => {
   return !!(
     provider &&
-    typeof provider.id === 'string' &&
-    typeof provider.name === 'string' &&
-    typeof provider.connect === 'function' &&
-    typeof provider.disconnect === 'function'
+    typeof provider === 'object' &&
+    typeof (provider as Record<string, unknown>).id === 'string' &&
+    typeof (provider as Record<string, unknown>).name === 'string' &&
+    typeof (provider as Record<string, unknown>).connect === 'function' &&
+    typeof (provider as Record<string, unknown>).disconnect === 'function'
   );
 };
 
-export const validateWalletProviderDetailed = (provider: any): WalletProviderValidationResult => {
-  const errors: string[] = [];
-
-  if (!provider) {
-    errors.push('Provider is null or undefined');
-    return { valid: false, errors };
-  }
-  if (typeof provider.id !== 'string' || provider.id.trim() === '') errors.push('Provider id must be a non-empty string');
-  if (typeof provider.name !== 'string' || provider.name.trim() === '') errors.push('Provider name must be a non-empty string');
-  if (typeof provider.connect !== 'function') errors.push('Provider must implement connect()');
-  if (typeof provider.disconnect !== 'function') errors.push('Provider must implement disconnect()');
-  if (provider.homepage && !isValidHttpsUrl(provider.homepage)) {
-    errors.push('Provider homepage must be a valid HTTPS URL');
-  }
-
-  return { valid: errors.length === 0, errors };
-};
-
-export const safeConnectWallet = async (provider: any): Promise<boolean> => {
-  const validation = validateWalletProviderDetailed(provider);
-  if (!validation.valid) {
-    console.error('Invalid wallet provider:', validation.errors);
+export const safeConnectWallet = async (provider: unknown): Promise<boolean> => {
+  if (!validateWalletProvider(provider)) {
+    logger.error('Invalid wallet provider');
     return false;
   }
   try {
     await provider.connect();
     return true;
   } catch (error) {
-    console.error('Wallet connection failed:', error);
+    logger.error('Wallet connection failed:', error);
     return false;
   }
 };

@@ -1,3 +1,4 @@
+import { logger } from '../utils/logger';
 import React, { useState, useEffect } from 'react';
 import NotificationService from '../services/notificationService';
 import { WalletKitService } from '../services/walletkit-service';
@@ -13,7 +14,7 @@ interface Notification {
   read: boolean;
   priority?: 'low' | 'medium' | 'high';
   actions?: string[];
-  data?: any;
+  data?: Record<string, unknown>;
 }
 
 interface NotificationCenterProps {
@@ -46,7 +47,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
     const saved = localStorage.getItem(`notifications_${userId}`);
     if (saved) {
       const parsed = JSON.parse(saved);
-      setNotifications(parsed.map((n: any) => ({
+      setNotifications(parsed.map((n: Omit<Notification, 'timestamp'> & { timestamp: string }) => ({
         ...n,
         timestamp: new Date(n.timestamp)
       })));
@@ -73,38 +74,38 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
     const saved = localStorage.getItem(`notifications_${userId}`);
     if (saved) {
       const parsed = JSON.parse(saved);
-      const updated = parsed.map((n: any) =>
+      const updated = parsed.map((n: Notification) =>
         n.id === id ? { ...n, read: true } : n
       );
       localStorage.setItem(`notifications_${userId}`, JSON.stringify(updated));
     }
   };
 
-  const handleAction = async (notificationId: string, action: string, data: any) => {
+  const handleAction = async (notificationId: string, action: string, data: Record<string, unknown>) => {
     try {
       if (action === 'Approve') {
         if (data.proposalId) {
           // This is a session proposal
           // In a real app, we'd need to get the actual proposal object
           // For now, we'll assume we have enough data or the service can handle it
-          console.log('Approving session:', data.proposalId);
+          logger.info('Approving session:', data.proposalId);
           // To keep it simple for this task, we'll just log it.
           // Implementing the full approval flow would require more state management.
         } else if (data.requestId) {
-          console.log('Approving request:', data.requestId);
+          logger.info('Approving request:', data.requestId);
         }
       } else if (action === 'Reject') {
         if (data.proposalId) {
-          console.log('Rejecting session:', data.proposalId);
+          logger.info('Rejecting session:', data.proposalId);
         } else if (data.requestId) {
-          console.log('Rejecting request:', data.requestId);
+          logger.info('Rejecting request:', data.requestId);
         }
       }
       
       // Mark as read after action
       markAsRead(notificationId);
     } catch (error) {
-      console.error(`Failed to handle action ${action}:`, error);
+      logger.error(`Failed to handle action ${action}:`, error);
     }
   };
 

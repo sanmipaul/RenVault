@@ -104,6 +104,7 @@ class PriceValidator {
   }
 
   setThreshold(type, value) {
+    if (typeof value !== 'number' || value < 0) throw new Error('threshold value must be a non-negative number');
     if (this.thresholds.hasOwnProperty(type)) {
       this.thresholds[type] = value;
       return true;
@@ -136,6 +137,7 @@ class PriceValidator {
     
     const returns = [];
     for (let i = 1; i < prices.length; i++) {
+      if (prices[i-1] === 0) continue;
       returns.push((prices[i] - prices[i-1]) / prices[i-1]);
     }
 
@@ -147,10 +149,11 @@ class PriceValidator {
 
   calculateTrend(prices) {
     if (prices.length < 2) return 0;
-    
+
     const first = prices[0];
     const last = prices[prices.length - 1];
-    
+
+    if (first === 0) return 0;
     return (last - first) / first;
   }
 

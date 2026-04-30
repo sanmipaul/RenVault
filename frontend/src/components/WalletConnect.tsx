@@ -1,3 +1,4 @@
+import { logger } from '../utils/logger';
 import React, { useState } from 'react';
 import { useWallet } from '../hooks/useWallet';
 import ProviderSelector from './ProviderSelector';
@@ -10,7 +11,7 @@ export const WalletConnect: React.FC = () => {
     try {
       await connect();
     } catch (err) {
-      console.error('Connection failed:', err);
+      logger.error('Connection failed:', err);
     }
   };
 
@@ -18,7 +19,7 @@ export const WalletConnect: React.FC = () => {
     try {
       await disconnect();
     } catch (err) {
-      console.error('Disconnect failed:', err);
+      logger.error('Disconnect failed:', err);
     }
   };
 

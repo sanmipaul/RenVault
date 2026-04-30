@@ -1,12 +1,4 @@
-import { isValidHttpsUrl, extractDomain } from '../utils/urlValidator';
-
-const TRUSTED_DOWNLOAD_DOMAINS = [
-  'chrome.google.com',
-  'addons.mozilla.org',
-  'apps.apple.com',
-  'microsoftedge.microsoft.com',
-  'play.google.com',
-];
+import { isValidStacksAddress } from '../utils/stacksAddress';
 
 export class WalletSecurityValidator {
   private trustedDomains = ['renvault.app', 'localhost'];
@@ -19,7 +11,7 @@ export class WalletSecurityValidator {
   }
 
   isValidAddress(address: string): boolean {
-    return address.startsWith('SP') || address.startsWith('ST');
+    return isValidStacksAddress(address);
   }
 
   isTrustedOrigin(origin: string): boolean {
@@ -42,7 +34,7 @@ export class WalletSecurityValidator {
     return this.suspiciousPatterns.some(pattern => lower.includes(pattern));
   }
 
-  validateTransaction(tx: any): {valid: boolean; warnings: string[]} {
+  validateTransaction(tx: { amount?: number; recipient?: string }): {valid: boolean; warnings: string[]} {
     const warnings: string[] = [];
 
     if (!tx.amount || tx.amount <= 0) {

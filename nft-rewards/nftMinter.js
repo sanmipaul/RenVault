@@ -62,6 +62,7 @@ class NFTMinter {
   }
 
   transferToken(tokenId, fromAddress, toAddress) {
+    if (!toAddress || typeof toAddress !== 'string') throw new Error('toAddress is required');
     const token = this.mintedTokens.get(tokenId);
     if (!token || token.owner !== fromAddress) {
       return { success: false, error: 'Invalid transfer' };
@@ -95,7 +96,7 @@ class NFTMinter {
   }
 
   generateTxId() {
-    return '0x' + Math.random().toString(16).substr(2, 64);
+    return '0x' + require('crypto').randomBytes(32).toString('hex');
   }
 }
 

@@ -11,8 +11,9 @@ export const useWalletConnection = () => {
       setState(newState);
     });
 
-    const unsubConnect = walletEvents.on('connected', (data: any) => {
-      setAddress(data.address);
+    const unsubConnect = walletEvents.on('connected', (...args: unknown[]) => {
+      const data = args[0] as { address?: string } | undefined;
+      setAddress(data?.address ?? null);
     });
 
     const unsubDisconnect = walletEvents.on('disconnected', () => {
@@ -28,7 +29,14 @@ export const useWalletConnection = () => {
 
   const connect = async (walletType: string) => {
     walletState.setState('connecting');
-    // Implement connection logic
+    try {
+      const result = await walletState.connect(walletType);
+      walletState.setState('connected');
+      walletEvents.emit('connected', result);
+    } catch (error) {
+      walletState.setState('error');
+      walletEvents.emit('error', error);
+    }
   };
 
   const disconnect = () => {

@@ -3,7 +3,16 @@
  * Configures AppKit to support multiple chains (Stacks, Ethereum, Polygon, Arbitrum)
  */
 
-import { ChainConfig, ChainNamespace } from '@reown/appkit-core';
+type ChainNamespace = string;
+interface ChainConfig {
+  chainId: string;
+  chainNamespace: ChainNamespace;
+  name: string;
+  nativeCurrency: { name: string; symbol: string; decimals: number };
+  rpcUrl: string;
+  explorerUrl: string;
+  testnet: boolean;
+}
 import { StacksMainnet, StacksTestnet } from '@stacks/network';
 import { mainnet, polygon, arbitrum, sepolia } from 'viem/chains';
 

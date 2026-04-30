@@ -57,7 +57,8 @@ class LeaderboardManager {
   getUserRank(address) {
     const sorted = Array.from(this.users.values())
       .sort((a, b) => b.score - a.score);
-    return sorted.findIndex(user => user.address === address) + 1;
+    const index = sorted.findIndex(user => user.address === address);
+    return index === -1 ? null : index + 1;
   }
 }
 

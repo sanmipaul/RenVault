@@ -1,6 +1,4 @@
-import { isValidHttpsUrl, isValidDeepLinkUrl } from './urlValidator';
-
-export const validateConnection = (connection: any): boolean => {
+export const validateConnection = (connection: { address?: string; publicKey?: string } | null | undefined): boolean => {
   return !!(connection && connection.address && connection.publicKey);
 };
 

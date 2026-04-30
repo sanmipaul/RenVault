@@ -9,6 +9,9 @@ class StrategyExecutor {
   }
 
   async executeStrategy(userAddress, strategyType, amount) {
+    if (!userAddress || typeof userAddress !== 'string') throw new Error('userAddress is required');
+    if (!strategyType || typeof strategyType !== 'string') throw new Error('strategyType is required');
+    if (typeof amount !== 'number' || amount <= 0) throw new Error('amount must be a positive number');
     const strategy = {
       id: this.generateId(),
       userAddress,
@@ -93,6 +96,7 @@ class StrategyExecutor {
 
   calculateCurrentAllocation(strategies) {
     const total = strategies.reduce((sum, s) => sum + s.amount, 0);
+    if (total === 0) return { staking: 0, liquidity: 0, lending: 0 };
     const byType = strategies.reduce((acc, s) => {
       acc[s.strategyType] = (acc[s.strategyType] || 0) + s.amount;
       return acc;

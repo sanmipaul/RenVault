@@ -1,6 +1,7 @@
+import { logger } from './utils/logger';
 import React, { createContext, useContext, ReactNode, useEffect, useState } from 'react';
 import { useAppKitAccount } from '@reown/appkit/react';
-import { WalletProvider, WalletProviderType } from '../types/wallet';
+import { WalletProvider as WalletProviderBase, WalletProviderType } from '../types/wallet';
 import { WalletKitService } from '../services/walletkit-service';
 import NotificationService from '../services/notificationService';
 import SponsorshipService, { SponsorshipQuota } from '../services/SponsorshipService';
@@ -11,7 +12,7 @@ import { WalletFallbackManager } from '../services/wallet/WalletFallbackManager'
 import { WalletProviderLoader } from '../services/wallet/WalletProviderLoader';
 
 interface WalletContextType {
-  currentProvider: WalletProvider | null;
+  currentProvider: WalletProviderBase | null;
   selectedProviderType: WalletProviderType | null;
   setSelectedProvider: (type: WalletProviderType) => void;
   connect: (walletId?: string) => Promise<any>;
@@ -51,7 +52,11 @@ const WalletContext = createContext<WalletContextType | undefined>(undefined);
 
 export const WalletProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { address, isConnected, status } = useAppKitAccount();
-  const [userId] = useState('user-' + Math.random().toString(36).substring(7));
+  // Derive userId from the connected wallet address so it matches the key used
+  // in App.tsx and in localStorage (notifications_<address>).  Fall back to a
+  // stable session ID only when no address is available yet.
+  const [fallbackId] = useState('user-' + Math.random().toString(36).substring(7));
+  const userId = address ?? fallbackId;
   const [sponsorshipQuota, setSponsorshipQuota] = useState<SponsorshipQuota | null>(null);
   const [currentStacksAdapter, setCurrentStacksAdapter] = useState<StacksConnectorAdapter | null>(null);
   const [appKitWallets, setAppKitWallets] = useState<any[]>([]);
@@ -80,7 +85,7 @@ export const WalletProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
         return stopMonitoring;
       } catch (error) {
-        console.error('Failed to initialize AppKit wallets:', error);
+        logger.error('Failed to initialize AppKit wallets:', error);
       } finally {
         setIsLoadingWallets(false);
       }
@@ -134,32 +139,22 @@ export const WalletProvider: React.FC<{ children: ReactNode }> = ({ children }) 
           );
         });
 
-        const unsubUpdate = walletKitService.on('session_update', (data) => {
-          notificationService.notifySessionUpdate(data.topic, data.params.namespaces);
-        });
-
         const unsubDelete = walletKitService.on('session_delete', (data) => {
           notificationService.notifySessionDelete(data.topic);
         });
 
-        const unsubExpire = walletKitService.on('session_expire', (data) => {
-          notificationService.notifySessionExpire(data.topic);
-        });
-
         const unsubRequestExpiration = walletKitService.on('session_request_expire', (data) => {
-          notificationService.notifySessionExpire(data.topic);
+          notificationService.notifySessionExpire(String(data.id));
         });
 
         return () => {
           unsubProposal();
           unsubRequest();
-          unsubUpdate();
           unsubDelete();
-          unsubExpire();
           unsubRequestExpiration();
         };
       } catch (error) {
-        console.error('Failed to initialize WalletKit events:', error);
+        logger.error('Failed to initialize WalletKit events:', error);
         const notificationService = NotificationService.getInstance(userId);
         notificationService.notifyConnectionError(error instanceof Error ? error.message : 'Unknown connection error');
       }
@@ -177,9 +172,9 @@ export const WalletProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       
       // Attempt suggested action if available and recoverable
       if (error.recoverable && error.suggestedAction) {
-        console.log(`Attempting recovery for ${error.type}...`);
+        logger.info(`Attempting recovery for ${error.type}...`);
         error.suggestedAction().catch(err => {
-          console.error('Recovery action failed:', err);
+          logger.error('Recovery action failed:', err);
         });
       }
     });
@@ -188,7 +183,7 @@ export const WalletProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   }, []);
 
   const setSelectedProvider = (type: WalletProviderType) => {
-    console.log('Provider selection:', type);
+    logger.info('Provider selection:', type);
   };
 
   const connect = async (walletId?: string) => {

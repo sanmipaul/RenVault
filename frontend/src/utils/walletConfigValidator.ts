@@ -172,23 +172,9 @@ const validateDesktopConfig = (
   }
 };
 
-const validateSupportedPlatforms = (
-  supportedPlatforms: CustomWalletConfig['supportedPlatforms'],
-  errors: WalletConfigError[],
-  warnings: WalletConfigError[]
-): void => {
-  if (!supportedPlatforms || supportedPlatforms.length === 0) {
-    pushError(errors, 'supportedPlatforms', 'At least one platform must be supported');
-    return;
-  }
-  for (const platform of supportedPlatforms) {
-    if (!VALID_PLATFORMS.includes(platform)) {
-      pushError(
-        errors,
-        'supportedPlatforms',
-        `Unknown platform: "${platform}". Must be one of: ${VALID_PLATFORMS.join(', ')}`
-      );
-    }
+  const platforms = (config as any).supportedPlatforms;
+  if (!platforms || platforms.length === 0) {
+    errors.push({ field: 'supportedPlatforms', message: 'At least one platform must be supported', severity: 'error' });
   }
 };
 

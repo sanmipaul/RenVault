@@ -43,6 +43,7 @@ class ReferralManager {
   }
 
   processReferralReward(userAddress, transactionAmount) {
+    if (typeof transactionAmount !== 'number' || transactionAmount < 0) throw new Error('transactionAmount must be a non-negative number');
     const referrer = this.referrals.get(userAddress);
     if (!referrer) return { commission: 0 };
 
@@ -106,6 +107,9 @@ class ReferralManager {
     }
     
     if (newSettings.referrerCommission !== undefined) {
+      if (typeof newSettings.referrerCommission !== 'number' || newSettings.referrerCommission < 0) {
+        throw new Error('referrerCommission must be a non-negative number');
+      }
       if (newSettings.referrerCommission > this.settings.maxCommission) {
         throw new Error(`Commission cannot exceed ${this.settings.maxCommission}%`);
       }

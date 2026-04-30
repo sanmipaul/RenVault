@@ -29,7 +29,7 @@ export const SessionTestingComponent: React.FC<SessionTestingProps> = ({
       setCurrentTestSuite(testSuite);
       onTestComplete?.(testSuite);
     } catch (error) {
-      console.error('Test suite failed:', error);
+      logger.error('Test suite failed:', error);
       onTestError?.('Test suite execution failed');
     } finally {
       setIsRunning(false);

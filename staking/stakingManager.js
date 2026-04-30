@@ -11,6 +11,9 @@ class StakingManager {
   }
 
   stake(userAddress, amount) {
+    if (!Number.isFinite(amount) || !Number.isInteger(amount) || amount <= 0) {
+      throw new Error('Amount must be a positive integer (microSTX units)');
+    }
     if (amount < this.minStake) {
       throw new Error(`Minimum stake is ${this.minStake / 1000000} STX`);
     }
@@ -31,6 +34,9 @@ class StakingManager {
   }
 
   unstake(userAddress, amount) {
+    if (!Number.isFinite(amount) || !Number.isInteger(amount) || amount <= 0) {
+      throw new Error('Amount must be a positive integer (microSTX units)');
+    }
     const currentStake = this.stakes.get(userAddress) || 0;
     const stakeTime = this.stakeTimestamps.get(userAddress) || 0;
 
@@ -49,6 +55,12 @@ class StakingManager {
     if (newStake === 0) {
       this.stakes.delete(userAddress);
       this.stakeTimestamps.delete(userAddress);
+    } else {
+      // Reset the lock timer so the remaining stake must wait a full lock
+      // period before another unstake is permitted.  Without this reset a
+      // user who has held for one lock period could drain their entire
+      // position through rapid repeated partial unstakes.
+      this.stakeTimestamps.set(userAddress, Date.now());
     }
 
     return {
@@ -67,7 +79,7 @@ class StakingManager {
 
     const stakingDuration = Date.now() - stakeTime;
     const epochs = Math.floor(stakingDuration / this.lockPeriod);
-    const rewards = (stake * this.rewardRate * epochs) / 100;
+    const rewards = stake * this.rewardRate * epochs;
 
     return Math.floor(rewards);
   }
@@ -135,7 +147,7 @@ class StakingManager {
   }
 
   updateRewardRate(newRate) {
-    if (newRate < 0 || newRate > 0.2) { // Max 20%
+    if (newRate <= 0 || newRate > 0.2) { // Must be positive; max 20%
       throw new Error('Invalid reward rate');
     }
     this.rewardRate = newRate;
@@ -143,6 +155,9 @@ class StakingManager {
   }
 
   updateMinStake(newMinStake) {
+    if (!Number.isFinite(newMinStake) || newMinStake <= 0 || !Number.isInteger(newMinStake)) {
+      throw new Error('Minimum stake must be a positive integer (microSTX units)');
+    }
     this.minStake = newMinStake;
     return this.minStake;
   }

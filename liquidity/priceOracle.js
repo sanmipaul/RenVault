@@ -28,8 +28,11 @@ class PriceOracle {
   }
 
   calculatePoolPrice(poolId, reserveA, reserveB) {
-    if (!reserveA || reserveA <= 0) {
+    if (typeof reserveA !== 'number' || reserveA <= 0) {
       throw new Error('reserveA must be a positive number to calculate pool price');
+    }
+    if (typeof reserveB !== 'number' || reserveB < 0) {
+      throw new Error('reserveB must be a non-negative number to calculate pool price');
     }
     return reserveB / reserveA;
   }

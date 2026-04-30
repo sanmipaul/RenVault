@@ -1,7 +1,7 @@
 // services/wallet/TrezorWalletProvider.ts
 import TrezorConnect from '@trezor/connect-web';
 import { BaseWalletProvider } from './BaseWalletProvider';
-import { WalletConnection } from '../../types/wallet';
+import { WalletConnection, StacksContractCallOptions, SignedTransactionResult } from '../../types/wallet';
 import { WalletError, WalletErrorCode } from '../../utils/wallet-errors';
 
 export class TrezorWalletProvider extends BaseWalletProvider {
@@ -13,12 +13,13 @@ export class TrezorWalletProvider extends BaseWalletProvider {
     try {
       await TrezorConnect.init({
         manifest: {
+          appName: 'RenVault',
           email: 'developer@example.com',
           appUrl: 'https://renvault.com',
         },
       });
 
-      const result = await TrezorConnect.stacksGetAddress({
+      const result = await (TrezorConnect as any).stacksGetAddress({
         path: "m/44'/5757'/0'/0/0",
         showOnTrezor: true,
       });
@@ -32,7 +33,7 @@ export class TrezorWalletProvider extends BaseWalletProvider {
         throw new WalletError(WalletErrorCode.HARDWARE_WALLET_CONNECTION_FAILED, result.payload.error);
       }
     } catch (error) {
-      throw new WalletError(WalletErrorCode.HARDWARE_WALLET_NOT_FOUND, 'Failed to connect to Trezor: ' + error.message);
+      throw new WalletError(WalletErrorCode.HARDWARE_WALLET_NOT_FOUND, 'Failed to connect to Trezor: ' + (error as Error).message);
     }
   }
 
@@ -40,11 +41,11 @@ export class TrezorWalletProvider extends BaseWalletProvider {
     // Trezor doesn't require explicit disconnect
   }
 
-  async signTransaction(tx: any): Promise<any> {
+  async signTransaction(tx: StacksContractCallOptions): Promise<SignedTransactionResult> {
     // For Stacks transactions, we need to sign the serialized transaction
     const serializedTx = tx.serialize();
 
-    const result = await TrezorConnect.stacksSignTransaction({
+    const result = await (TrezorConnect as any).stacksSignTransaction({
       path: "m/44'/5757'/0'/0/0",
       transaction: serializedTx.toString('hex'),
     });
