@@ -6,7 +6,16 @@ import {
   isValidDownloadUrl,
   isValidMobileNativeUrl,
   isValidMobileUniversalUrl,
+  extractDomain,
 } from './urlValidator';
+
+const TRUSTED_STORE_DOMAINS = [
+  'chrome.google.com',
+  'addons.mozilla.org',
+  'apps.apple.com',
+  'microsoftedge.microsoft.com',
+  'play.google.com',
+];
 
 const VALID_PLATFORMS: SupportedPlatform[] = ['chrome', 'firefox', 'safari', 'edge', 'ios', 'android'];
 const SUPPORTED_CHAINS = ['stacks:1', 'stacks:2147483648'];
@@ -110,10 +119,16 @@ const validateDownloadUrls = (
   for (const platform of VALID_PLATFORMS) {
     const url = downloadUrls[platform];
     if (url !== undefined && url !== '') {
-      if (!isValidDownloadUrl(url)) {
-        pushError(errors, `downloadUrls.${platform}`, `Download URL for ${platform} must be a valid HTTPS URL`);
+        if (!isValidDownloadUrl(url)) {
+          pushError(errors, `downloadUrls.${platform}`, `Download URL for ${platform} must be a valid HTTPS URL`);
+        } else {
+          const domain = extractDomain(url);
+          const trusted = domain !== null && TRUSTED_STORE_DOMAINS.some(d => domain === d || domain.endsWith(`.${d}`));
+          if (!trusted) {
+            pushWarning(warnings, `downloadUrls.${platform}`, `Download URL for ${platform} is not from a recognised app store domain`);
+          }
+        }
       }
-    }
   }
 };
 
