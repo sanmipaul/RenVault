@@ -83,3 +83,31 @@ export const getUrlValidationError = (url: string, fieldName: string): string | 
 export const sanitizeUrl = (url: string): string => {
   return url.trim().replace(/\s+/g, '');
 };
+
+export const normalizeUrl = (url: string): string => {
+  const sanitized = sanitizeUrl(url);
+  try {
+    const parsed = new URL(sanitized);
+    // Remove trailing slash from pathname unless it's the root
+    if (parsed.pathname !== '/' && parsed.pathname.endsWith('/')) {
+      parsed.pathname = parsed.pathname.slice(0, -1);
+    }
+    return parsed.toString();
+  } catch {
+    return sanitized;
+  }
+};
+
+export const extractDomain = (url: string): string | null => {
+  try {
+    return new URL(url).hostname;
+  } catch {
+    return null;
+  }
+};
+
+export const isSameDomain = (urlA: string, urlB: string): boolean => {
+  const domainA = extractDomain(urlA);
+  const domainB = extractDomain(urlB);
+  return domainA !== null && domainA === domainB;
+};
