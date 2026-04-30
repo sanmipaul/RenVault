@@ -1,3 +1,7 @@
+import { logger } from '../utils/logger';
+
+const log = logger.child('WalletSessionManager');
+
 export class WalletSessionManager {
   private sessions: Map<string, any> = new Map();
   private readonly STORAGE_KEY = 'renvault_wallet_sessions';
@@ -6,7 +10,7 @@ export class WalletSessionManager {
     this.sessions.set(address, {
       ...data,
       timestamp: Date.now(),
-      lastActive: Date.now()
+      lastActive: Date.now(),
     });
     this.persistToStorage();
   }
@@ -37,7 +41,7 @@ export class WalletSessionManager {
     try {
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(Array.from(this.sessions.entries())));
     } catch (e) {
-      console.error('Failed to persist sessions:', e);
+      log.error('Failed to persist sessions', e instanceof Error ? e : new Error(String(e)));
     }
   }
 
@@ -47,20 +51,26 @@ export class WalletSessionManager {
       if (data) {
         const entries = JSON.parse(data);
         this.sessions = new Map(entries);
+        log.debug('Sessions loaded from storage', { count: this.sessions.size });
       }
     } catch (e) {
-      console.error('Failed to load sessions:', e);
+      log.error('Failed to load sessions', e instanceof Error ? e : new Error(String(e)));
     }
   }
 
   clearExpiredSessions(maxAge: number = 7 * 24 * 60 * 60 * 1000) {
     const now = Date.now();
+    let cleared = 0;
     for (const [address, session] of this.sessions.entries()) {
       if (now - session.timestamp > maxAge) {
         this.sessions.delete(address);
+        cleared++;
       }
     }
-    this.persistToStorage();
+    if (cleared > 0) {
+      log.info('Cleared expired sessions', { cleared });
+      this.persistToStorage();
+    }
   }
 }
 
