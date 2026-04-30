@@ -1,5 +1,6 @@
 export interface ConfigMetrics {
   validationErrors: number;
+  validationWarnings: number;
   validationSuccesses: number;
   cacheHits: number;
   cacheMisses: number;
@@ -7,11 +8,22 @@ export interface ConfigMetrics {
 }
 
 class ConfigMonitor {
-  private metrics: ConfigMetrics = { validationErrors: 0, validationSuccesses: 0, cacheHits: 0, cacheMisses: 0, lastValidation: 0 };
+  private metrics: ConfigMetrics = {
+    validationErrors: 0,
+    validationWarnings: 0,
+    validationSuccesses: 0,
+    cacheHits: 0,
+    cacheMisses: 0,
+    lastValidation: 0,
+  };
 
   recordValidationError(): void {
     this.metrics.validationErrors++;
     this.metrics.lastValidation = Date.now();
+  }
+
+  recordValidationWarning(): void {
+    this.metrics.validationWarnings++;
   }
 
   recordValidationSuccess(): void {
@@ -32,7 +44,14 @@ class ConfigMonitor {
   }
 
   reset(): void {
-    this.metrics = { validationErrors: 0, validationSuccesses: 0, cacheHits: 0, cacheMisses: 0, lastValidation: 0 };
+    this.metrics = {
+      validationErrors: 0,
+      validationWarnings: 0,
+      validationSuccesses: 0,
+      cacheHits: 0,
+      cacheMisses: 0,
+      lastValidation: 0,
+    };
   }
 }
 
