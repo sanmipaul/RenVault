@@ -51,7 +51,10 @@ const validateHomepage = (
   errors: WalletConfigError[],
   warnings: WalletConfigError[]
 ): void => {
-  if (!homepage) return;
+  if (!homepage) {
+    pushWarning(warnings, 'homepage', 'Wallet homepage is not set; consider adding one for discoverability');
+    return;
+  }
   if (!isValidWalletHomepage(homepage)) {
     pushError(errors, 'homepage', 'Wallet homepage must be a valid HTTPS URL');
   }
