@@ -1,3 +1,7 @@
+import { logger } from '../utils/logger';
+
+const log = logger.child('WalletPreferenceManager');
+
 export interface WalletPreferences {
   defaultWallet?: string;
   autoConnect: boolean;
@@ -12,7 +16,7 @@ export class WalletPreferenceManager {
     autoConnect: true,
     showNotifications: true,
     theme: 'auto',
-    language: 'en'
+    language: 'en',
   };
 
   loadPreferences() {
@@ -20,9 +24,10 @@ export class WalletPreferenceManager {
       const stored = localStorage.getItem(this.STORAGE_KEY);
       if (stored) {
         this.preferences = { ...this.preferences, ...JSON.parse(stored) };
+        log.debug('Preferences loaded', { preferences: this.preferences });
       }
     } catch (e) {
-      console.error('Failed to load preferences:', e);
+      log.error('Failed to load preferences', e instanceof Error ? e : new Error(String(e)));
     }
   }
 
@@ -30,8 +35,9 @@ export class WalletPreferenceManager {
     this.preferences = { ...this.preferences, ...prefs };
     try {
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.preferences));
+      log.debug('Preferences saved', { updated: Object.keys(prefs) });
     } catch (e) {
-      console.error('Failed to save preferences:', e);
+      log.error('Failed to save preferences', e instanceof Error ? e : new Error(String(e)));
     }
   }
 
@@ -60,9 +66,10 @@ export class WalletPreferenceManager {
       autoConnect: true,
       showNotifications: true,
       theme: 'auto',
-      language: 'en'
+      language: 'en',
     };
     localStorage.removeItem(this.STORAGE_KEY);
+    log.info('Preferences reset to defaults');
   }
 }
 
