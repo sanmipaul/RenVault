@@ -92,10 +92,12 @@ const validateMobileConfig = (
   errors: WalletConfigError[],
   warnings: WalletConfigError[]
 ): void => {
-  if (!mobile) return;
+  if (!mobile) {
+    pushError(errors, 'mobile', 'Mobile configuration is required');
+    return;
+  }
   if (mobile.native && !isValidMobileNativeUrl(mobile.native)) {
     pushError(errors, 'mobile.native', 'Mobile native URL must be a valid deep link (e.g. wallet://)');
-  }
   if (mobile.universal && !isValidMobileUniversalUrl(mobile.universal)) {
     pushError(errors, 'mobile.universal', 'Mobile universal URL must be a valid HTTPS URL');
   }
