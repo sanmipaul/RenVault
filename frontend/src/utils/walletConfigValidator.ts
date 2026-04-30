@@ -241,3 +241,17 @@ export const getErrorFields = (result: ValidationResult): string[] =>
 
 export const getWarningFields = (result: ValidationResult): string[] =>
   result.warnings.map(w => w.field);
+
+/**
+ * Strict mode: treats warnings as errors.
+ * Use this in CI or pre-deployment checks.
+ */
+export const validateWalletConfigStrict = (config: CustomWalletConfig): ValidationResult => {
+  const result = validateWalletConfig(config);
+  const promotedErrors: WalletConfigError[] = result.warnings.map(w => ({ ...w, severity: 'error' as const }));
+  return {
+    valid: result.valid && promotedErrors.length === 0,
+    errors: [...result.errors, ...promotedErrors],
+    warnings: [],
+  };
+};
