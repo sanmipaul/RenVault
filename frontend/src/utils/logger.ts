@@ -170,6 +170,7 @@ class Logger {
       minLevel: this.minLevel,
       bufferSize: this.bufferSize,
       enableBuffer: this.enableBuffer,
+      transports: this.transports,
       ...options,
       context: this.context ? `${this.context}:${context}` : context,
     });
