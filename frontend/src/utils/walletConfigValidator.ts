@@ -9,6 +9,31 @@ import {
 } from './urlValidator';
 
 const VALID_PLATFORMS: SupportedPlatform[] = ['chrome', 'firefox', 'safari', 'edge', 'ios', 'android'];
+const WALLET_ID_PATTERN = /^[a-z0-9-]+$/;
+const MAX_WALLET_NAME_LENGTH = 64;
+const MAX_WALLET_ID_LENGTH = 32;
+
+export const validateWalletId = (id: string): WalletConfigError[] => {
+  const errors: WalletConfigError[] = [];
+  if (!id || id.trim() === '') {
+    errors.push({ field: 'id', message: 'Wallet ID is required', severity: 'error' });
+  } else if (id.length > MAX_WALLET_ID_LENGTH) {
+    errors.push({ field: 'id', message: `Wallet ID must not exceed ${MAX_WALLET_ID_LENGTH} characters`, severity: 'error' });
+  } else if (!WALLET_ID_PATTERN.test(id)) {
+    errors.push({ field: 'id', message: 'Wallet ID must contain only lowercase letters, numbers, and hyphens', severity: 'error' });
+  }
+  return errors;
+};
+
+export const validateWalletName = (name: string): WalletConfigError[] => {
+  const errors: WalletConfigError[] = [];
+  if (!name || name.trim() === '') {
+    errors.push({ field: 'name', message: 'Wallet name is required', severity: 'error' });
+  } else if (name.length > MAX_WALLET_NAME_LENGTH) {
+    errors.push({ field: 'name', message: `Wallet name must not exceed ${MAX_WALLET_NAME_LENGTH} characters`, severity: 'error' });
+  }
+  return errors;
+};
 
 const pushError = (
   errors: WalletConfigError[],
@@ -150,15 +175,11 @@ export const validateWalletConfig = (config: CustomWalletConfig): ValidationResu
   const errors: WalletConfigError[] = [];
   const warnings: WalletConfigError[] = [];
 
-  if (!config.id || config.id.trim() === '') {
-    pushError(errors, 'id', 'Wallet ID is required');
-  } else if (!/^[a-z0-9-]+$/.test(config.id)) {
-    pushError(errors, 'id', 'Wallet ID must contain only lowercase letters, numbers, and hyphens');
-  }
+  const idErrors = validateWalletId(config.id);
+  errors.push(...idErrors);
 
-  if (!config.name || config.name.trim() === '') {
-    pushError(errors, 'name', 'Wallet name is required');
-  }
+  const nameErrors = validateWalletName(config.name);
+  errors.push(...nameErrors);
 
   validateImageUrl(config.imageUrl, errors, warnings);
   validateHomepage(config.homepage, errors, warnings);
