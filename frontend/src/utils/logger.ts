@@ -39,6 +39,7 @@ export interface LoggerOptions {
   context?: string;
   bufferSize?: number;
   enableBuffer?: boolean;
+  transports?: LogTransport[];
 }
 
 const LEVEL_NAMES: Record<LogLevel, string> = {
@@ -59,12 +60,22 @@ class Logger {
   private buffer: LogEntry[] = [];
   private bufferSize: number;
   private enableBuffer: boolean;
+  private transports: LogTransport[];
 
   constructor(options: LoggerOptions = {}) {
     this.minLevel = options.minLevel ?? (environment.isDev ? DEFAULT_MIN_LEVEL_DEV : DEFAULT_MIN_LEVEL_PROD);
     this.context = options.context;
     this.bufferSize = options.bufferSize ?? DEFAULT_BUFFER_SIZE;
     this.enableBuffer = options.enableBuffer ?? true;
+    this.transports = options.transports ?? [new ConsoleTransport()];
+  }
+
+  addTransport(transport: LogTransport): void {
+    this.transports.push(transport);
+  }
+
+  removeTransports(): void {
+    this.transports = [];
   }
 
   setMinLevel(level: LogLevel): void {
@@ -105,32 +116,35 @@ class Logger {
     };
   }
 
+  private dispatch(entry: LogEntry): void {
+    this.record(entry);
+    for (const transport of this.transports) {
+      try {
+        transport.write(entry);
+      } catch {
+        // never let a transport crash the app
+      }
+    }
+  }
+
   debug(message: string, data?: unknown): void {
     if (!this.shouldLog(LogLevel.DEBUG)) return;
-    const entry = this.buildEntry(LogLevel.DEBUG, message, data);
-    this.record(entry);
-    console.debug(this.formatMessage('DEBUG', message), data !== undefined ? data : '');
+    this.dispatch(this.buildEntry(LogLevel.DEBUG, message, data));
   }
 
   info(message: string, data?: unknown): void {
     if (!this.shouldLog(LogLevel.INFO)) return;
-    const entry = this.buildEntry(LogLevel.INFO, message, data);
-    this.record(entry);
-    console.log(this.formatMessage('INFO', message), data !== undefined ? data : '');
+    this.dispatch(this.buildEntry(LogLevel.INFO, message, data));
   }
 
   warn(message: string, data?: unknown): void {
     if (!this.shouldLog(LogLevel.WARN)) return;
-    const entry = this.buildEntry(LogLevel.WARN, message, data);
-    this.record(entry);
-    console.warn(this.formatMessage('WARN', message), data !== undefined ? data : '');
+    this.dispatch(this.buildEntry(LogLevel.WARN, message, data));
   }
 
   error(message: string, error?: Error, data?: unknown): void {
     if (!this.shouldLog(LogLevel.ERROR)) return;
-    const entry = this.buildEntry(LogLevel.ERROR, message, data, error);
-    this.record(entry);
-    console.error(this.formatMessage('ERROR', message), error, data !== undefined ? data : '');
+    this.dispatch(this.buildEntry(LogLevel.ERROR, message, data, error));
   }
 
   getBuffer(): ReadonlyArray<LogEntry> {
