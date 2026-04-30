@@ -228,6 +228,22 @@ class Logger {
     this.minLevel = LogLevel.SILENT;
   }
 
+  getLogStats(): Record<string, number> {
+    const stats: Record<string, number> = {
+      DEBUG: 0, INFO: 0, WARN: 0, ERROR: 0,
+    };
+    for (const entry of this.buffer) {
+      stats[entry.levelName] = (stats[entry.levelName] ?? 0) + 1;
+    }
+    return stats;
+  }
+
+  getErrorRate(): number {
+    if (this.buffer.length === 0) return 0;
+    const errors = this.buffer.filter(e => e.level === LogLevel.ERROR).length;
+    return errors / this.buffer.length;
+  }
+
   reset(): void {
     this.minLevel = environment.isDev ? DEFAULT_MIN_LEVEL_DEV : DEFAULT_MIN_LEVEL_PROD;
     this.buffer = [];
