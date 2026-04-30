@@ -1,4 +1,8 @@
-export type WalletEvent = 
+import { logger } from '../utils/logger';
+
+const log = logger.child('WalletEventEmitter');
+
+export type WalletEvent =
   | 'connected'
   | 'disconnected'
   | 'accountChanged'
@@ -13,7 +17,6 @@ export class WalletEventEmitter {
       this.listeners.set(event, new Set());
     }
     this.listeners.get(event)!.add(callback);
-
     return () => this.off(event, callback);
   }
 
@@ -31,7 +34,7 @@ export class WalletEventEmitter {
         try {
           callback(...args);
         } catch (error) {
-          console.error(`Error in ${event} listener:`, error);
+          log.error(`Error in ${event} listener`, error instanceof Error ? error : new Error(String(error)));
         }
       });
     }
