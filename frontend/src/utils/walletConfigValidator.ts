@@ -65,7 +65,14 @@ const validateDownloadUrls = (
   errors: WalletConfigError[],
   warnings: WalletConfigError[]
 ): void => {
-  if (!downloadUrls) return;
+  if (!downloadUrls) {
+    pushWarning(warnings, 'downloadUrls', 'No download URLs configured; users may not be able to install the wallet');
+    return;
+  }
+  const configuredPlatforms = VALID_PLATFORMS.filter(p => downloadUrls[p]);
+  if (configuredPlatforms.length === 0) {
+    pushWarning(warnings, 'downloadUrls', 'Download URLs object is empty; no install links will be shown');
+  }
   for (const platform of VALID_PLATFORMS) {
     const url = downloadUrls[platform];
     if (url !== undefined && url !== '') {
