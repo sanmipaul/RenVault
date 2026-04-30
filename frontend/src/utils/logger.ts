@@ -18,6 +18,22 @@ export interface LogEntry {
   timestamp: string;
 }
 
+export interface LogTransport {
+  write(entry: LogEntry): void;
+}
+
+export class ConsoleTransport implements LogTransport {
+  write(entry: LogEntry): void {
+    const prefix = `[${entry.timestamp}] [${entry.levelName}]${entry.context ? ` [${entry.context}]` : ''} ${entry.message}`;
+    switch (entry.level) {
+      case LogLevel.DEBUG: console.debug(prefix, entry.data ?? ''); break;
+      case LogLevel.INFO: console.log(prefix, entry.data ?? ''); break;
+      case LogLevel.WARN: console.warn(prefix, entry.data ?? ''); break;
+      case LogLevel.ERROR: console.error(prefix, entry.error, entry.data ?? ''); break;
+    }
+  }
+}
+
 export interface LoggerOptions {
   minLevel?: LogLevel;
   context?: string;
