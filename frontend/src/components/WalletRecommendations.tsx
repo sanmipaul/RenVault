@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { EducationalTooltip, InfoIcon } from './modal/EducationalTooltips';
+import { isValidImageUrlStrict, isValidHttpsUrl } from '../utils/urlValidator';
 
 interface WalletInfo {
   id: string;
@@ -93,6 +94,9 @@ const WalletRecommendations: React.FC<WalletRecommendationsProps> = ({
           (w) => w.userType === filterByUserType || w.userType === 'all'
         );
 
+  const safeLogoUrl = (url: string) => isValidImageUrlStrict(url) ? url : '';
+  const safeDownloadUrl = (url: string) => isValidHttpsUrl(url) ? url : '#';
+
   const handleWalletSelect = (walletId: string) => {
     // Save to recent wallets
     const updated = [walletId, ...recentWallets.filter((id) => id !== walletId)].slice(0, 3);
@@ -154,8 +158,8 @@ const WalletRecommendations: React.FC<WalletRecommendationsProps> = ({
           >
             <div className="renvault-wallet-item__icon">
               <img
-                src={wallet.logoUrl}
-                alt={wallet.name}
+                src={safeLogoUrl(wallet.logoUrl)}
+                alt={`${wallet.name} logo`}
                 onError={(e) => {
                   (e.target as HTMLImageElement).style.display = 'none';
                   const parent = (e.target as HTMLImageElement).parentElement;

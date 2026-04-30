@@ -3,6 +3,8 @@
  * Defines Stacks-specific wallets: Hiro, Leather, and Xverse
  */
 
+export type SupportedPlatform = 'chrome' | 'firefox' | 'safari' | 'edge' | 'ios' | 'android';
+
 export interface CustomWalletConfig {
   id: string;
   name: string;
@@ -11,6 +13,7 @@ export interface CustomWalletConfig {
   imageAlt?: string;
   homepage?: string;
   chains?: string[];
+  supportedPlatforms?: SupportedPlatform[];
   mobile: {
     native?: string;
     universal?: string;
@@ -41,6 +44,7 @@ export const stacksWallets: CustomWalletConfig[] = [
     imageAlt: 'Hiro Wallet Logo',
     homepage: 'https://wallet.hiro.so',
     chains: ['stacks:1'],
+    supportedPlatforms: ['chrome', 'firefox', 'safari', 'edge', 'ios', 'android'],
     mobile: {
       native: 'hiro://',
       universal: 'https://wallet.hiro.so/install',
@@ -66,6 +70,7 @@ export const stacksWallets: CustomWalletConfig[] = [
     imageAlt: 'Leather Wallet Logo',
     homepage: 'https://leather.io',
     chains: ['stacks:1'],
+    supportedPlatforms: ['chrome', 'firefox', 'safari', 'edge', 'ios', 'android'],
     mobile: {
       native: 'leather://',
       universal: 'https://leather.io/install',
@@ -91,6 +96,7 @@ export const stacksWallets: CustomWalletConfig[] = [
     imageAlt: 'Xverse Wallet Logo',
     homepage: 'https://www.xverse.app',
     chains: ['stacks:1'],
+    supportedPlatforms: ['chrome', 'firefox', 'safari', 'edge', 'ios', 'android'],
     mobile: {
       native: 'xverse://',
       universal: 'https://www.xverse.app',
@@ -129,7 +135,7 @@ export const getFeaturedWalletIds = (): string[] => {
  */
 export const getWalletDownloadUrl = (
   walletId: string,
-  platform: 'chrome' | 'firefox' | 'safari' | 'edge' | 'ios' | 'android'
+  platform: SupportedPlatform
 ): string | undefined => {
   const wallet = getWalletConfig(walletId);
   return wallet?.downloadUrls?.[platform];

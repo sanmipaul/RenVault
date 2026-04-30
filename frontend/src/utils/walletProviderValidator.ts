@@ -1,6 +1,9 @@
+import { isValidHttpsUrl } from './urlValidator';
+
 export interface WalletProvider {
   id: string;
   name: string;
+  homepage?: string;
   connect: () => Promise<void>;
   disconnect: () => Promise<void>;
 }

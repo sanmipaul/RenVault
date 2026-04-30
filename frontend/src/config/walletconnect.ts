@@ -2,6 +2,7 @@ import { logger } from '../utils/logger';
 import { environment } from './environment';
 import { stacksWallets, getFeaturedWalletIds } from './customWallets';
 import { validateWalletConfig } from '../utils/walletConfigValidator';
+import { isValidUrl } from '../utils/urlValidator';
 
 /**
  * RenVault Branding Configuration
@@ -72,6 +73,9 @@ export const walletConnectConfig = {
       : [renvaultBranding.logo],
   },
   relayUrl: 'wss://relay.walletconnect.org',
+  relayUrlValid: (() => {
+    try { new URL('wss://relay.walletconnect.org'); return true; } catch { return false; }
+  })(),
   termsConditionsUrl: renvaultBranding.termsUrl,
   privacyPolicyUrl: renvaultBranding.privacyUrl,
 
@@ -155,6 +159,9 @@ export const customWalletsConfig = {
     const validation = validateWalletConfig(wallet);
     if (!validation.valid) {
       logger.error(`Wallet ${wallet.id} validation failed:`, validation.errors);
+    }
+    if (validation.warnings && validation.warnings.length > 0) {
+      console.warn(`Wallet ${wallet.id} validation warnings:`, validation.warnings);
     }
     return {
       id: wallet.id,

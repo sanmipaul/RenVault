@@ -23,6 +23,12 @@ export class WalletSecurityValidator {
     }
   }
 
+  isTrustedDownloadUrl(url: string): boolean {
+    if (!isValidHttpsUrl(url)) return false;
+    const domain = extractDomain(url);
+    return domain !== null && TRUSTED_DOWNLOAD_DOMAINS.some(d => domain === d || domain.endsWith(`.${d}`));
+  }
+
   checkSuspiciousActivity(url: string): boolean {
     const lower = url.toLowerCase();
     return this.suspiciousPatterns.some(pattern => lower.includes(pattern));

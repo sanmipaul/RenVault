@@ -1,5 +1,6 @@
 import { logger } from './logger';
 import { environment } from '../config/environment';
+import { isValidHttpsUrl, isValidUrl } from './urlValidator';
 
 export interface EnvironmentValidation {
   isValid: boolean;
@@ -21,6 +22,12 @@ export const validateEnvironmentVariables = (): EnvironmentValidation => {
 
   if (!environment.walletConnect.appUrl) {
     warnings.push('REACT_APP_URL is not set, using default');
+  } else if (!isValidUrl(environment.walletConnect.appUrl)) {
+    errors.push('REACT_APP_URL is not a valid URL');
+  }
+
+  if (environment.walletConnect.appIcon && !isValidUrl(environment.walletConnect.appIcon)) {
+    errors.push('REACT_APP_ICON must be a valid URL when set');
   }
 
   if (
