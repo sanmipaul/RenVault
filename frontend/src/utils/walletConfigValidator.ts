@@ -199,6 +199,16 @@ export const validateWalletConfig = (config: CustomWalletConfig): ValidationResu
   errors.push(...validateWalletId(config.id));
   errors.push(...validateWalletName(config.name));
 
+  if (!config.description || config.description.trim() === '') {
+    pushWarning(warnings, 'description', 'Wallet description is not set; consider adding one for user clarity');
+  } else if (config.description.length > 256) {
+    pushWarning(warnings, 'description', 'Wallet description exceeds 256 characters and may be truncated in the UI');
+  }
+
+  if (!config.imageAlt || config.imageAlt.trim() === '') {
+    pushWarning(warnings, 'imageAlt', 'Wallet image alt text is not set; this reduces accessibility');
+  }
+
   validateImageUrl(config.imageUrl, errors, warnings);
   validateHomepage(config.homepage, errors, warnings);
   validateChains(config.chains, errors, warnings);
