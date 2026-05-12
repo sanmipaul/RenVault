@@ -35,6 +35,8 @@ export interface TransactionDetails {
   functionArgs: ClarityValue[];
   amount: number;
   fee?: number;
+  estimatedFee?: number;
+  feePriority?: 'low' | 'medium' | 'high';
   network: string;
   isSponsored?: boolean;
   sponsorAddress?: string;
