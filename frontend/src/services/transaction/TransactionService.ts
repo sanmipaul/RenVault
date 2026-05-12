@@ -249,7 +249,8 @@ export class TransactionService {
       details.functionName &&
       details.functionArgs &&
       details.amount &&
-      details.amount > 0
+      details.amount > 0 &&
+      (details.fee === undefined || (details.fee >= 0 && Number.isInteger(details.fee)))
     );
   }
 
