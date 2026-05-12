@@ -4,6 +4,14 @@ import { isValidStacksPrincipal } from './stacksAddress';
 export const MIN_FEE_MICRO_STX = 180;
 export const MAX_FEE_MICRO_STX = 500_000_000;
 export const DEFAULT_FEE_PRIORITY = 'medium' as const;
+
+export type FeePriority = 'low' | 'medium' | 'high';
+
+export const FEE_PRIORITY_LABELS: Record<FeePriority, string> = {
+  low: 'Slow (Low Fee)',
+  medium: 'Standard (Medium Fee)',
+  high: 'Fast (High Fee)',
+};
 export const validateTransactionAmount = (amount: number): boolean => {
   return amount > 0 && amount <= 1000000 && Number.isFinite(amount);
 };
