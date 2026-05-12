@@ -40,7 +40,10 @@ export class TransactionErrorHandler {
       return ContractErrorMapper.toStatusMessage(error, contractName);
     }
 
-    if (error instanceof Error) return error.message;
+    if (error instanceof Error) {
+      if (this.isFeeError(error)) return `Fee error: ${error.message}`;
+      return error.message;
+    }
     return 'Unknown error occurred';
   }
 }
