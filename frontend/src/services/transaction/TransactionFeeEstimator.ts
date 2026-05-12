@@ -15,6 +15,7 @@ export interface FeeEstimationOptions {
   transactionSizeBytes?: number;
   networkCongestion?: number; // 0-1 scale
   functionArgsCount?: number; // number of clarity args affects size
+  memoLength?: number; // optional memo adds bytes
 }
 
 const BASE_FEE = 180; // minimum fee in microSTX
