@@ -63,4 +63,12 @@ export class TransactionFeeEstimator {
   isStale(estimate: FeeEstimate, maxAgeMs: number = 30_000): boolean {
     return Date.now() - estimate.estimatedAt > maxAgeMs;
   }
+
+  estimateForHighCongestion(options: FeeEstimationOptions = {}): FeeEstimate {
+    return this.estimateFee({ ...options, networkCongestion: 0.9 });
+  }
+
+  estimateForLowCongestion(options: FeeEstimationOptions = {}): FeeEstimate {
+    return this.estimateFee({ ...options, networkCongestion: 0.1 });
+  }
 }
