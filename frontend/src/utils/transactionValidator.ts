@@ -17,6 +17,11 @@ export const validateContractName = (name: string): boolean => {
   return /^[a-z][a-z0-9-]{0,39}$/.test(name);
 };
 
+export const validateTransactionFee = (fee: number | undefined): boolean => {
+  if (fee === undefined) return true; // fee is optional
+  return Number.isInteger(fee) && fee >= MIN_FEE_MICRO_STX && fee <= MAX_FEE_MICRO_STX;
+};
+
 export const validateTransactionDetails = (details: TransactionDetails): string[] => {
   const errors: string[] = [];
   if (!details.contractAddress) errors.push('Contract address is required');
