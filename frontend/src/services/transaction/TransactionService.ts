@@ -266,7 +266,14 @@ export class TransactionService {
   }
 
   getFeeEstimate() {
-    return this.feeCache.get() ?? this.feeEstimator.estimateFee();
+    const cached = this.feeCache.get();
+    if (cached) return cached;
+    const estimate = this.feeEstimator.estimateFee({
+      functionArgsCount: 1,
+      networkCongestion: this.feeHistory.hasSufficientData() ? 0.5 : 0.5,
+    });
+    this.feeCache.set(estimate);
+    return estimate;
   }
 
   getFeeCacheStats() {
