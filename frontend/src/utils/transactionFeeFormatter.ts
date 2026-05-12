@@ -51,4 +51,8 @@ export class TransactionFeeFormatter {
     if (congestion < 0.7) return 'Medium congestion';
     return 'High congestion';
   }
+
+  static formatFeeWithCongestion(microSTX: number, congestion: number): string {
+    return `${this.formatForDisplay(microSTX)} (${this.formatCongestion(congestion)})`;
+  }
 }
