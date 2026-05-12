@@ -312,6 +312,7 @@ export class TransactionService {
       ...this.monitor.getMetrics(),
       successRate: this.monitor.getSuccessRate(),
       retryRate: this.monitor.getRetryRate(),
+      hasData: this.monitor.hasData(),
       ...this.getFeeMetrics(),
     };
   }
