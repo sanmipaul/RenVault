@@ -33,6 +33,11 @@ export const validateFeePriority = (priority: string | undefined): boolean => {
   return ['low', 'medium', 'high'].includes(priority);
 };
 
+export const isSponsoredFee = (fee: number | undefined): boolean => {
+  return fee === 0;
+};
+
+export const validateTransactionDetails = (details: TransactionDetails): string[] => {
   const errors: string[] = [];
   if (!details.contractAddress) errors.push('Contract address is required');
   if (!validateContractAddress(details.contractAddress)) errors.push('Invalid contract address');
