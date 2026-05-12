@@ -132,6 +132,13 @@ export class TransactionService {
       if (errors.length > 0) {
         throw new WalletError(WalletErrorCode.INVALID_TRANSACTION, `Validation failed: ${errors.join(', ')}`);
       }
+
+      // Validate the dynamic fee
+      const feeValidation = this.feeValidator.validate(dynamicFee, feeEstimate.recommended);
+      if (!feeValidation.valid) {
+        throw new WalletError(WalletErrorCode.INVALID_TRANSACTION, `Fee validation failed: ${feeValidation.errors.join(', ')}`);
+      }
+
       return details;
     } catch (error) {
       throw TransactionErrorHandler.handleError(error, 'Transaction preparation');
