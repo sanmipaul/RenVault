@@ -10,6 +10,10 @@ export class TransactionFeeFormatter {
     return Math.round(stx * 1_000_000);
   }
 
+  static isValidMicroSTX(value: number): boolean {
+    return Number.isInteger(value) && value >= 0;
+  }
+
   static formatForDisplay(microSTX: number): string {
     const stx = microSTX / 1_000_000;
     if (stx < 0.001) return `${microSTX} μSTX`;
