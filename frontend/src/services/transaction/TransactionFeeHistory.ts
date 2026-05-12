@@ -66,6 +66,10 @@ export class TransactionFeeHistory {
     return this.history.length > 0 ? this.history[this.history.length - 1] : null;
   }
 
+  hasSufficientData(minRecords: number = 5): boolean {
+    return this.history.length >= minRecords;
+  }
+
   clear(): void {
     this.history = [];
   }
