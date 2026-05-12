@@ -73,4 +73,9 @@ export class TransactionFeeEstimator {
   estimateForLowCongestion(options: FeeEstimationOptions = {}): FeeEstimate {
     return this.estimateFee({ ...options, networkCongestion: 0.1 });
   }
+
+  estimateForPriority(priority: 'low' | 'medium' | 'high', options: FeeEstimationOptions = {}): FeeEstimate {
+    const congestionMap = { low: 0.2, medium: 0.5, high: 0.85 };
+    return this.estimateFee({ ...options, networkCongestion: congestionMap[priority] });
+  }
 }
