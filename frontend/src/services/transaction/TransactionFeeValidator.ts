@@ -43,6 +43,10 @@ export class TransactionFeeValidator {
   }
 
   clampFee(fee: number): number {
-    return Math.min(Math.max(fee, MIN_FEE), MAX_FEE);
+    return Math.min(Math.max(Math.round(fee), MIN_FEE), MAX_FEE);
+  }
+
+  suggestFee(estimatedFee: number): number {
+    return this.clampFee(Math.ceil(estimatedFee * 1.1)); // 10% buffer
   }
 }
