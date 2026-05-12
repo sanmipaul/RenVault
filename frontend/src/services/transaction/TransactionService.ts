@@ -15,6 +15,7 @@ import { TransactionFeeEstimator } from './TransactionFeeEstimator';
 import { TransactionFeeHistory } from './TransactionFeeHistory';
 import { TransactionFeeValidator } from './TransactionFeeValidator';
 import { TransactionFeeCache } from './TransactionFeeCache';
+import { TransactionFeeAdjuster } from './TransactionFeeAdjuster';
 import { TransactionStatus } from '../../types/transactionState';
 import {
   ClarityValue,
