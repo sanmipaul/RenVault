@@ -50,6 +50,14 @@ export class TransactionFeeHistory {
     return this.history.slice(-limit);
   }
 
+  getMedianFee(priority?: 'low' | 'medium' | 'high'): number {
+    const records = priority ? this.history.filter(r => r.priority === priority) : this.history;
+    if (records.length === 0) return 0;
+    const sorted = [...records].sort((a, b) => a.fee - b.fee);
+    const mid = Math.floor(sorted.length / 2);
+    return sorted.length % 2 !== 0 ? sorted[mid].fee : Math.ceil((sorted[mid - 1].fee + sorted[mid].fee) / 2);
+  }
+
   getFeesByTimeRange(fromMs: number, toMs: number): FeeRecord[] {
     return this.history.filter(r => r.confirmedAt >= fromMs && r.confirmedAt <= toMs);
   }
