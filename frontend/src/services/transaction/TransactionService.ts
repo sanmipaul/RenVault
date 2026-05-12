@@ -216,7 +216,12 @@ export class TransactionService {
         maxRetries: 3,
         delayMs: 1000,
         backoffMultiplier: 2,
-        onRetry: () => { this.monitor.recordRetry(); }
+        onRetry: (attempt) => {
+          this.monitor.recordRetry();
+          const bumpedFee = TransactionFeeAdjuster.getBumpedFeeForRetry(signedTx.details.fee ?? 0, attempt);
+          this.feeCache.invalidate();
+          signedTx.details.fee = bumpedFee;
+        }
       });
       this.stateManager.setState(txId, TransactionStatus.CONFIRMED);
       this.monitor.recordSuccess(Date.now() - broadcastStart);
