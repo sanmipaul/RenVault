@@ -2,6 +2,11 @@ import { WalletError, WalletErrorCode } from './wallet-errors';
 import { ContractErrorMapper } from './contractErrorMapper';
 
 export class TransactionErrorHandler {
+  static isFeeError(error: Error): boolean {
+    const feeErrors = ['fee too low', 'insufficient fee', 'fee below minimum', 'fee exceeds maximum'];
+    return feeErrors.some(msg => error.message.toLowerCase().includes(msg));
+  }
+
   static isRetryable(error: Error): boolean {
     const retryableErrors = ['network', 'timeout', 'connection', 'ECONNREFUSED', 'fee too low', 'insufficient fee'];
     return retryableErrors.some(msg => error.message.toLowerCase().includes(msg));
