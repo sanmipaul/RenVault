@@ -30,4 +30,10 @@ export class TransactionFeeAdjuster {
       TransactionFeeAdjuster.bumpFee(baseFee, i)
     );
   }
+
+  static formatBumpSchedule(baseFee: number): string {
+    return TransactionFeeAdjuster.getBumpSchedule(baseFee)
+      .map((fee, i) => `Attempt ${i + 1}: ${fee} μSTX`)
+      .join(', ');
+  }
 }
