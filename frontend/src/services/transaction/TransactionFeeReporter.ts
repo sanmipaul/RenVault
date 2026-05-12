@@ -8,6 +8,7 @@ export interface FeeReport {
   averageFee: string;
   minFee: string;
   maxFee: string;
+  medianFee: string;
   totalRecords: number;
   generatedAt: string;
 }
@@ -20,6 +21,7 @@ export class TransactionFeeReporter {
       averageFee: TransactionFeeFormatter.formatForDisplay(this.history.getAverageFee(priority)),
       minFee: TransactionFeeFormatter.formatForDisplay(this.history.getMinFee(priority)),
       maxFee: TransactionFeeFormatter.formatForDisplay(this.history.getMaxFee(priority)),
+      medianFee: TransactionFeeFormatter.formatForDisplay(this.history.getMedianFee(priority)),
       totalRecords: this.history.size(),
       generatedAt: new Date().toISOString(),
     };
