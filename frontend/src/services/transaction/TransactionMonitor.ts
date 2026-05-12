@@ -16,7 +16,9 @@ export class TransactionMonitor {
     failedTransactions: 0,
     retriedTransactions: 0,
     averageConfirmationTime: 0,
-    lastConfirmationTime: 0
+    lastConfirmationTime: 0,
+    totalFeesSpent: 0,
+    averageFeeSpent: 0,
   };
 
   recordTransaction(): void {
