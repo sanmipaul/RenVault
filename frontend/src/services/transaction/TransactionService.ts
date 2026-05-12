@@ -272,6 +272,7 @@ export class TransactionService {
   getFeeMetrics() {
     return {
       averageFee: this.feeHistory.getAverageFee(),
+      medianFee: this.feeHistory.getMedianFee(),
       minFee: this.feeHistory.getMinFee(),
       maxFee: this.feeHistory.getMaxFee(),
       totalRecords: this.feeHistory.size(),
