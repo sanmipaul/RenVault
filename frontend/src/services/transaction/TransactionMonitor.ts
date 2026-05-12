@@ -5,6 +5,8 @@ export interface TransactionMetrics {
   retriedTransactions: number;
   averageConfirmationTime: number;
   lastConfirmationTime: number;
+  totalFeesSpent: number;
+  averageFeeSpent: number;
 }
 
 export class TransactionMonitor {
@@ -14,17 +16,37 @@ export class TransactionMonitor {
     failedTransactions: 0,
     retriedTransactions: 0,
     averageConfirmationTime: 0,
-    lastConfirmationTime: 0
+    lastConfirmationTime: 0,
+    totalFeesSpent: 0,
+    averageFeeSpent: 0,
   };
 
   recordTransaction(): void {
     this.metrics.totalTransactions++;
   }
 
-  recordSuccess(confirmationTime: number): void {
+  getSuccessRate(): number {
+    if (this.metrics.totalTransactions === 0) return 0;
+    return this.metrics.successfulTransactions / this.metrics.totalTransactions;
+  }
+
+  getRetryRate(): number {
+    if (this.metrics.totalTransactions === 0) return 0;
+    return this.metrics.retriedTransactions / this.metrics.totalTransactions;
+  }
+
+  hasData(): boolean {
+    return this.metrics.totalTransactions > 0;
+  }
+
+  recordSuccess(confirmationTime: number, fee?: number): void {
     this.metrics.successfulTransactions++;
     this.metrics.lastConfirmationTime = confirmationTime;
     this.updateAverageTime(confirmationTime);
+    if (fee !== undefined) {
+      this.metrics.totalFeesSpent += fee;
+      this.metrics.averageFeeSpent = this.metrics.totalFeesSpent / this.metrics.successfulTransactions;
+    }
   }
 
   recordFailure(): void {
@@ -45,6 +67,6 @@ export class TransactionMonitor {
   }
 
   reset(): void {
-    this.metrics = { totalTransactions: 0, successfulTransactions: 0, failedTransactions: 0, retriedTransactions: 0, averageConfirmationTime: 0, lastConfirmationTime: 0 };
+    this.metrics = { totalTransactions: 0, successfulTransactions: 0, failedTransactions: 0, retriedTransactions: 0, averageConfirmationTime: 0, lastConfirmationTime: 0, totalFeesSpent: 0, averageFeeSpent: 0 };
   }
 }

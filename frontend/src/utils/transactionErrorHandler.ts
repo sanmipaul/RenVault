@@ -2,8 +2,13 @@ import { WalletError, WalletErrorCode } from './wallet-errors';
 import { ContractErrorMapper } from './contractErrorMapper';
 
 export class TransactionErrorHandler {
+  static isFeeError(error: Error): boolean {
+    const feeErrors = ['fee too low', 'insufficient fee', 'fee below minimum', 'fee exceeds maximum', 'fee required'];
+    return feeErrors.some(msg => error.message.toLowerCase().includes(msg));
+  }
+
   static isRetryable(error: Error): boolean {
-    const retryableErrors = ['network', 'timeout', 'connection', 'ECONNREFUSED'];
+    const retryableErrors = ['network', 'timeout', 'connection', 'ECONNREFUSED', 'fee too low', 'insufficient fee'];
     return retryableErrors.some(msg => error.message.toLowerCase().includes(msg));
   }
 
@@ -35,7 +40,10 @@ export class TransactionErrorHandler {
       return ContractErrorMapper.toStatusMessage(error, contractName);
     }
 
-    if (error instanceof Error) return error.message;
+    if (error instanceof Error) {
+      if (this.isFeeError(error)) return `Fee error: ${error.message}`;
+      return error.message;
+    }
     return 'Unknown error occurred';
   }
 }

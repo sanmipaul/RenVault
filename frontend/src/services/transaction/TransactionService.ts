@@ -11,6 +11,12 @@ import { TransactionTimeout } from '../../utils/transactionTimeout';
 import { TransactionErrorHandler } from '../../utils/transactionErrorHandler';
 import { retryWithBackoff } from '../../utils/retry';
 import { validateTransactionDetails, validateContractName } from '../../utils/transactionValidator';
+import { TransactionFeeEstimator } from './TransactionFeeEstimator';
+import { TransactionFeeHistory } from './TransactionFeeHistory';
+import { TransactionFeeValidator } from './TransactionFeeValidator';
+import { TransactionFeeCache } from './TransactionFeeCache';
+import { TransactionFeeAdjuster } from './TransactionFeeAdjuster';
+import { TransactionFeeReporter } from './TransactionFeeReporter';
 import { TransactionStatus } from '../../types/transactionState';
 import {
   ClarityValue,
@@ -31,6 +37,8 @@ export interface TransactionDetails {
   functionArgs: ClarityValue[];
   amount: number;
   fee?: number;
+  estimatedFee?: number;
+  feePriority?: 'low' | 'medium' | 'high';
   network: string;
   isSponsored?: boolean;
   sponsorAddress?: string;
@@ -54,6 +62,11 @@ export class TransactionService {
   private cache = new TransactionCache();
   private monitor = new TransactionMonitor();
   private timeout = new TransactionTimeout();
+  private feeEstimator = new TransactionFeeEstimator();
+  private feeHistory = new TransactionFeeHistory();
+  private feeValidator = new TransactionFeeValidator();
+  private feeCache = new TransactionFeeCache();
+  private feeReporter = new TransactionFeeReporter(this.feeHistory);
 
   private constructor() {
     this.walletManager = new WalletManager();
@@ -94,13 +107,25 @@ export class TransactionService {
         throw new WalletError(WalletErrorCode.INVALID_TRANSACTION, 'Invalid contract name: must start with a letter or digit and contain only lowercase letters, digits, and hyphens');
       }
       const microAmount = Math.floor(amount * 1000000);
+
+      // Dynamic fee estimation
+      const cachedFee = this.feeCache.get();
+      const feeEstimate = cachedFee ?? this.feeEstimator.estimateFee({
+        functionArgsCount: 1,
+        networkCongestion: 0.5,
+      });
+      if (!cachedFee) this.feeCache.set(feeEstimate);
+      const dynamicFee = isSponsored ? 0 : feeEstimate.recommended;
+
       const details: TransactionDetails = {
         contractAddress,
         contractName,
         functionName: 'deposit',
         functionArgs: [uintCV(microAmount)],
         amount: microAmount,
-        fee: isSponsored ? 0 : 1000,
+        fee: dynamicFee,
+        estimatedFee: feeEstimate.recommended,
+        feePriority: 'medium',
         network: 'mainnet',
         isSponsored,
         anchorMode: AnchorMode.Any,
@@ -110,6 +135,13 @@ export class TransactionService {
       if (errors.length > 0) {
         throw new WalletError(WalletErrorCode.INVALID_TRANSACTION, `Validation failed: ${errors.join(', ')}`);
       }
+
+      // Validate the dynamic fee
+      const feeValidation = this.feeValidator.validate(dynamicFee, feeEstimate.recommended);
+      if (!feeValidation.valid) {
+        throw new WalletError(WalletErrorCode.INVALID_TRANSACTION, `Fee validation failed: ${feeValidation.errors.join(', ')}`);
+      }
+
       return details;
     } catch (error) {
       throw TransactionErrorHandler.handleError(error, 'Transaction preparation');
@@ -176,7 +208,7 @@ export class TransactionService {
     const txId = signedTx.txId;
     const broadcastStart = Date.now();
     try {
-      this.stateManager.setState(txId, TransactionStatus.BROADCASTING);
+      this.stateManager.setState(txId, TransactionStatus.BROADCASTING, undefined, signedTx.details.fee, signedTx.details.estimatedFee);
       this.monitor.recordTransaction();
       const result = await retryWithBackoff(async () => {
         const response = await broadcastTransaction(signedTx.signedTx, this.network);
@@ -186,10 +218,16 @@ export class TransactionService {
         maxRetries: 3,
         delayMs: 1000,
         backoffMultiplier: 2,
-        onRetry: () => { this.monitor.recordRetry(); }
+        onRetry: (attempt) => {
+          this.monitor.recordRetry();
+          const bumpedFee = TransactionFeeAdjuster.getBumpedFeeForRetry(signedTx.details.fee ?? 0, attempt);
+          this.feeCache.invalidate();
+          signedTx.details.fee = bumpedFee;
+        }
       });
       this.stateManager.setState(txId, TransactionStatus.CONFIRMED);
-      this.monitor.recordSuccess(Date.now() - broadcastStart);
+      this.monitor.recordSuccess(Date.now() - broadcastStart, signedTx.details.fee);
+      this.feeHistory.record(txId, signedTx.details.fee ?? 0, 'medium', true);
       TransactionRecovery.removePendingTransaction(txId);
       return result;
     } catch (error) {
@@ -211,7 +249,8 @@ export class TransactionService {
       details.functionName &&
       details.functionArgs &&
       details.amount &&
-      details.amount > 0
+      details.amount > 0 &&
+      (details.fee === undefined || (details.fee >= 0 && Number.isInteger(details.fee)))
     );
   }
 
@@ -227,8 +266,55 @@ export class TransactionService {
     return this.stateManager.getState(txId);
   }
 
+  getFeeEstimate() {
+    const cached = this.feeCache.get();
+    if (cached) return cached;
+    const estimate = this.feeEstimator.estimateFee({
+      functionArgsCount: 1,
+      networkCongestion: this.feeHistory.hasSufficientData() ? 0.5 : 0.5,
+    });
+    this.feeCache.set(estimate);
+    return estimate;
+  }
+
+  getFeeCacheStats() {
+    return this.feeCache.getStats();
+  }
+
+  getFeeMetrics() {
+    return {
+      averageFee: this.feeHistory.getAverageFee(),
+      medianFee: this.feeHistory.getMedianFee(),
+      minFee: this.feeHistory.getMinFee(),
+      maxFee: this.feeHistory.getMaxFee(),
+      totalRecords: this.feeHistory.size(),
+    };
+  }
+
+  getFeeReport(priority?: 'low' | 'medium' | 'high') {
+    return this.feeReporter.generateReport(priority);
+  }
+
+  getDetailedFeeReport() {
+    return this.feeReporter.generateDetailedReport();
+  }
+
+  getFeeSummary(): string {
+    return this.feeReporter.summarize();
+  }
+
   getMetrics() {
     return this.monitor.getMetrics();
+  }
+
+  getExtendedMetrics() {
+    return {
+      ...this.monitor.getMetrics(),
+      successRate: this.monitor.getSuccessRate(),
+      retryRate: this.monitor.getRetryRate(),
+      hasData: this.monitor.hasData(),
+      ...this.getFeeMetrics(),
+    };
   }
 
   recoverPendingTransactions() {
@@ -237,5 +323,6 @@ export class TransactionService {
 
   clearCache() {
     this.cache.clear();
+    this.feeCache.invalidate();
   }
 }
