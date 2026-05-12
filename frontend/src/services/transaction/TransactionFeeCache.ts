@@ -49,4 +49,13 @@ export class TransactionFeeCache {
     if (age === null) return 0;
     return Math.max(0, this.TTL_MS - age);
   }
+
+  getStats(): { hits: number; misses: number; hitRate: number } {
+    const total = this.hitCount + this.missCount;
+    return {
+      hits: this.hitCount,
+      misses: this.missCount,
+      hitRate: total === 0 ? 0 : this.hitCount / total,
+    };
+  }
 }
