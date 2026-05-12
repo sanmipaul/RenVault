@@ -7,6 +7,7 @@ export interface FeeEstimate {
   high: number;
   recommended: number;
   estimatedAt: number;
+  networkCongestion: number;
 }
 
 export interface FeeEstimationOptions {
