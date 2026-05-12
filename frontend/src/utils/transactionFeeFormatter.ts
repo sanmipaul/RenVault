@@ -26,4 +26,12 @@ export class TransactionFeeFormatter {
   static formatRange(low: number, high: number): string {
     return `${this.formatForDisplay(low)} – ${this.formatForDisplay(high)}`;
   }
+
+  static formatWithLabel(microSTX: number, label: string): string {
+    return `${label}: ${this.formatForDisplay(microSTX)}`;
+  }
+
+  static formatEstimate(low: number, medium: number, high: number): string {
+    return `Low: ${this.formatForDisplay(low)} | Medium: ${this.formatForDisplay(medium)} | High: ${this.formatForDisplay(high)}`;
+  }
 }
