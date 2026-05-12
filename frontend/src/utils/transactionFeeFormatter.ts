@@ -38,4 +38,11 @@ export class TransactionFeeFormatter {
   static formatEstimate(low: number, medium: number, high: number): string {
     return `Low: ${this.formatForDisplay(low)} | Medium: ${this.formatForDisplay(medium)} | High: ${this.formatForDisplay(high)}`;
   }
+
+  static formatPercentageDiff(fee: number, estimatedFee: number): string {
+    if (estimatedFee === 0) return 'N/A';
+    const diff = ((fee - estimatedFee) / estimatedFee) * 100;
+    const sign = diff >= 0 ? '+' : '';
+    return `${sign}${diff.toFixed(1)}% vs estimate`;
+  }
 }
