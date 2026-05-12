@@ -62,6 +62,10 @@ export class TransactionFeeHistory {
     return this.history.filter(r => r.confirmedAt >= fromMs && r.confirmedAt <= toMs);
   }
 
+  getLastFee(): FeeRecord | null {
+    return this.history.length > 0 ? this.history[this.history.length - 1] : null;
+  }
+
   clear(): void {
     this.history = [];
   }
