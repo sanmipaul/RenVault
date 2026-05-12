@@ -9,7 +9,7 @@ export class TransactionFeeAdjuster {
   static bumpFee(currentFee: number, retryAttempt: number): number {
     const bumps = Math.min(retryAttempt, this.MAX_BUMPS);
     const multiplier = Math.pow(1 + this.RETRY_BUMP_PERCENT, bumps);
-    return Math.ceil(currentFee * multiplier);
+    return Math.max(this.MIN_BUMP_FEE, Math.ceil(currentFee * multiplier));
   }
 
   static shouldBump(retryAttempt: number): boolean {
