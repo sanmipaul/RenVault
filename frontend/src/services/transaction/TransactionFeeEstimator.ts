@@ -51,6 +51,7 @@ export class TransactionFeeEstimator {
       high,
       recommended: medium,
       estimatedAt: Date.now(),
+      networkCongestion,
     };
   }
 
