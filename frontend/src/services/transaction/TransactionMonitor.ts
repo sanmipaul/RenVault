@@ -53,6 +53,6 @@ export class TransactionMonitor {
   }
 
   reset(): void {
-    this.metrics = { totalTransactions: 0, successfulTransactions: 0, failedTransactions: 0, retriedTransactions: 0, averageConfirmationTime: 0, lastConfirmationTime: 0 };
+    this.metrics = { totalTransactions: 0, successfulTransactions: 0, failedTransactions: 0, retriedTransactions: 0, averageConfirmationTime: 0, lastConfirmationTime: 0, totalFeesSpent: 0, averageFeeSpent: 0 };
   }
 }
