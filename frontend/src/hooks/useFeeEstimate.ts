@@ -10,12 +10,14 @@ export interface UseFeeEstimateResult {
   loading: boolean;
   error: string | null;
   refresh: () => void;
+  cacheStats: { hits: number; misses: number; hitRate: number } | null;
 }
 
 export function useFeeEstimate(autoRefreshMs?: number): UseFeeEstimateResult {
   const [estimate, setEstimate] = useState<FeeEstimate | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [cacheStats, setCacheStats] = useState<{ hits: number; misses: number; hitRate: number } | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const refresh = useCallback(() => {
@@ -24,6 +26,7 @@ export function useFeeEstimate(autoRefreshMs?: number): UseFeeEstimateResult {
     try {
       const service = TransactionService.getInstance();
       setEstimate(service.getFeeEstimate());
+      setCacheStats(service.getFeeCacheStats());
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -41,5 +44,5 @@ export function useFeeEstimate(autoRefreshMs?: number): UseFeeEstimateResult {
     };
   }, [refresh, autoRefreshMs]);
 
-  return { estimate, loading, error, refresh };
+  return { estimate, loading, error, refresh, cacheStats };
 }
