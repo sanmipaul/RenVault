@@ -74,6 +74,17 @@ export class TransactionFeeHistory {
     return JSON.stringify(this.history, null, 2);
   }
 
+  importFromJSON(json: string): void {
+    try {
+      const parsed = JSON.parse(json);
+      if (Array.isArray(parsed)) {
+        this.history = parsed.slice(-this.MAX_RECORDS);
+      }
+    } catch {
+      // silently ignore malformed input
+    }
+  }
+
   clear(): void {
     this.history = [];
   }
