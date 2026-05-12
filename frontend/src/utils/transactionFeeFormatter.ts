@@ -45,4 +45,10 @@ export class TransactionFeeFormatter {
     const sign = diff >= 0 ? '+' : '';
     return `${sign}${diff.toFixed(1)}% vs estimate`;
   }
+
+  static formatCongestion(congestion: number): string {
+    if (congestion < 0.3) return 'Low congestion';
+    if (congestion < 0.7) return 'Medium congestion';
+    return 'High congestion';
+  }
 }
