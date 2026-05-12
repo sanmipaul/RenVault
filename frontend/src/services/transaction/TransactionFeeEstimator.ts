@@ -57,4 +57,8 @@ export class TransactionFeeEstimator {
     const estimate = this.estimateFee(options);
     return estimate[priority];
   }
+
+  isStale(estimate: FeeEstimate, maxAgeMs: number = 30_000): boolean {
+    return Date.now() - estimate.estimatedAt > maxAgeMs;
+  }
 }
