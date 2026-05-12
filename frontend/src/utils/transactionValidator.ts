@@ -1,8 +1,9 @@
 import { TransactionDetails } from '../services/transaction/TransactionService';
 import { isValidStacksPrincipal } from './stacksAddress';
 
-const MIN_FEE_MICRO_STX = 180;
-const MAX_FEE_MICRO_STX = 500_000_000;
+export const MIN_FEE_MICRO_STX = 180;
+export const MAX_FEE_MICRO_STX = 500_000_000;
+export const DEFAULT_FEE_PRIORITY = 'medium' as const;
 export const validateTransactionAmount = (amount: number): boolean => {
   return amount > 0 && amount <= 1000000 && Number.isFinite(amount);
 };
