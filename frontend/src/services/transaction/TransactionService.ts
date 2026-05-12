@@ -16,6 +16,7 @@ import { TransactionFeeHistory } from './TransactionFeeHistory';
 import { TransactionFeeValidator } from './TransactionFeeValidator';
 import { TransactionFeeCache } from './TransactionFeeCache';
 import { TransactionFeeAdjuster } from './TransactionFeeAdjuster';
+import { TransactionFeeReporter } from './TransactionFeeReporter';
 import { TransactionStatus } from '../../types/transactionState';
 import {
   ClarityValue,
@@ -65,6 +66,7 @@ export class TransactionService {
   private feeHistory = new TransactionFeeHistory();
   private feeValidator = new TransactionFeeValidator();
   private feeCache = new TransactionFeeCache();
+  private feeReporter = new TransactionFeeReporter(this.feeHistory);
 
   private constructor() {
     this.walletManager = new WalletManager();
