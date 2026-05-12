@@ -294,6 +294,10 @@ export class TransactionService {
     return this.feeReporter.generateReport(priority);
   }
 
+  getDetailedFeeReport() {
+    return this.feeReporter.generateDetailedReport();
+  }
+
   getFeeSummary(): string {
     return this.feeReporter.summarize();
   }
