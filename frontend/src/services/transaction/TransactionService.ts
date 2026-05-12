@@ -269,6 +269,10 @@ export class TransactionService {
     return this.feeCache.get() ?? this.feeEstimator.estimateFee();
   }
 
+  getFeeCacheStats() {
+    return this.feeCache.getStats();
+  }
+
   getFeeMetrics() {
     return {
       averageFee: this.feeHistory.getAverageFee(),
