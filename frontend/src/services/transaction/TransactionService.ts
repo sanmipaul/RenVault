@@ -278,6 +278,14 @@ export class TransactionService {
     };
   }
 
+  getFeeReport(priority?: 'low' | 'medium' | 'high') {
+    return this.feeReporter.generateReport(priority);
+  }
+
+  getFeeSummary(): string {
+    return this.feeReporter.summarize();
+  }
+
   getMetrics() {
     return this.monitor.getMetrics();
   }
