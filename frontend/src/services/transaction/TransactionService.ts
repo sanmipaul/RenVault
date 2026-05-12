@@ -121,6 +121,8 @@ export class TransactionService {
         functionArgs: [uintCV(microAmount)],
         amount: microAmount,
         fee: dynamicFee,
+        estimatedFee: feeEstimate.recommended,
+        feePriority: 'medium',
         network: 'mainnet',
         isSponsored,
         anchorMode: AnchorMode.Any,
