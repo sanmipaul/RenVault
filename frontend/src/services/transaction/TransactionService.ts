@@ -301,5 +301,6 @@ export class TransactionService {
 
   clearCache() {
     this.cache.clear();
+    this.feeCache.invalidate();
   }
 }
