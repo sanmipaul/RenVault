@@ -50,6 +50,10 @@ export class TransactionFeeHistory {
     return this.history.slice(-limit);
   }
 
+  getFeesByTimeRange(fromMs: number, toMs: number): FeeRecord[] {
+    return this.history.filter(r => r.confirmedAt >= fromMs && r.confirmedAt <= toMs);
+  }
+
   clear(): void {
     this.history = [];
   }
