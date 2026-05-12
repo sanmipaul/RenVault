@@ -15,6 +15,10 @@ export class TransactionFeeValidator {
     const errors: string[] = [];
     const warnings: string[] = [];
 
+    if (!Number.isInteger(fee)) {
+      errors.push('Fee must be an integer (microSTX)');
+    }
+
     if (!Number.isFinite(fee) || fee < 0) {
       errors.push('Fee must be a non-negative finite number');
     } else if (fee < MIN_FEE) {
