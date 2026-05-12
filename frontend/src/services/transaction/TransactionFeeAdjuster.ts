@@ -2,8 +2,9 @@
 // Adjusts fees based on retry attempts and network conditions
 
 export class TransactionFeeAdjuster {
-  private static readonly RETRY_BUMP_PERCENT = 0.25; // 25% bump per retry
+  static readonly RETRY_BUMP_PERCENT = 0.25; // 25% bump per retry
   private static readonly MAX_BUMPS = 4;
+  private static readonly MIN_BUMP_FEE = 180;
 
   static bumpFee(currentFee: number, retryAttempt: number): number {
     const bumps = Math.min(retryAttempt, this.MAX_BUMPS);
