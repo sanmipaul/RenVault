@@ -35,6 +35,14 @@ export class TransactionStateManager {
     this.states.delete(txId);
   }
 
+  getStatesByStatus(status: TransactionStatus): TransactionState[] {
+    return this.getAllStates().filter(s => s.status === status);
+  }
+
+  getStatesWithFee(): TransactionState[] {
+    return this.getAllStates().filter(s => s.fee !== undefined);
+  }
+
   getAllStates(): TransactionState[] {
     return Array.from(this.states.values());
   }
