@@ -25,6 +25,11 @@ export class TransactionMonitor {
     this.metrics.totalTransactions++;
   }
 
+  getSuccessRate(): number {
+    if (this.metrics.totalTransactions === 0) return 0;
+    return this.metrics.successfulTransactions / this.metrics.totalTransactions;
+  }
+
   recordSuccess(confirmationTime: number, fee?: number): void {
     this.metrics.successfulTransactions++;
     this.metrics.lastConfirmationTime = confirmationTime;
