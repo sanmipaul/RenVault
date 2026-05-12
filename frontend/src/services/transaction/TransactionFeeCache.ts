@@ -31,4 +31,15 @@ export class TransactionFeeCache {
   invalidate(): void {
     this.cached = null;
   }
+
+  getAge(): number | null {
+    if (!this.cached) return null;
+    return Date.now() - this.cached.estimatedAt;
+  }
+
+  getRemainingTTL(): number {
+    const age = this.getAge();
+    if (age === null) return 0;
+    return Math.max(0, this.TTL_MS - age);
+  }
 }
