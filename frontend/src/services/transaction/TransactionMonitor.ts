@@ -5,6 +5,8 @@ export interface TransactionMetrics {
   retriedTransactions: number;
   averageConfirmationTime: number;
   lastConfirmationTime: number;
+  totalFeesSpent: number;
+  averageFeeSpent: number;
 }
 
 export class TransactionMonitor {
