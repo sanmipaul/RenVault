@@ -32,9 +32,11 @@ export class TransactionFeeEstimator {
     const {
       transactionSizeBytes = DEFAULT_TX_SIZE,
       networkCongestion = 0.5,
+      functionArgsCount = 1,
     } = options;
 
-    const effectiveSize = transactionSizeBytes + CONTRACT_CALL_OVERHEAD;
+    const argsOverhead = functionArgsCount * 8;
+    const effectiveSize = transactionSizeBytes + CONTRACT_CALL_OVERHEAD + argsOverhead;
     const baseFee = Math.max(BASE_FEE, effectiveSize * FEE_PER_BYTE);
     const congestionFactor = 1 + networkCongestion;
 
