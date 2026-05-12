@@ -33,7 +33,8 @@ export class TransactionFeeEstimator {
       networkCongestion = 0.5,
     } = options;
 
-    const baseFee = Math.max(BASE_FEE, transactionSizeBytes * FEE_PER_BYTE);
+    const effectiveSize = transactionSizeBytes + CONTRACT_CALL_OVERHEAD;
+    const baseFee = Math.max(BASE_FEE, effectiveSize * FEE_PER_BYTE);
     const congestionFactor = 1 + networkCongestion;
 
     const low = Math.ceil(baseFee * TransactionFeeEstimator.CONGESTION_MULTIPLIERS.low);
