@@ -246,6 +246,19 @@ export class TransactionService {
     return this.stateManager.getState(txId);
   }
 
+  getFeeEstimate() {
+    return this.feeCache.get() ?? this.feeEstimator.estimateFee();
+  }
+
+  getFeeMetrics() {
+    return {
+      averageFee: this.feeHistory.getAverageFee(),
+      minFee: this.feeHistory.getMinFee(),
+      maxFee: this.feeHistory.getMaxFee(),
+      totalRecords: this.feeHistory.size(),
+    };
+  }
+
   getMetrics() {
     return this.monitor.getMetrics();
   }
