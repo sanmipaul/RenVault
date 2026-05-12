@@ -30,6 +30,11 @@ export class TransactionMonitor {
     return this.metrics.successfulTransactions / this.metrics.totalTransactions;
   }
 
+  getRetryRate(): number {
+    if (this.metrics.totalTransactions === 0) return 0;
+    return this.metrics.retriedTransactions / this.metrics.totalTransactions;
+  }
+
   recordSuccess(confirmationTime: number, fee?: number): void {
     this.metrics.successfulTransactions++;
     this.metrics.lastConfirmationTime = confirmationTime;
