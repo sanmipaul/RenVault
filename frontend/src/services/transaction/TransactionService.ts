@@ -302,6 +302,15 @@ export class TransactionService {
     return this.monitor.getMetrics();
   }
 
+  getExtendedMetrics() {
+    return {
+      ...this.monitor.getMetrics(),
+      successRate: this.monitor.getSuccessRate(),
+      retryRate: this.monitor.getRetryRate(),
+      ...this.getFeeMetrics(),
+    };
+  }
+
   recoverPendingTransactions() {
     return TransactionRecovery.getPendingTransactions();
   }
