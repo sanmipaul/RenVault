@@ -57,4 +57,10 @@ export class TransactionFeeValidator {
   suggestFee(estimatedFee: number): number {
     return this.clampFee(Math.ceil(estimatedFee * 1.1)); // 10% buffer
   }
+
+  validateAndSuggest(fee: number, estimatedFee: number): { fee: number; result: ReturnType<TransactionFeeValidator['validate']> } {
+    const result = this.validate(fee, estimatedFee);
+    const suggested = result.valid ? fee : this.suggestFee(estimatedFee);
+    return { fee: suggested, result };
+  }
 }
