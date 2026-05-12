@@ -3,7 +3,7 @@ import { ContractErrorMapper } from './contractErrorMapper';
 
 export class TransactionErrorHandler {
   static isRetryable(error: Error): boolean {
-    const retryableErrors = ['network', 'timeout', 'connection', 'ECONNREFUSED'];
+    const retryableErrors = ['network', 'timeout', 'connection', 'ECONNREFUSED', 'fee too low', 'insufficient fee'];
     return retryableErrors.some(msg => error.message.toLowerCase().includes(msg));
   }
 
