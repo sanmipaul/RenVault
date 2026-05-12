@@ -208,6 +208,7 @@ export class TransactionService {
       });
       this.stateManager.setState(txId, TransactionStatus.CONFIRMED);
       this.monitor.recordSuccess(Date.now() - broadcastStart);
+      this.feeHistory.record(txId, signedTx.details.fee ?? 0, 'medium', true);
       TransactionRecovery.removePendingTransaction(txId);
       return result;
     } catch (error) {
