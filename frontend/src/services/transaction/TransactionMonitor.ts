@@ -25,10 +25,14 @@ export class TransactionMonitor {
     this.metrics.totalTransactions++;
   }
 
-  recordSuccess(confirmationTime: number): void {
+  recordSuccess(confirmationTime: number, fee?: number): void {
     this.metrics.successfulTransactions++;
     this.metrics.lastConfirmationTime = confirmationTime;
     this.updateAverageTime(confirmationTime);
+    if (fee !== undefined) {
+      this.metrics.totalFeesSpent += fee;
+      this.metrics.averageFeeSpent = this.metrics.totalFeesSpent / this.metrics.successfulTransactions;
+    }
   }
 
   recordFailure(): void {
