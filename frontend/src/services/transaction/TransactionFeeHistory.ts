@@ -6,14 +6,15 @@ export interface FeeRecord {
   priority: 'low' | 'medium' | 'high';
   confirmedAt: number;
   txId: string;
+  confirmed: boolean;
 }
 
 export class TransactionFeeHistory {
   private history: FeeRecord[] = [];
   private readonly MAX_RECORDS = 50;
 
-  record(txId: string, fee: number, priority: 'low' | 'medium' | 'high'): void {
-    this.history.push({ fee, priority, confirmedAt: Date.now(), txId });
+  record(txId: string, fee: number, priority: 'low' | 'medium' | 'high', confirmed: boolean = true): void {
+    this.history.push({ fee, priority, confirmedAt: Date.now(), txId, confirmed });
     if (this.history.length > this.MAX_RECORDS) {
       this.history.shift();
     }
