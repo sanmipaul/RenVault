@@ -42,6 +42,14 @@ export class TransactionFeeValidator {
     return fee >= MIN_FEE;
   }
 
+  isBelowMaximum(fee: number): boolean {
+    return fee <= MAX_FEE;
+  }
+
+  isInRange(fee: number): boolean {
+    return this.isAboveMinimum(fee) && this.isBelowMaximum(fee);
+  }
+
   clampFee(fee: number): number {
     return Math.min(Math.max(Math.round(fee), MIN_FEE), MAX_FEE);
   }
