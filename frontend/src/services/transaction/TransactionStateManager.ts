@@ -43,6 +43,10 @@ export class TransactionStateManager {
     return this.getAllStates().filter(s => s.fee !== undefined);
   }
 
+  getTotalFeesFromStates(): number {
+    return this.getStatesWithFee().reduce((sum, s) => sum + (s.fee ?? 0), 0);
+  }
+
   getAllStates(): TransactionState[] {
     return Array.from(this.states.values());
   }
