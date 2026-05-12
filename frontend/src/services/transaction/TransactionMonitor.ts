@@ -35,6 +35,10 @@ export class TransactionMonitor {
     return this.metrics.retriedTransactions / this.metrics.totalTransactions;
   }
 
+  hasData(): boolean {
+    return this.metrics.totalTransactions > 0;
+  }
+
   recordSuccess(confirmationTime: number, fee?: number): void {
     this.metrics.successfulTransactions++;
     this.metrics.lastConfirmationTime = confirmationTime;
