@@ -38,6 +38,14 @@ export class TransactionFeeHistory {
     return Math.max(...records.map(r => r.fee));
   }
 
+  getConfirmedFees(): FeeRecord[] {
+    return this.history.filter(r => r.confirmed);
+  }
+
+  getUnconfirmedFees(): FeeRecord[] {
+    return this.history.filter(r => !r.confirmed);
+  }
+
   getRecentFees(limit: number = 10): FeeRecord[] {
     return this.history.slice(-limit);
   }
