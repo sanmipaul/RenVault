@@ -25,6 +25,18 @@ export class TransactionFeeHistory {
     return Math.ceil(records.reduce((sum, r) => sum + r.fee, 0) / records.length);
   }
 
+  getMinFee(priority?: 'low' | 'medium' | 'high'): number {
+    const records = priority ? this.history.filter(r => r.priority === priority) : this.history;
+    if (records.length === 0) return 0;
+    return Math.min(...records.map(r => r.fee));
+  }
+
+  getMaxFee(priority?: 'low' | 'medium' | 'high'): number {
+    const records = priority ? this.history.filter(r => r.priority === priority) : this.history;
+    if (records.length === 0) return 0;
+    return Math.max(...records.map(r => r.fee));
+  }
+
   getRecentFees(limit: number = 10): FeeRecord[] {
     return this.history.slice(-limit);
   }
