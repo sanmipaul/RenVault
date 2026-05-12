@@ -30,5 +30,6 @@ export const validateTransactionDetails = (details: TransactionDetails): string[
   if (!validateContractName(details.contractName)) errors.push('Invalid contract name format');
   if (!details.functionName) errors.push('Function name is required');
   if (!validateTransactionAmount(details.amount)) errors.push('Invalid transaction amount');
+  if (details.fee !== undefined && !validateTransactionFee(details.fee)) errors.push('Invalid transaction fee');
   return errors;
 };
