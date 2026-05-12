@@ -55,4 +55,13 @@ export class TransactionFeeFormatter {
   static formatFeeWithCongestion(microSTX: number, congestion: number): string {
     return `${this.formatForDisplay(microSTX)} (${this.formatCongestion(congestion)})`;
   }
+
+  static formatFeeBreakdown(fee: number, estimatedFee: number, congestion: number): string {
+    return [
+      `Fee: ${this.formatForDisplay(fee)}`,
+      `Estimated: ${this.formatForDisplay(estimatedFee)}`,
+      `Diff: ${this.formatPercentageDiff(fee, estimatedFee)}`,
+      this.formatCongestion(congestion),
+    ].join(' | ');
+  }
 }
