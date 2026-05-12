@@ -22,7 +22,16 @@ export const validateTransactionFee = (fee: number | undefined): boolean => {
   return Number.isInteger(fee) && fee >= MIN_FEE_MICRO_STX && fee <= MAX_FEE_MICRO_STX;
 };
 
-export const validateTransactionDetails = (details: TransactionDetails): string[] => {
+export const validateEstimatedFee = (estimatedFee: number | undefined): boolean => {
+  if (estimatedFee === undefined) return true;
+  return Number.isFinite(estimatedFee) && estimatedFee >= 0;
+};
+
+export const validateFeePriority = (priority: string | undefined): boolean => {
+  if (priority === undefined) return true;
+  return ['low', 'medium', 'high'].includes(priority);
+};
+
   const errors: string[] = [];
   if (!details.contractAddress) errors.push('Contract address is required');
   if (!validateContractAddress(details.contractAddress)) errors.push('Invalid contract address');
