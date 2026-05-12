@@ -6,6 +6,8 @@ import { FeeEstimate } from './TransactionFeeEstimator';
 export class TransactionFeeCache {
   private cached: FeeEstimate | null = null;
   private readonly TTL_MS: number;
+  private hitCount = 0;
+  private missCount = 0;
 
   constructor(ttlMs: number = 30_000) {
     this.TTL_MS = ttlMs;
@@ -16,11 +18,16 @@ export class TransactionFeeCache {
   }
 
   get(): FeeEstimate | null {
-    if (!this.cached) return null;
-    if (Date.now() - this.cached.estimatedAt > this.TTL_MS) {
-      this.cached = null;
+    if (!this.cached) {
+      this.missCount++;
       return null;
     }
+    if (Date.now() - this.cached.estimatedAt > this.TTL_MS) {
+      this.cached = null;
+      this.missCount++;
+      return null;
+    }
+    this.hitCount++;
     return this.cached;
   }
 
