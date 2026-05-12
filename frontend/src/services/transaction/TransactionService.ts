@@ -11,6 +11,10 @@ import { TransactionTimeout } from '../../utils/transactionTimeout';
 import { TransactionErrorHandler } from '../../utils/transactionErrorHandler';
 import { retryWithBackoff } from '../../utils/retry';
 import { validateTransactionDetails, validateContractName } from '../../utils/transactionValidator';
+import { TransactionFeeEstimator } from './TransactionFeeEstimator';
+import { TransactionFeeHistory } from './TransactionFeeHistory';
+import { TransactionFeeValidator } from './TransactionFeeValidator';
+import { TransactionFeeCache } from './TransactionFeeCache';
 import { TransactionStatus } from '../../types/transactionState';
 import {
   ClarityValue,
