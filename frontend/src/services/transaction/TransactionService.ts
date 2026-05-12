@@ -58,6 +58,10 @@ export class TransactionService {
   private cache = new TransactionCache();
   private monitor = new TransactionMonitor();
   private timeout = new TransactionTimeout();
+  private feeEstimator = new TransactionFeeEstimator();
+  private feeHistory = new TransactionFeeHistory();
+  private feeValidator = new TransactionFeeValidator();
+  private feeCache = new TransactionFeeCache();
 
   private constructor() {
     this.walletManager = new WalletManager();
