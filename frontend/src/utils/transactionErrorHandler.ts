@@ -3,7 +3,7 @@ import { ContractErrorMapper } from './contractErrorMapper';
 
 export class TransactionErrorHandler {
   static isFeeError(error: Error): boolean {
-    const feeErrors = ['fee too low', 'insufficient fee', 'fee below minimum', 'fee exceeds maximum'];
+    const feeErrors = ['fee too low', 'insufficient fee', 'fee below minimum', 'fee exceeds maximum', 'fee required'];
     return feeErrors.some(msg => error.message.toLowerCase().includes(msg));
   }
 
