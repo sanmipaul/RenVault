@@ -70,6 +70,10 @@ export class TransactionFeeHistory {
     return this.history.length >= minRecords;
   }
 
+  exportToJSON(): string {
+    return JSON.stringify(this.history, null, 2);
+  }
+
   clear(): void {
     this.history = [];
   }
