@@ -208,7 +208,7 @@ export class TransactionService {
     const txId = signedTx.txId;
     const broadcastStart = Date.now();
     try {
-      this.stateManager.setState(txId, TransactionStatus.BROADCASTING);
+      this.stateManager.setState(txId, TransactionStatus.BROADCASTING, undefined, signedTx.details.fee, signedTx.details.estimatedFee);
       this.monitor.recordTransaction();
       const result = await retryWithBackoff(async () => {
         const response = await broadcastTransaction(signedTx.signedTx, this.network);
