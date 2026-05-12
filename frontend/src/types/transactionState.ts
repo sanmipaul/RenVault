@@ -13,4 +13,6 @@ export interface TransactionState {
   timestamp: number;
   retryCount: number;
   error?: string;
+  fee?: number;
+  estimatedFee?: number;
 }
