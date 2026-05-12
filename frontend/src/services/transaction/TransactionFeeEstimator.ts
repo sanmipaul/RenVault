@@ -13,6 +13,7 @@ export interface FeeEstimationOptions {
   priority?: 'low' | 'medium' | 'high';
   transactionSizeBytes?: number;
   networkCongestion?: number; // 0-1 scale
+  functionArgsCount?: number; // number of clarity args affects size
 }
 
 const BASE_FEE = 180; // minimum fee in microSTX
