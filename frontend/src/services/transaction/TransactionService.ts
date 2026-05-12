@@ -102,13 +102,23 @@ export class TransactionService {
         throw new WalletError(WalletErrorCode.INVALID_TRANSACTION, 'Invalid contract name: must start with a letter or digit and contain only lowercase letters, digits, and hyphens');
       }
       const microAmount = Math.floor(amount * 1000000);
+
+      // Dynamic fee estimation
+      const cachedFee = this.feeCache.get();
+      const feeEstimate = cachedFee ?? this.feeEstimator.estimateFee({
+        functionArgsCount: 1,
+        networkCongestion: 0.5,
+      });
+      if (!cachedFee) this.feeCache.set(feeEstimate);
+      const dynamicFee = isSponsored ? 0 : feeEstimate.recommended;
+
       const details: TransactionDetails = {
         contractAddress,
         contractName,
         functionName: 'deposit',
         functionArgs: [uintCV(microAmount)],
         amount: microAmount,
-        fee: isSponsored ? 0 : 1000,
+        fee: dynamicFee,
         network: 'mainnet',
         isSponsored,
         anchorMode: AnchorMode.Any,
