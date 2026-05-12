@@ -25,6 +25,14 @@ export class TransactionFeeReporter {
     };
   }
 
+  generateDetailedReport(): Record<'low' | 'medium' | 'high', FeeReport> {
+    return {
+      low: this.generateReport('low'),
+      medium: this.generateReport('medium'),
+      high: this.generateReport('high'),
+    };
+  }
+
   summarize(): string {
     const report = this.generateReport();
     return `Fee Summary — Avg: ${report.averageFee}, Min: ${report.minFee}, Max: ${report.maxFee} (${report.totalRecords} records)`;
