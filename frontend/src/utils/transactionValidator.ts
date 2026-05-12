@@ -40,5 +40,7 @@ export const validateFeePriority = (priority: string | undefined): boolean => {
   if (!details.functionName) errors.push('Function name is required');
   if (!validateTransactionAmount(details.amount)) errors.push('Invalid transaction amount');
   if (details.fee !== undefined && !validateTransactionFee(details.fee)) errors.push('Invalid transaction fee');
+  if (!validateEstimatedFee(details.estimatedFee)) errors.push('Invalid estimated fee');
+  if (!validateFeePriority(details.feePriority)) errors.push('Invalid fee priority');
   return errors;
 };
