@@ -16,6 +16,13 @@ export class TransactionFeeFormatter {
     return `${stx.toFixed(4)} STX`;
   }
 
+  static formatForDisplayShort(microSTX: number): string {
+    const stx = microSTX / 1_000_000;
+    if (stx < 0.001) return `${microSTX} μSTX`;
+    if (stx < 0.01) return `${stx.toFixed(6)} STX`;
+    return `${stx.toFixed(4)} STX`;
+  }
+
   static formatRange(low: number, high: number): string {
     return `${this.formatForDisplay(low)} – ${this.formatForDisplay(high)}`;
   }
