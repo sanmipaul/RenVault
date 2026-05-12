@@ -19,4 +19,8 @@ export class TransactionFeeAdjuster {
     if (!this.shouldBump(retryAttempt)) return baseFee;
     return this.bumpFee(baseFee, retryAttempt);
   }
+
+  static getMaxBumpedFee(baseFee: number): number {
+    return this.bumpFee(baseFee, this.MAX_BUMPS);
+  }
 }
