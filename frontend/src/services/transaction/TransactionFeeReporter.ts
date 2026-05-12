@@ -37,6 +37,6 @@ export class TransactionFeeReporter {
 
   summarize(): string {
     const report = this.generateReport();
-    return `Fee Summary — Avg: ${report.averageFee}, Min: ${report.minFee}, Max: ${report.maxFee} (${report.totalRecords} records)`;
+    return `Fee Summary — Avg: ${report.averageFee}, Median: ${report.medianFee}, Min: ${report.minFee}, Max: ${report.maxFee} (${report.totalRecords} records)`;
   }
 }
