@@ -18,6 +18,7 @@ export interface FeeEstimationOptions {
 const BASE_FEE = 180; // minimum fee in microSTX
 const FEE_PER_BYTE = 1; // microSTX per byte
 const DEFAULT_TX_SIZE = 180; // bytes
+const CONTRACT_CALL_OVERHEAD = 50; // extra bytes for contract call overhead
 
 export class TransactionFeeEstimator {
   private static readonly CONGESTION_MULTIPLIERS = {
