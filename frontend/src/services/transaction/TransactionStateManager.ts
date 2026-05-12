@@ -3,14 +3,16 @@ import { TransactionState, TransactionStatus } from '../../types/transactionStat
 export class TransactionStateManager {
   private states: Map<string, TransactionState> = new Map();
 
-  setState(txId: string, status: TransactionStatus, error?: string): void {
+  setState(txId: string, status: TransactionStatus, error?: string, fee?: number, estimatedFee?: number): void {
     const existing = this.states.get(txId);
     this.states.set(txId, {
       txId,
       status,
       timestamp: Date.now(),
       retryCount: existing?.retryCount || 0,
-      error
+      error,
+      fee: fee ?? existing?.fee,
+      estimatedFee: estimatedFee ?? existing?.estimatedFee,
     });
   }
 
