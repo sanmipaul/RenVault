@@ -21,7 +21,13 @@ export class TransactionFeeAdjuster {
     return this.bumpFee(baseFee, retryAttempt);
   }
 
-  static getMaxBumpedFee(baseFee: number): number {
+  getMaxBumpedFee(baseFee: number): number {
     return this.bumpFee(baseFee, this.MAX_BUMPS);
+  }
+
+  static getBumpSchedule(baseFee: number): number[] {
+    return Array.from({ length: TransactionFeeAdjuster.MAX_BUMPS + 1 }, (_, i) =>
+      TransactionFeeAdjuster.bumpFee(baseFee, i)
+    );
   }
 }
