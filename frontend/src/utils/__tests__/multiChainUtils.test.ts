@@ -10,6 +10,7 @@ import {
   getChainColor,
   getChainIcon,
   isTestnet,
+  formatTransactionHash,
 } from '../multiChainUtils';
 
 // ─── formatAmount ─────────────────────────────────────────────────────────────
