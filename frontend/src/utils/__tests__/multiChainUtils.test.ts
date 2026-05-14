@@ -6,6 +6,7 @@ import {
   formatAmount,
   convertUnits,
   shortenAddress,
+  formatChainName,
 } from '../multiChainUtils';
 
 // ─── formatAmount ─────────────────────────────────────────────────────────────
