@@ -470,4 +470,4 @@ describe('compact', () => {
   it('returns empty array for all falsy values', () => {
     expect(compact([null, undefined, false, ''])).toEqual([]);
   });
-});
+});// Test enhancement 1
