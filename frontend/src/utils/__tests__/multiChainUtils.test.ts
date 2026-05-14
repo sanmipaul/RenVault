@@ -8,6 +8,7 @@ import {
   shortenAddress,
   formatChainName,
   getChainColor,
+  getChainIcon,
 } from '../multiChainUtils';
 
 // ─── formatAmount ─────────────────────────────────────────────────────────────
