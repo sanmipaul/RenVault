@@ -491,3 +491,4 @@ describe('compact', () => {
 // Test enhancement 19
 // Test enhancement 20
 // Test enhancement 21
+// Test enhancement 22
