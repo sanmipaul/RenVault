@@ -9,6 +9,7 @@ import {
   formatChainName,
   getChainColor,
   getChainIcon,
+  isTestnet,
 } from '../multiChainUtils';
 
 // ─── formatAmount ─────────────────────────────────────────────────────────────
