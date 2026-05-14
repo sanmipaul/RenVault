@@ -520,3 +520,4 @@ describe('compact', () => {
 // Test enhancement 48
 // Test enhancement 49
 // Test enhancement 50
+// Test enhancement 51
