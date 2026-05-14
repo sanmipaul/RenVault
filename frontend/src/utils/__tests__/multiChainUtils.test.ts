@@ -471,3 +471,4 @@ describe('compact', () => {
     expect(compact([null, undefined, false, ''])).toEqual([]);
   });
 });// Test enhancement 1
+// Test enhancement 2
