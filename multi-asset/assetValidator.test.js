@@ -83,4 +83,53 @@ describe('AssetValidator', () => {
       expect(AssetValidator.validateAssetContract('0x1234567890abcdef.some-token')).toBe(false);
     });
   });
+
+  // ─── formatAmount ─────────────────────────────────────────────────────────
+
+  describe('formatAmount', () => {
+    it('formats a whole number with 6 decimals correctly', () => {
+      expect(AssetValidator.formatAmount(1, 6)).toBe('1000000');
+    });
+
+    it('formats fractional amount with 8 decimals (sBTC style)', () => {
+      expect(AssetValidator.formatAmount(0.001, 8)).toBe('100000');
+    });
+
+    it('returns "0" for invalid amount', () => {
+      expect(AssetValidator.formatAmount(-5, 6)).toBe('0');
+    });
+
+    it('returns "0" for null amount', () => {
+      expect(AssetValidator.formatAmount(null, 6)).toBe('0');
+    });
+
+    it('throws for decimals out of range', () => {
+      expect(() => AssetValidator.formatAmount(1, 19)).toThrow('decimals must be an integer between 0 and 18');
+    });
+
+    it('throws for negative decimals', () => {
+      expect(() => AssetValidator.formatAmount(1, -1)).toThrow('decimals must be an integer between 0 and 18');
+    });
+
+    it('formats correctly with 0 decimals', () => {
+      expect(AssetValidator.formatAmount(42, 0)).toBe('42');
+    });
+  });
+
+  // ─── parseAmount ──────────────────────────────────────────────────────────
+
+  describe('parseAmount', () => {
+    it('converts micro-units back to standard with 6 decimals', () => {
+      expect(AssetValidator.parseAmount(1000000, 6)).toBe(1);
+    });
+
+    it('converts micro-units back to standard with 8 decimals', () => {
+      expect(AssetValidator.parseAmount(100000000, 8)).toBe(1);
+    });
+
+    it('returns 0 for falsy amount', () => {
+      expect(AssetValidator.parseAmount(0, 6)).toBe(0);
+      expect(AssetValidator.parseAmount(null, 6)).toBe(0);
+    });
+  });
 });
