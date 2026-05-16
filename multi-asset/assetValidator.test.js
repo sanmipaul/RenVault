@@ -168,4 +168,40 @@ describe('AssetValidator', () => {
       expect(AssetValidator.validateDeposit('STX', 1)).toBe(true);
     });
   });
+
+  // ─── validateWithdrawal ───────────────────────────────────────────────────
+
+  describe('validateWithdrawal', () => {
+    it('returns true when amount is within balance', () => {
+      expect(AssetValidator.validateWithdrawal('STX', 50, 100)).toBe(true);
+    });
+
+    it('returns true when amount equals balance exactly', () => {
+      expect(AssetValidator.validateWithdrawal('STX', 100, 100)).toBe(true);
+    });
+
+    it('throws for invalid withdrawal amount', () => {
+      expect(() => AssetValidator.validateWithdrawal('STX', 0, 100)).toThrow('Invalid withdrawal amount');
+    });
+
+    it('throws for negative amount', () => {
+      expect(() => AssetValidator.validateWithdrawal('STX', -10, 100)).toThrow('Invalid withdrawal amount');
+    });
+
+    it('throws when amount exceeds balance', () => {
+      expect(() => AssetValidator.validateWithdrawal('STX', 200, 100)).toThrow('Insufficient balance');
+    });
+
+    it('throws for negative balance', () => {
+      expect(() => AssetValidator.validateWithdrawal('STX', 10, -5)).toThrow('balance must be a non-negative finite number');
+    });
+
+    it('throws for Infinity balance', () => {
+      expect(() => AssetValidator.validateWithdrawal('STX', 10, Infinity)).toThrow('balance must be a non-negative finite number');
+    });
+
+    it('throws for zero balance', () => {
+      expect(() => AssetValidator.validateWithdrawal('STX', 10, 0)).toThrow('Insufficient balance');
+    });
+  });
 });
