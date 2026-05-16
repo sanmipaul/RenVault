@@ -204,4 +204,117 @@ describe('AssetValidator', () => {
       expect(() => AssetValidator.validateWithdrawal('STX', 10, 0)).toThrow('Insufficient balance');
     });
   });
+
+  // ─── isValidSymbol ────────────────────────────────────────────────────────
+
+  describe('isValidSymbol', () => {
+    it('returns true for standard 3-letter uppercase symbols', () => {
+      expect(AssetValidator.isValidSymbol('STX')).toBe(true);
+      expect(AssetValidator.isValidSymbol('BTC')).toBe(true);
+    });
+
+    it('returns true for mixed alphanumeric uppercase symbols', () => {
+      expect(AssetValidator.isValidSymbol('sBTC')).toBe(false); // lowercase 's' invalid
+      expect(AssetValidator.isValidSymbol('SBTC')).toBe(true);
+    });
+
+    it('returns false for symbols shorter than 2 chars', () => {
+      expect(AssetValidator.isValidSymbol('S')).toBe(false);
+    });
+
+    it('returns false for symbols longer than 10 chars', () => {
+      expect(AssetValidator.isValidSymbol('TOOLONGSYMBOL')).toBe(false);
+    });
+
+    it('returns false for empty string', () => {
+      expect(AssetValidator.isValidSymbol('')).toBe(false);
+    });
+
+    it('returns false for null', () => {
+      expect(AssetValidator.isValidSymbol(null)).toBe(false);
+    });
+
+    it('returns false for non-string types', () => {
+      expect(AssetValidator.isValidSymbol(123)).toBe(false);
+    });
+
+    it('returns false for symbols containing lowercase letters', () => {
+      expect(AssetValidator.isValidSymbol('usda')).toBe(false);
+    });
+
+    it('returns false for symbols with special characters', () => {
+      expect(AssetValidator.isValidSymbol('ST-X')).toBe(false);
+    });
+  });
+
+  // ─── validateSenderKey ────────────────────────────────────────────────────
+
+  describe('validateSenderKey', () => {
+    const valid64HexKey = 'a'.repeat(64);
+    const valid66HexKey = 'b'.repeat(66);
+
+    it('returns true for a valid 64-char hex key', () => {
+      expect(AssetValidator.validateSenderKey(valid64HexKey)).toBe(true);
+    });
+
+    it('returns true for a valid 66-char hex key (with compression suffix)', () => {
+      expect(AssetValidator.validateSenderKey(valid66HexKey)).toBe(true);
+    });
+
+    it('returns false for keys shorter than 64 chars', () => {
+      expect(AssetValidator.validateSenderKey('abc123')).toBe(false);
+    });
+
+    it('returns false for keys with non-hex characters', () => {
+      expect(AssetValidator.validateSenderKey('z'.repeat(64))).toBe(false);
+    });
+
+    it('returns false for null', () => {
+      expect(AssetValidator.validateSenderKey(null)).toBe(false);
+    });
+
+    it('returns false for undefined', () => {
+      expect(AssetValidator.validateSenderKey(undefined)).toBe(false);
+    });
+
+    it('returns false for empty string', () => {
+      expect(AssetValidator.validateSenderKey('')).toBe(false);
+    });
+
+    it('returns false for non-string type', () => {
+      expect(AssetValidator.validateSenderKey(12345)).toBe(false);
+    });
+  });
+
+  // ─── validateStacksAddress ────────────────────────────────────────────────
+
+  describe('validateStacksAddress', () => {
+    it('returns true for a valid mainnet address (SP prefix)', () => {
+      expect(AssetValidator.validateStacksAddress('SP3K8BC0PPEVCV7NZ6QSRWPQ2JE9E5B6N3PA0KBR9')).toBe(true);
+    });
+
+    it('returns true for a valid testnet address (ST prefix)', () => {
+      expect(AssetValidator.validateStacksAddress('ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM')).toBe(true);
+    });
+
+    it('returns false for an Ethereum-style address', () => {
+      expect(AssetValidator.validateStacksAddress('0x742d35Cc6634C0532925a3b8D5c5f40E')).toBe(false);
+    });
+
+    it('returns false for empty string', () => {
+      expect(AssetValidator.validateStacksAddress('')).toBe(false);
+    });
+
+    it('returns false for null', () => {
+      expect(AssetValidator.validateStacksAddress(null)).toBe(false);
+    });
+
+    it('returns false for address with wrong length', () => {
+      expect(AssetValidator.validateStacksAddress('SP12345')).toBe(false);
+    });
+
+    it('returns false for address with wrong prefix', () => {
+      expect(AssetValidator.validateStacksAddress('SX3K8BC0PPEVCV7NZ6QSRWPQ2JE9E5B6N3PA0KBR9')).toBe(false);
+    });
+  });
 });
