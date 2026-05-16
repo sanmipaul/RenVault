@@ -60,4 +60,68 @@ describe('SessionManager', () => {
       expect(manager.hasValidSession()).toBe(false);
     });
   });
+
+  // ─── storeSession ─────────────────────────────────────────────────────
+
+  describe('storeSession', () => {
+    it('persists a session and makes hasValidSession return true', () => {
+      manager.storeSession(BASE_SESSION);
+      expect(manager.hasValidSession()).toBe(true);
+    });
+
+    it('getCurrentSession returns the stored session details', () => {
+      manager.storeSession(BASE_SESSION);
+      const session = manager.getCurrentSession();
+      expect(session!.address).toBe(BASE_SESSION.address);
+      expect(session!.providerType).toBe(BASE_SESSION.providerType);
+    });
+  });
+
+  // ─── clearSession ─────────────────────────────────────────────────────
+
+  describe('clearSession', () => {
+    it('removes the session so hasValidSession returns false', () => {
+      manager.storeSession(BASE_SESSION);
+      manager.clearSession();
+      expect(manager.hasValidSession()).toBe(false);
+    });
+
+    it('calls onSessionExpired callback when session is cleared', () => {
+      const onExpired = jest.fn();
+      manager.initialize(undefined, onExpired);
+      manager.storeSession(BASE_SESSION);
+      manager.clearSession();
+      expect(onExpired).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not throw when no session is active', () => {
+      expect(() => manager.clearSession()).not.toThrow();
+    });
+  });
+
+  // ─── getSessionStatus ─────────────────────────────────────────────────
+
+  describe('getSessionStatus', () => {
+    it('reports hasSession as false when no session stored', () => {
+      const status = manager.getSessionStatus();
+      expect(status.hasSession).toBe(false);
+    });
+
+    it('reports hasSession as true after storing a session', () => {
+      manager.storeSession(BASE_SESSION);
+      const status = manager.getSessionStatus();
+      expect(status.hasSession).toBe(true);
+    });
+
+    it('reports timeRemaining as a positive number for valid session', () => {
+      manager.storeSession(BASE_SESSION);
+      const status = manager.getSessionStatus();
+      expect(status.timeRemaining).toBeGreaterThan(0);
+    });
+
+    it('exposes maxReconnectAttempts', () => {
+      const status = manager.getSessionStatus();
+      expect(typeof status.maxReconnectAttempts).toBe('number');
+    });
+  });
 });
