@@ -114,4 +114,67 @@ describe('AssetRegistry', () => {
       expect(registry.getDecimals('UNKNOWN')).toBe(6);
     });
   });
+
+  // ─── getAssetOrThrow ──────────────────────────────────────────────────────
+
+  describe('getAssetOrThrow', () => {
+    it('returns asset for supported symbol', () => {
+      const asset = registry.getAssetOrThrow('STX');
+      expect(asset.symbol).toBe('STX');
+    });
+
+    it('throws for unknown symbol', () => {
+      expect(() => registry.getAssetOrThrow('FAKE')).toThrow('Asset "FAKE" is not supported by the registry');
+    });
+
+    it('throws for empty string', () => {
+      expect(() => registry.getAssetOrThrow('')).toThrow();
+    });
+  });
+
+  // ─── addAsset ─────────────────────────────────────────────────────────────
+
+  describe('addAsset', () => {
+    const validSip010Config = {
+      name: 'Test Token',
+      symbol: 'TEST',
+      decimals: 6,
+      type: 'sip010',
+      contract: 'SP2C2YFP12AJZB4MABJBAJ55XECVS7E4PMMZ89YZR.test-token'
+    };
+
+    it('adds a valid SIP-010 asset', () => {
+      registry.addAsset('TEST', validSip010Config);
+      expect(registry.isSupported('TEST')).toBe(true);
+    });
+
+    it('adds a valid native asset', () => {
+      registry.addAsset('NTVX', { name: 'Native X', symbol: 'NTVX', decimals: 6, type: 'native' });
+      expect(registry.getType('NTVX')).toBe('native');
+    });
+
+    it('throws for invalid symbol (lowercase)', () => {
+      expect(() => registry.addAsset('bad', validSip010Config)).toThrow('Invalid asset symbol');
+    });
+
+    it('throws for null config', () => {
+      expect(() => registry.addAsset('TST', null)).toThrow('Asset config must be a non-null object');
+    });
+
+    it('throws for unsupported type', () => {
+      expect(() => registry.addAsset('TST', { ...validSip010Config, type: 'erc20' })).toThrow('Asset type must be "native" or "sip010"');
+    });
+
+    it('throws for SIP-010 with invalid contract address', () => {
+      expect(() => registry.addAsset('TST', { ...validSip010Config, contract: 'invalid-contract' })).toThrow('Invalid contract address');
+    });
+
+    it('throws for decimals out of range', () => {
+      expect(() => registry.addAsset('TST', { ...validSip010Config, decimals: 19 })).toThrow('Asset decimals must be an integer between 0 and 18');
+    });
+
+    it('throws for non-integer decimals', () => {
+      expect(() => registry.addAsset('TST', { ...validSip010Config, decimals: 6.5 })).toThrow('Asset decimals must be an integer between 0 and 18');
+    });
+  });
 });
