@@ -51,4 +51,36 @@ describe('AssetValidator', () => {
       expect(AssetValidator.validateAmount('50')).toBe(true);
     });
   });
+
+  // ─── validateAssetContract ────────────────────────────────────────────────
+
+  describe('validateAssetContract', () => {
+    it('returns true for a valid mainnet SIP-010 contract', () => {
+      expect(AssetValidator.validateAssetContract('SP3K8BC0PPEVCV7NZ6QSRWPQ2JE9E5B6N3PA0KBR9.sbtc-token')).toBe(true);
+    });
+
+    it('returns true for a valid testnet SIP-010 contract', () => {
+      expect(AssetValidator.validateAssetContract('ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.test-token')).toBe(true);
+    });
+
+    it('returns false for empty string', () => {
+      expect(AssetValidator.validateAssetContract('')).toBe(false);
+    });
+
+    it('returns false for null', () => {
+      expect(AssetValidator.validateAssetContract(null)).toBe(false);
+    });
+
+    it('returns false for contract without dot separator', () => {
+      expect(AssetValidator.validateAssetContract('SP3K8BC0PPEVCV7NZ6QSRWPQ2JE9E5B6N3PA0KBR9')).toBe(false);
+    });
+
+    it('returns false for contract with uppercase token name', () => {
+      expect(AssetValidator.validateAssetContract('SP3K8BC0PPEVCV7NZ6QSRWPQ2JE9E5B6N3PA0KBR9.SBTC')).toBe(false);
+    });
+
+    it('returns false for contract with wrong address prefix', () => {
+      expect(AssetValidator.validateAssetContract('0x1234567890abcdef.some-token')).toBe(false);
+    });
+  });
 });
