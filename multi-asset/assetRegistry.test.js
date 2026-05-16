@@ -35,4 +35,83 @@ describe('AssetRegistry', () => {
       expect(registry.getAsset('')).toBeUndefined();
     });
   });
+
+  // ─── getAllAssets ──────────────────────────────────────────────────────────
+
+  describe('getAllAssets', () => {
+    it('returns an array of all supported assets', () => {
+      const assets = registry.getAllAssets();
+      expect(Array.isArray(assets)).toBe(true);
+      expect(assets.length).toBe(Object.keys(supportedAssets).length);
+    });
+
+    it('includes STX in the returned list', () => {
+      const assets = registry.getAllAssets();
+      const stx = assets.find(a => a.symbol === 'STX');
+      expect(stx).toBeDefined();
+    });
+  });
+
+  // ─── isSupported ──────────────────────────────────────────────────────────
+
+  describe('isSupported', () => {
+    it('returns true for supported symbols', () => {
+      expect(registry.isSupported('STX')).toBe(true);
+      expect(registry.isSupported('sBTC')).toBe(true);
+      expect(registry.isSupported('USDA')).toBe(true);
+    });
+
+    it('returns false for unsupported symbols', () => {
+      expect(registry.isSupported('DOGE')).toBe(false);
+      expect(registry.isSupported('')).toBe(false);
+    });
+  });
+
+  // ─── getContract ──────────────────────────────────────────────────────────
+
+  describe('getContract', () => {
+    it('returns contract address for SIP-010 tokens', () => {
+      expect(registry.getContract('sBTC')).toBe('SP3K8BC0PPEVCV7NZ6QSRWPQ2JE9E5B6N3PA0KBR9.sbtc-token');
+    });
+
+    it('returns undefined for native assets (no contract)', () => {
+      expect(registry.getContract('STX')).toBeUndefined();
+    });
+
+    it('returns undefined for unknown symbols', () => {
+      expect(registry.getContract('UNKNOWN')).toBeUndefined();
+    });
+  });
+
+  // ─── getType ──────────────────────────────────────────────────────────────
+
+  describe('getType', () => {
+    it('returns "native" for STX', () => {
+      expect(registry.getType('STX')).toBe('native');
+    });
+
+    it('returns "sip010" for token assets', () => {
+      expect(registry.getType('ALEX')).toBe('sip010');
+    });
+
+    it('returns undefined for unknown symbols', () => {
+      expect(registry.getType('XYZ')).toBeUndefined();
+    });
+  });
+
+  // ─── getDecimals ──────────────────────────────────────────────────────────
+
+  describe('getDecimals', () => {
+    it('returns 6 for STX', () => {
+      expect(registry.getDecimals('STX')).toBe(6);
+    });
+
+    it('returns 8 for sBTC', () => {
+      expect(registry.getDecimals('sBTC')).toBe(8);
+    });
+
+    it('returns 6 as default for unknown symbol', () => {
+      expect(registry.getDecimals('UNKNOWN')).toBe(6);
+    });
+  });
 });
