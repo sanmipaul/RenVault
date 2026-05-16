@@ -132,4 +132,40 @@ describe('AssetValidator', () => {
       expect(AssetValidator.parseAmount(null, 6)).toBe(0);
     });
   });
+
+  // ─── validateDeposit ──────────────────────────────────────────────────────
+
+  describe('validateDeposit', () => {
+    it('returns true for valid deposit above minimum', () => {
+      expect(AssetValidator.validateDeposit('STX', 100, 10)).toBe(true);
+    });
+
+    it('returns true for deposit equal to minimum', () => {
+      expect(AssetValidator.validateDeposit('STX', 10, 10)).toBe(true);
+    });
+
+    it('throws for invalid amount', () => {
+      expect(() => AssetValidator.validateDeposit('STX', -1, 0)).toThrow('Invalid deposit amount');
+    });
+
+    it('throws for null amount', () => {
+      expect(() => AssetValidator.validateDeposit('STX', null, 0)).toThrow('Invalid deposit amount');
+    });
+
+    it('throws for amount below minimum', () => {
+      expect(() => AssetValidator.validateDeposit('STX', 5, 10)).toThrow('Deposit amount below minimum of 10');
+    });
+
+    it('throws for invalid minDeposit (negative)', () => {
+      expect(() => AssetValidator.validateDeposit('STX', 100, -1)).toThrow('minDeposit must be a non-negative finite number');
+    });
+
+    it('throws for minDeposit of Infinity', () => {
+      expect(() => AssetValidator.validateDeposit('STX', 100, Infinity)).toThrow('minDeposit must be a non-negative finite number');
+    });
+
+    it('returns true with default minDeposit of 0', () => {
+      expect(AssetValidator.validateDeposit('STX', 1)).toBe(true);
+    });
+  });
 });
