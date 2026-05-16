@@ -48,4 +48,50 @@ describe('SessionMonitor', () => {
       expect(events[1].type).toBe('expired');
     });
   });
+
+  // ─── getRecentEvents ────────────────────────────────────────────────────
+
+  describe('getRecentEvents', () => {
+    it('returns at most the requested limit', () => {
+      for (let i = 0; i < 10; i++) {
+        monitor.recordEvent({ type: 'created' });
+      }
+      expect(monitor.getRecentEvents(3).length).toBe(3);
+    });
+
+    it('returns all events when limit exceeds event count', () => {
+      monitor.recordEvent({ type: 'restored' });
+      monitor.recordEvent({ type: 'extended' });
+      expect(monitor.getRecentEvents(100).length).toBe(2);
+    });
+
+    it('returns empty array when no events recorded', () => {
+      expect(monitor.getRecentEvents(10)).toEqual([]);
+    });
+
+    it('returns the most recent events last (chronological order)', () => {
+      monitor.recordEvent({ type: 'created', sessionId: 'first' });
+      monitor.recordEvent({ type: 'expired', sessionId: 'second' });
+      const recent = monitor.getRecentEvents(2);
+      expect(recent[recent.length - 1].sessionId).toBe('second');
+    });
+  });
+
+  // ─── getEventsByType ────────────────────────────────────────────────────
+
+  describe('getEventsByType', () => {
+    it('returns only events matching the specified type', () => {
+      monitor.recordEvent({ type: 'created' });
+      monitor.recordEvent({ type: 'expired' });
+      monitor.recordEvent({ type: 'created' });
+      const created = monitor.getEventsByType('created');
+      expect(created.length).toBe(2);
+      created.forEach(e => expect(e.type).toBe('created'));
+    });
+
+    it('returns empty array when no events match', () => {
+      monitor.recordEvent({ type: 'created' });
+      expect(monitor.getEventsByType('failed').length).toBe(0);
+    });
+  });
 });
