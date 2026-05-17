@@ -95,6 +95,34 @@ class RewardsHistory {
     if (this.entries.length === 0) return 0;
     return this.getTotalDistributed() / this.entries.length;
   }
+
+  /**
+   * Top N earners sorted by total rewards descending.
+   * @param {number} [limit=10]
+   */
+  getTopEarners(limit = 10) {
+    const totals = new Map();
+    for (const e of this.entries) {
+      totals.set(e.staker, (totals.get(e.staker) || 0) + e.amount);
+    }
+    return [...totals.entries()]
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, limit)
+      .map(([staker, total]) => ({ staker, total }));
+  }
+
+  /**
+   * Return unique staker addresses that have received rewards.
+   */
+  getUniqueStakers() {
+    return [...new Set(this.entries.map(e => e.staker))];
+  }
+
+  /** Clear all entries and reset epoch counter. */
+  clear() {
+    this.entries = [];
+    this.nextEpoch = 1;
+  }
 }
 
 module.exports = { RewardsHistory };
