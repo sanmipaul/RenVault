@@ -55,6 +55,28 @@ class RewardsHistory {
       .sort((a, b) => b.timestamp - a.timestamp);
     return limit !== undefined ? filtered.slice(0, limit) : filtered;
   }
+
+  /**
+   * Return entries within a timestamp range.
+   * @param {number} startMs
+   * @param {number} [endMs]
+   */
+  getByDateRange(startMs, endMs = Date.now()) {
+    if (!Number.isFinite(startMs) || startMs < 0) {
+      throw new Error('getByDateRange: startMs must be a non-negative number');
+    }
+    return this.entries
+      .filter(e => e.timestamp >= startMs && e.timestamp <= endMs)
+      .sort((a, b) => b.timestamp - a.timestamp);
+  }
+
+  /**
+   * Return entries matching a specific event type.
+   * @param {'distribution'|'claim'|'bonus'} type
+   */
+  getByType(type) {
+    return this.entries.filter(e => e.type === type);
+  }
 }
 
 module.exports = { RewardsHistory };
