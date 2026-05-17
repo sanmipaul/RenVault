@@ -34,6 +34,27 @@ class RewardsHistory {
     this.entries.push(entry);
     return entry;
   }
+
+  /**
+   * Return all entries, newest first.
+   * @param {number} [limit]
+   */
+  getHistory(limit) {
+    const sorted = [...this.entries].sort((a, b) => b.timestamp - a.timestamp);
+    return limit !== undefined ? sorted.slice(0, limit) : sorted;
+  }
+
+  /**
+   * Return entries for a specific staker, newest first.
+   * @param {string} staker
+   * @param {number} [limit]
+   */
+  getByStaker(staker, limit) {
+    const filtered = this.entries
+      .filter(e => e.staker === staker)
+      .sort((a, b) => b.timestamp - a.timestamp);
+    return limit !== undefined ? filtered.slice(0, limit) : filtered;
+  }
 }
 
 module.exports = { RewardsHistory };
