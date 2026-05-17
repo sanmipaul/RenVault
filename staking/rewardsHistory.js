@@ -77,6 +77,24 @@ class RewardsHistory {
   getByType(type) {
     return this.entries.filter(e => e.type === type);
   }
+
+  /** Total rewards distributed across all stakers. */
+  getTotalDistributed() {
+    return this.entries.reduce((sum, e) => sum + e.amount, 0);
+  }
+
+  /** Total rewards earned by a specific staker. */
+  getTotalForStaker(staker) {
+    return this.entries
+      .filter(e => e.staker === staker)
+      .reduce((sum, e) => sum + e.amount, 0);
+  }
+
+  /** Average reward per event across all entries. */
+  getAverageReward() {
+    if (this.entries.length === 0) return 0;
+    return this.getTotalDistributed() / this.entries.length;
+  }
 }
 
 module.exports = { RewardsHistory };
