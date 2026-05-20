@@ -89,6 +89,40 @@ class RewardsExporter {
     const entries = this.filterForExport(startMs, endMs);
     return new Set(entries.map(e => e.staker)).size;
   }
+
+  /**
+   * Export a per-staker summary as CSV (one row per staker).
+   */
+  toSummaryCSV() {
+    const totals = new Map();
+    for (const e of this.history.getHistory()) {
+      const rec = totals.get(e.staker) || { staker: e.staker, total: 0, count: 0, lastAt: 0 };
+      rec.total += e.amount;
+      rec.count += 1;
+      if (e.timestamp > rec.lastAt) rec.lastAt = e.timestamp;
+      totals.set(e.staker, rec);
+    }
+    const header = 'staker,totalAmount,eventCount,lastRewardDate';
+    const rows = [...totals.values()].map(r => {
+      const date = new Date(r.lastAt).toISOString().slice(0, 10);
+      return `${r.staker},${r.total},${r.count},${date}`;
+    });
+    return [header, ...rows].join('\n');
+  }
+
+  /**
+   * Batch-export multiple stakers to separate CSV strings.
+   * @param {string[]} stakers
+   * @returns {Record<string, string>}
+   */
+  toBatchCSV(stakers) {
+    if (!Array.isArray(stakers)) throw new Error('toBatchCSV: stakers must be an array');
+    const result = {};
+    for (const s of stakers) {
+      result[s] = this.toCSV(s);
+    }
+    return result;
+  }
 }
 
 module.exports = { RewardsExporter };
