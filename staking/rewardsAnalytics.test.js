@@ -218,4 +218,49 @@ describe('RewardsAnalytics', () => {
       expect(ra.getLeaderboard()).toEqual([]);
     });
   });
+
+  // ─── getRewardVelocity ────────────────────────────────────────────────────
+
+  describe('getRewardVelocity', () => {
+    it('returns null for fewer than 2 entries', () => {
+      const { rh, ra } = makeAnalytics();
+      rh.addEntry('SP1', 100);
+      expect(ra.getRewardVelocity('SP1')).toBeNull();
+    });
+
+    it('returns a positive velocity when entries span time', () => {
+      const { rh, ra } = makeAnalytics();
+      const e1 = rh.addEntry('SP1', 1000);
+      const e2 = rh.addEntry('SP1', 1000);
+      // Separate by 2 hours
+      e1.timestamp = Date.now() - 2 * 60 * 60 * 1000;
+      e2.timestamp = Date.now();
+      const v = ra.getRewardVelocity('SP1');
+      expect(v).toBeGreaterThan(0);
+    });
+  });
+
+  // ─── getRewardsByEpoch ────────────────────────────────────────────────────
+
+  describe('getRewardsByEpoch', () => {
+    it('returns entries sorted by epoch ascending', () => {
+      const { rh, ra } = makeAnalytics();
+      rh.addEntry('SP1', 100);
+      rh.addEntry('SP1', 200);
+      const byEpoch = ra.getRewardsByEpoch('SP1');
+      expect(byEpoch[0].epoch).toBeLessThan(byEpoch[1].epoch);
+    });
+
+    it('returns empty for unknown staker', () => {
+      const { ra } = makeAnalytics();
+      expect(ra.getRewardsByEpoch('NOBODY')).toEqual([]);
+    });
+
+    it('includes correct amount values', () => {
+      const { rh, ra } = makeAnalytics();
+      rh.addEntry('SP1', 555);
+      const byEpoch = ra.getRewardsByEpoch('SP1');
+      expect(byEpoch[0].amount).toBe(555);
+    });
+  });
 });
