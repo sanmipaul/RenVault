@@ -173,4 +173,49 @@ describe('RewardsAnalytics', () => {
       expect(peak.staker).toBe('SP2');
     });
   });
+
+  // ─── compareStakers ───────────────────────────────────────────────────────
+
+  describe('compareStakers', () => {
+    it('returns positive when stakerA earns more', () => {
+      const { rh, ra } = makeAnalytics();
+      rh.addEntry('SP1', 500);
+      rh.addEntry('SP2', 100);
+      expect(ra.compareStakers('SP1', 'SP2')).toBeGreaterThan(0);
+    });
+
+    it('returns 0 when both stakers have equal earnings', () => {
+      const { rh, ra } = makeAnalytics();
+      rh.addEntry('SP1', 300);
+      rh.addEntry('SP2', 300);
+      expect(ra.compareStakers('SP1', 'SP2')).toBe(0);
+    });
+  });
+
+  // ─── getLeaderboard ───────────────────────────────────────────────────────
+
+  describe('getLeaderboard', () => {
+    it('returns stakers ranked descending by default', () => {
+      const { rh, ra } = makeAnalytics();
+      rh.addEntry('SP1', 300);
+      rh.addEntry('SP2', 700);
+      rh.addEntry('SP3', 100);
+      const board = ra.getLeaderboard();
+      expect(board[0].staker).toBe('SP2');
+      expect(board[0].rank).toBe(1);
+    });
+
+    it('returns ascending order when specified', () => {
+      const { rh, ra } = makeAnalytics();
+      rh.addEntry('SP1', 300);
+      rh.addEntry('SP2', 700);
+      const board = ra.getLeaderboard('asc');
+      expect(board[0].staker).toBe('SP1');
+    });
+
+    it('returns empty array for empty history', () => {
+      const { ra } = makeAnalytics();
+      expect(ra.getLeaderboard()).toEqual([]);
+    });
+  });
 });
