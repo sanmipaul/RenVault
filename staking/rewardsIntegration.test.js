@@ -98,4 +98,27 @@ describe('Rewards lifecycle integration', () => {
     // StakingManager state is independent
     expect(sm.getGlobalStats().totalStaked).toBe(MIN_STAKE * 2);
   });
+
+  it('snapshot and restore preserves analytics integrity', () => {
+    rh.addEntry(SP1, 300);
+    rh.addEntry(SP2, 700);
+    const snap = rh.snapshot();
+    rh.clear();
+    expect(rh.getTotalDistributed()).toBe(0);
+    rh.restoreFromSnapshot(snap);
+    expect(rh.getTotalDistributed()).toBe(1000);
+    const top = rh.getTopEarners(1);
+    expect(top[0].staker).toBe(SP2);
+  });
+
+  it('exporter produces consistent counts after merge', () => {
+    const { RewardsHistory } = require('./rewardsHistory');
+    const other = new RewardsHistory();
+    rh.addEntry(SP1, 100);
+    other.addEntry(SP2, 200);
+    rh.merge(other);
+    const csv = ex.toCSV();
+    const lines = csv.split('\n');
+    expect(lines.length).toBe(3); // header + 2 entries
+  });
 });
