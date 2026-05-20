@@ -28,6 +28,40 @@ export class RewardsHistoryService {
     }
     return RewardsHistoryService.instance;
   }
+
+  private isCacheValid(key: string): boolean {
+    const entry = this.cache.get(key);
+    return !!entry && Date.now() - entry.cachedAt < CACHE_TTL_MS;
+  }
+
+  /**
+   * Fetch all reward entries for a staker, using cache when fresh.
+   */
+  async fetchHistory(staker: string): Promise<RewardEntry[]> {
+    if (!staker) throw new Error('fetchHistory: staker address is required');
+
+    const cacheKey = `history:${staker}`;
+    if (this.isCacheValid(cacheKey)) {
+      return this.cache.get(cacheKey)!.data;
+    }
+
+    try {
+      // In production this would call a backend API; returning mock data here.
+      const data: RewardEntry[] = [];
+      this.cache.set(cacheKey, { data, cachedAt: Date.now() });
+      logger.debug(`Fetched rewards history for ${staker}`);
+      return data;
+    } catch (err) {
+      logger.error('fetchHistory failed', err);
+      throw err;
+    }
+  }
+
+  /** Invalidate all cached entries. */
+  clearCache(): void {
+    this.cache.clear();
+    logger.debug('RewardsHistoryService cache cleared');
+  }
 }
 
 export default RewardsHistoryService;
