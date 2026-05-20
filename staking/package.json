@@ -4,7 +4,11 @@
   "description": "Staking rewards system for RenVault protocol",
   "main": "stakingAPI.js",
   "scripts": {
-    "start": "node stakingAPI.js"
+    "start": "node stakingAPI.js",
+    "test": "jest"
+  },
+  "devDependencies": {
+    "jest": "^29.0.0"
   },
   "dependencies": {
     "express": "^4.18.0"
