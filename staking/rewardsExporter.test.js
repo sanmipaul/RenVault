@@ -137,4 +137,48 @@ describe('RewardsExporter', () => {
       expect(ex.countUniqueStakersInRange(Date.now() + 100_000)).toBe(0);
     });
   });
+
+  // ─── toSummaryCSV ─────────────────────────────────────────────────────────
+
+  describe('toSummaryCSV', () => {
+    it('produces a header row', () => {
+      const { ex } = makeExporter(STAKERS);
+      expect(ex.toSummaryCSV()).toMatch(/^staker,totalAmount,eventCount,lastRewardDate/);
+    });
+
+    it('produces one row per unique staker', () => {
+      const { ex } = makeExporter(STAKERS);
+      const lines = ex.toSummaryCSV().split('\n');
+      expect(lines.length).toBe(3); // header + SP1 + SP2
+    });
+
+    it('aggregates amounts correctly for SP1', () => {
+      const { ex } = makeExporter(STAKERS);
+      const csv = ex.toSummaryCSV();
+      // SP1 has 100 + 150 = 250
+      expect(csv).toMatch(/SP1,250,2/);
+    });
+  });
+
+  // ─── toBatchCSV ───────────────────────────────────────────────────────────
+
+  describe('toBatchCSV', () => {
+    it('returns an object keyed by staker address', () => {
+      const { ex } = makeExporter(STAKERS);
+      const batch = ex.toBatchCSV(['SP1', 'SP2']);
+      expect(batch).toHaveProperty('SP1');
+      expect(batch).toHaveProperty('SP2');
+    });
+
+    it('throws when argument is not an array', () => {
+      const { ex } = makeExporter(STAKERS);
+      expect(() => ex.toBatchCSV('SP1')).toThrow('stakers must be an array');
+    });
+
+    it('each value is a valid CSV string', () => {
+      const { ex } = makeExporter(STAKERS);
+      const batch = ex.toBatchCSV(['SP1']);
+      expect(batch['SP1']).toMatch(/^epoch,staker/);
+    });
+  });
 });
