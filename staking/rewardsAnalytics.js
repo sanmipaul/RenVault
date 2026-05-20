@@ -76,6 +76,44 @@ class RewardsAnalytics {
     }
     return totalGap / (timestamps.length - 1);
   }
+
+  /**
+   * Per-staker summary: total, count, average, first/last event timestamps.
+   * @param {string} staker
+   */
+  getStakerMetrics(staker) {
+    const entries = this.history.getByStaker(staker);
+    if (entries.length === 0) {
+      return { staker, total: 0, count: 0, average: 0, firstAt: null, lastAt: null };
+    }
+    const timestamps = entries.map(e => e.timestamp);
+    const total = entries.reduce((s, e) => s + e.amount, 0);
+    return {
+      staker,
+      total,
+      count: entries.length,
+      average: total / entries.length,
+      firstAt: Math.min(...timestamps),
+      lastAt: Math.max(...timestamps),
+    };
+  }
+
+  /**
+   * Protocol-wide summary across all stakers and all history.
+   */
+  getProtocolMetrics() {
+    const all = this.history.getHistory();
+    const uniqueStakers = this.history.getUniqueStakers().length;
+    const total = this.history.getTotalDistributed();
+    const count = all.length;
+    return {
+      totalDistributed: total,
+      distributionCount: count,
+      uniqueStakers,
+      averagePerEvent: count > 0 ? total / count : 0,
+      averagePerStaker: uniqueStakers > 0 ? total / uniqueStakers : 0,
+    };
+  }
 }
 
 module.exports = { RewardsAnalytics };
