@@ -131,4 +131,36 @@ describe('StakingStats', () => {
       expect(ss.getHistoricalTVL().length).toBe(0);
     });
   });
+
+  // ─── comparePeriods ───────────────────────────────────────────────────────
+
+  describe('comparePeriods', () => {
+    it('returns zeros when no snapshots fall in either window', () => {
+      const { ss } = makeStats();
+      const now = Date.now();
+      const r = ss.comparePeriods(now - 2000, now - 1000, now + 1000, now + 2000);
+      expect(r.windowA).toBe(0);
+      expect(r.windowB).toBe(0);
+    });
+
+    it('returns positive delta when windowB has higher TVL', () => {
+      const { sm, ss } = makeStats();
+      const t0 = Date.now();
+      sm.stake('SP1', MIN_STAKE);
+      ss.recordSnapshot();
+      const t1 = Date.now();
+      sm.stake('SP2', MIN_STAKE * 3);
+      ss.recordSnapshot();
+      const t2 = Date.now();
+      const r = ss.comparePeriods(t0 - 100, t1, t1, t2 + 100);
+      expect(r.delta).toBeGreaterThan(0);
+    });
+
+    it('returns null percentChange when windowA avg is zero', () => {
+      const { ss } = makeStats();
+      const now = Date.now();
+      const r = ss.comparePeriods(now - 2000, now - 1000, now + 1000, now + 2000);
+      expect(r.percentChange).toBeNull();
+    });
+  });
 });
