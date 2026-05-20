@@ -174,6 +174,32 @@ class RewardsAnalytics {
     ranked.sort((a, b) => order === 'desc' ? b.total - a.total : a.total - b.total);
     return ranked.map((r, i) => ({ rank: i + 1, ...r }));
   }
+
+  /**
+   * Reward velocity: total earned divided by observation window in hours.
+   * @param {string} staker
+   * @returns {number|null}  µSTX per hour, or null when < 2 events
+   */
+  getRewardVelocity(staker) {
+    const entries = this.history.getByStaker(staker);
+    if (entries.length < 2) return null;
+    const timestamps = entries.map(e => e.timestamp).sort((a, b) => a - b);
+    const windowHours = (timestamps[timestamps.length - 1] - timestamps[0]) / (1000 * 60 * 60);
+    if (windowHours === 0) return null;
+    return this.history.getTotalForStaker(staker) / windowHours;
+  }
+
+  /**
+   * Map epoch number → amount for a staker (for charting).
+   * @param {string} staker
+   * @returns {Array<{epoch:number, amount:number}>}
+   */
+  getRewardsByEpoch(staker) {
+    return this.history
+      .getByStaker(staker)
+      .map(e => ({ epoch: e.epoch, amount: e.amount }))
+      .sort((a, b) => a.epoch - b.epoch);
+  }
 }
 
 module.exports = { RewardsAnalytics };
