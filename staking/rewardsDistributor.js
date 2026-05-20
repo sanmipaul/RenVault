@@ -78,6 +78,13 @@ class RewardsDistributor {
     return distribution;
   }
 
+  /**
+   * Access the underlying RewardsHistory for analytics use.
+   */
+  getRewardsHistory() {
+    return this.rewardsHistory;
+  }
+
   getDistributionHistory(limit = 50) {
     return this.distributionHistory
       .sort((a, b) => b.timestamp - a.timestamp)
