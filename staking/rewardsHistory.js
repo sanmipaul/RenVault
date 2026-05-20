@@ -123,6 +123,34 @@ class RewardsHistory {
     this.entries = [];
     this.nextEpoch = 1;
   }
+
+  /**
+   * Merge entries from another RewardsHistory instance without duplicating epochs.
+   * @param {RewardsHistory} other
+   */
+  merge(other) {
+    if (!other || typeof other.getHistory !== 'function') {
+      throw new Error('merge: argument must be a RewardsHistory instance');
+    }
+    const existingEpochs = new Set(this.entries.map(e => e.epoch));
+    for (const e of other.getHistory()) {
+      if (!existingEpochs.has(e.epoch)) {
+        this.entries.push({ ...e });
+        existingEpochs.add(e.epoch);
+      }
+    }
+    // Keep nextEpoch consistent
+    if (this.entries.length > 0) {
+      this.nextEpoch = Math.max(...this.entries.map(e => e.epoch)) + 1;
+    }
+  }
+
+  /**
+   * Total number of recorded entries.
+   */
+  get size() {
+    return this.entries.length;
+  }
 }
 
 module.exports = { RewardsHistory };
