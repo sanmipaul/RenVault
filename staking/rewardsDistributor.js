@@ -48,6 +48,7 @@ class RewardsDistributor {
           const result = this.stakingManager.claimRewards(staker);
           distribution.totalDistributed += result.claimed;
           distribution.recipients += 1;
+          this.rewardsHistory.addEntry(staker, result.claimed, 'distribution');
           distribution.details.push({
             staker,
             amount: result.claimed,
