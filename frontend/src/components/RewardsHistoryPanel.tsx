@@ -81,6 +81,13 @@ export function RewardsHistoryPanel({ staker, typeFilter = 'all' }: Props) {
         <button onClick={refresh} disabled={loading}>
           {loading ? 'Refreshing…' : 'Refresh'}
         </button>
+        <button
+          onClick={() => handleExportCSV(entries)}
+          disabled={entries.length === 0}
+          title="Download as CSV"
+        >
+          Export CSV
+        </button>
       </div>
 
       <table className="rewards-history-panel__table">
@@ -116,6 +123,23 @@ export function RewardsHistoryPanel({ staker, typeFilter = 'all' }: Props) {
       )}
     </div>
   );
+}
+
+// ─── CSV export helper ────────────────────────────────────────────────────────
+
+function handleExportCSV(entries: RewardEntry[]) {
+  const header = 'epoch,staker,amount,type,timestamp,date';
+  const rows = entries.map(e =>
+    `${e.epoch},${e.staker},${e.amount},${e.type},${e.timestamp},${new Date(e.timestamp).toISOString()}`
+  );
+  const csv = [header, ...rows].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `rewards-${Date.now()}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 // ─── RewardRow ────────────────────────────────────────────────────────────────
