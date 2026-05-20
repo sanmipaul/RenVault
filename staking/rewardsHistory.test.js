@@ -138,4 +138,86 @@ describe('RewardsHistory', () => {
       expect(rh.getByType('claim').length).toBe(1);
     });
   });
+
+  // ─── aggregation ──────────────────────────────────────────────────────────
+
+  describe('getTotalDistributed', () => {
+    it('sums all amounts', () => {
+      rh.addEntry('SP1', 100);
+      rh.addEntry('SP2', 250);
+      expect(rh.getTotalDistributed()).toBe(350);
+    });
+
+    it('returns 0 with no entries', () => {
+      expect(rh.getTotalDistributed()).toBe(0);
+    });
+  });
+
+  describe('getTotalForStaker', () => {
+    it('returns sum for a single staker', () => {
+      rh.addEntry('SP1', 100);
+      rh.addEntry('SP1', 200);
+      rh.addEntry('SP2', 999);
+      expect(rh.getTotalForStaker('SP1')).toBe(300);
+    });
+
+    it('returns 0 for unknown staker', () => {
+      rh.addEntry('SP1', 100);
+      expect(rh.getTotalForStaker('NOBODY')).toBe(0);
+    });
+  });
+
+  describe('getAverageReward', () => {
+    it('computes mean correctly', () => {
+      rh.addEntry('SP1', 100);
+      rh.addEntry('SP2', 200);
+      expect(rh.getAverageReward()).toBe(150);
+    });
+
+    it('returns 0 with no entries', () => {
+      expect(rh.getAverageReward()).toBe(0);
+    });
+  });
+
+  // ─── getTopEarners ────────────────────────────────────────────────────────
+
+  describe('getTopEarners', () => {
+    beforeEach(() => {
+      rh.addEntry('SP1', 500);
+      rh.addEntry('SP2', 1000);
+      rh.addEntry('SP3', 250);
+      rh.addEntry('SP1', 300);
+    });
+
+    it('returns earners sorted by total descending', () => {
+      const top = rh.getTopEarners(3);
+      expect(top[0].staker).toBe('SP2');
+      expect(top[1].staker).toBe('SP1');
+    });
+
+    it('respects the limit', () => {
+      expect(rh.getTopEarners(2).length).toBe(2);
+    });
+  });
+
+  // ─── getUniqueStakers / clear ─────────────────────────────────────────────
+
+  describe('getUniqueStakers', () => {
+    it('returns each staker only once', () => {
+      rh.addEntry('SP1', 100);
+      rh.addEntry('SP1', 200);
+      rh.addEntry('SP2', 100);
+      expect(rh.getUniqueStakers().length).toBe(2);
+    });
+  });
+
+  describe('clear', () => {
+    it('empties entries and resets epoch', () => {
+      rh.addEntry('SP1', 100);
+      rh.clear();
+      expect(rh.getHistory().length).toBe(0);
+      const next = rh.addEntry('SP1', 50);
+      expect(next.epoch).toBe(1);
+    });
+  });
 });
