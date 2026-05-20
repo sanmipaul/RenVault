@@ -123,6 +123,55 @@ class RewardsHistory {
     this.entries = [];
     this.nextEpoch = 1;
   }
+
+  /**
+   * Merge entries from another RewardsHistory instance without duplicating epochs.
+   * @param {RewardsHistory} other
+   */
+  merge(other) {
+    if (!other || typeof other.getHistory !== 'function') {
+      throw new Error('merge: argument must be a RewardsHistory instance');
+    }
+    const existingEpochs = new Set(this.entries.map(e => e.epoch));
+    for (const e of other.getHistory()) {
+      if (!existingEpochs.has(e.epoch)) {
+        this.entries.push({ ...e });
+        existingEpochs.add(e.epoch);
+      }
+    }
+    // Keep nextEpoch consistent
+    if (this.entries.length > 0) {
+      this.nextEpoch = Math.max(...this.entries.map(e => e.epoch)) + 1;
+    }
+  }
+
+  /**
+   * Total number of recorded entries.
+   */
+  get size() {
+    return this.entries.length;
+  }
+
+  /**
+   * Snapshot the current entries as a plain array (deep copy).
+   */
+  snapshot() {
+    return this.entries.map(e => ({ ...e }));
+  }
+
+  /**
+   * Restore entries from a snapshot, replacing current state.
+   * @param {Array} snap
+   */
+  restoreFromSnapshot(snap) {
+    if (!Array.isArray(snap)) {
+      throw new Error('restoreFromSnapshot: argument must be an array');
+    }
+    this.entries = snap.map(e => ({ ...e }));
+    this.nextEpoch = this.entries.length > 0
+      ? Math.max(...this.entries.map(e => e.epoch)) + 1
+      : 1;
+  }
 }
 
 module.exports = { RewardsHistory };

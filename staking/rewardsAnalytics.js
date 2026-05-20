@@ -76,6 +76,130 @@ class RewardsAnalytics {
     }
     return totalGap / (timestamps.length - 1);
   }
+
+  /**
+   * Per-staker summary: total, count, average, first/last event timestamps.
+   * @param {string} staker
+   */
+  getStakerMetrics(staker) {
+    const entries = this.history.getByStaker(staker);
+    if (entries.length === 0) {
+      return { staker, total: 0, count: 0, average: 0, firstAt: null, lastAt: null };
+    }
+    const timestamps = entries.map(e => e.timestamp);
+    const total = entries.reduce((s, e) => s + e.amount, 0);
+    return {
+      staker,
+      total,
+      count: entries.length,
+      average: total / entries.length,
+      firstAt: Math.min(...timestamps),
+      lastAt: Math.max(...timestamps),
+    };
+  }
+
+  /**
+   * Protocol-wide summary across all stakers and all history.
+   */
+  getProtocolMetrics() {
+    const all = this.history.getHistory();
+    const uniqueStakers = this.history.getUniqueStakers().length;
+    const total = this.history.getTotalDistributed();
+    const count = all.length;
+    return {
+      totalDistributed: total,
+      distributionCount: count,
+      uniqueStakers,
+      averagePerEvent: count > 0 ? total / count : 0,
+      averagePerStaker: uniqueStakers > 0 ? total / uniqueStakers : 0,
+    };
+  }
+
+  /**
+   * Bucket rewards into time slots and return totals per bucket.
+   * @param {number} bucketMs  - bucket width in ms (e.g. 86400000 for daily)
+   * @param {string} [staker]  - optional: scope to one staker
+   * @returns {Array<{bucketStart:number,total:number,count:number}>}
+   */
+  getTimeSeries(bucketMs, staker) {
+    if (!Number.isFinite(bucketMs) || bucketMs <= 0) {
+      throw new Error('getTimeSeries: bucketMs must be a positive number');
+    }
+    const entries = staker
+      ? this.history.getByStaker(staker)
+      : this.history.getHistory();
+
+    const buckets = new Map();
+    for (const e of entries) {
+      const key = Math.floor(e.timestamp / bucketMs) * bucketMs;
+      const b = buckets.get(key) || { bucketStart: key, total: 0, count: 0 };
+      b.total += e.amount;
+      b.count += 1;
+      buckets.set(key, b);
+    }
+    return [...buckets.values()].sort((a, b) => a.bucketStart - b.bucketStart);
+  }
+
+  /**
+   * Return the highest single reward event recorded globally or for one staker.
+   * @param {string} [staker]
+   */
+  getPeakReward(staker) {
+    const entries = staker
+      ? this.history.getByStaker(staker)
+      : this.history.getHistory();
+    if (entries.length === 0) return null;
+    return entries.reduce((max, e) => (e.amount > max.amount ? e : max), entries[0]);
+  }
+
+  /**
+   * Compare two stakers: returns positive if stakerA earned more, negative if less.
+   * @param {string} stakerA
+   * @param {string} stakerB
+   */
+  compareStakers(stakerA, stakerB) {
+    return this.history.getTotalForStaker(stakerA) - this.history.getTotalForStaker(stakerB);
+  }
+
+  /**
+   * Return sorted leaderboard of all stakers by total earnings.
+   * @param {'asc'|'desc'} [order='desc']
+   */
+  getLeaderboard(order = 'desc') {
+    const stakers = this.history.getUniqueStakers();
+    const ranked = stakers.map(s => ({
+      staker: s,
+      total: this.history.getTotalForStaker(s),
+    }));
+    ranked.sort((a, b) => order === 'desc' ? b.total - a.total : a.total - b.total);
+    return ranked.map((r, i) => ({ rank: i + 1, ...r }));
+  }
+
+  /**
+   * Reward velocity: total earned divided by observation window in hours.
+   * @param {string} staker
+   * @returns {number|null}  µSTX per hour, or null when < 2 events
+   */
+  getRewardVelocity(staker) {
+    const entries = this.history.getByStaker(staker);
+    if (entries.length < 2) return null;
+    const timestamps = entries.map(e => e.timestamp).sort((a, b) => a - b);
+    const windowHours = (timestamps[timestamps.length - 1] - timestamps[0]) / (1000 * 60 * 60);
+    if (windowHours === 0) return null;
+    return this.history.getTotalForStaker(staker) / windowHours;
+  }
+
+  /**
+   * Map epoch number → amount for a staker (for charting).
+   * @param {string} staker
+   * @returns {Array<{epoch:number, amount:number}>}
+   */
+  getRewardsByEpoch(staker) {
+    return this.history
+      .getByStaker(staker)
+      .map(e => ({ epoch: e.epoch, amount: e.amount }))
+      .sort((a, b) => a.epoch - b.epoch);
+  }
 }
 
 module.exports = { RewardsAnalytics };

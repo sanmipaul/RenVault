@@ -1,7 +1,12 @@
 // Rewards Distributor
+const { RewardsHistory } = require('./rewardsHistory');
+
 class RewardsDistributor {
-  constructor(stakingManager) {
+  constructor(stakingManager, rewardsHistory) {
     this.stakingManager = stakingManager;
+    this.rewardsHistory = rewardsHistory instanceof RewardsHistory
+      ? rewardsHistory
+      : new RewardsHistory();
     this.distributionHistory = [];
     this.isRunning = false;
     this.distributionInterval = 86400000; // 24 hours
@@ -43,6 +48,7 @@ class RewardsDistributor {
           const result = this.stakingManager.claimRewards(staker);
           distribution.totalDistributed += result.claimed;
           distribution.recipients += 1;
+          this.rewardsHistory.addEntry(staker, result.claimed, 'distribution');
           distribution.details.push({
             staker,
             amount: result.claimed,
@@ -70,6 +76,13 @@ class RewardsDistributor {
     this.distributionHistory.push(distribution);
 
     return distribution;
+  }
+
+  /**
+   * Access the underlying RewardsHistory for analytics use.
+   */
+  getRewardsHistory() {
+    return this.rewardsHistory;
   }
 
   getDistributionHistory(limit = 50) {
