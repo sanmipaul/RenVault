@@ -1,7 +1,12 @@
 // Rewards Distributor
+const { RewardsHistory } = require('./rewardsHistory');
+
 class RewardsDistributor {
-  constructor(stakingManager) {
+  constructor(stakingManager, rewardsHistory) {
     this.stakingManager = stakingManager;
+    this.rewardsHistory = rewardsHistory instanceof RewardsHistory
+      ? rewardsHistory
+      : new RewardsHistory();
     this.distributionHistory = [];
     this.isRunning = false;
     this.distributionInterval = 86400000; // 24 hours
