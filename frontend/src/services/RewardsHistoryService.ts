@@ -62,6 +62,49 @@ export class RewardsHistoryService {
     this.cache.clear();
     logger.debug('RewardsHistoryService cache cleared');
   }
+
+  /**
+   * Return a paginated slice of reward history.
+   * @param staker   - wallet address
+   * @param page     - 1-based page index
+   * @param pageSize - entries per page (clamped 1–200)
+   */
+  async fetchPage(staker: string, page = 1, pageSize = 20): Promise<RewardsPage> {
+    const clampedSize = Math.min(200, Math.max(1, pageSize));
+    const all = await this.fetchHistory(staker);
+    const totalPages = Math.max(1, Math.ceil(all.length / clampedSize));
+    const safePage = Math.min(Math.max(1, page), totalPages);
+    const start = (safePage - 1) * clampedSize;
+    return {
+      entries: all.slice(start, start + clampedSize),
+      total: all.length,
+      page: safePage,
+      pageSize: clampedSize,
+      totalPages,
+    };
+  }
+
+  /**
+   * Sort a history array by a given field.
+   */
+  sortHistory(
+    entries: RewardEntry[],
+    field: keyof RewardEntry = 'timestamp',
+    direction: 'asc' | 'desc' = 'desc'
+  ): RewardEntry[] {
+    return [...entries].sort((a, b) => {
+      const av = a[field] as number;
+      const bv = b[field] as number;
+      return direction === 'asc' ? av - bv : bv - av;
+    });
+  }
+
+  /**
+   * Compute total rewards from an array of entries.
+   */
+  sumRewards(entries: RewardEntry[]): number {
+    return entries.reduce((s, e) => s + e.amount, 0);
+  }
 }
 
 export default RewardsHistoryService;
