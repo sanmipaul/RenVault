@@ -94,4 +94,50 @@ export function RewardsHistoryPanel({ staker }: Props) {
   );
 }
 
+// ─── RewardRow ────────────────────────────────────────────────────────────────
+
+function RewardRow({ entry }: { entry: RewardEntry }) {
+  const date = new Date(entry.timestamp).toLocaleDateString();
+  const short = entry.staker.slice(0, 8) + '…' + entry.staker.slice(-4);
+  return (
+    <tr>
+      <td>{entry.epoch}</td>
+      <td>{entry.amount.toLocaleString()}</td>
+      <td>
+        <span className={`badge badge--${entry.type}`}>{entry.type}</span>
+      </td>
+      <td>{date}</td>
+      <td title={entry.staker}>{short}</td>
+    </tr>
+  );
+}
+
+// ─── PaginationControls ───────────────────────────────────────────────────────
+
+function PaginationControls({
+  page,
+  totalPages,
+  onPrev,
+  onNext,
+}: {
+  page: number;
+  totalPages: number;
+  onPrev: () => void;
+  onNext: () => void;
+}) {
+  return (
+    <div className="rewards-history-panel__pagination">
+      <button onClick={onPrev} disabled={page <= 1}>
+        ← Prev
+      </button>
+      <span>
+        Page {page} of {totalPages}
+      </span>
+      <button onClick={onNext} disabled={page >= totalPages}>
+        Next →
+      </button>
+    </div>
+  );
+}
+
 export default RewardsHistoryPanel;
