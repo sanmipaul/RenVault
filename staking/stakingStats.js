@@ -49,6 +49,37 @@ class StakingStats {
     if (first === 0) return null;
     return (sorted[sorted.length - 1].tvl - first) / first;
   }
+
+  /** Combine live staking stats with cumulative rewards data. */
+  getFullReport() {
+    const global = this.sm.getGlobalStats();
+    return {
+      ...global,
+      totalRewardsDistributed: this.history.getTotalDistributed(),
+      uniqueRewardedStakers: this.history.getUniqueStakers().length,
+      rewardEventCount: this.history.getHistory().length,
+      currentTVL: this.getCurrentTVL(),
+      tvlGrowthRate: this.getTVLGrowthRate(),
+      snapshotCount: this.tvlSnapshots.length,
+      reportGeneratedAt: Date.now(),
+    };
+  }
+
+  /**
+   * Staker count over time from TVL snapshots.
+   * @returns {Array<{timestamp:number,stakers:number}>}
+   */
+  getActiveStakersOverTime() {
+    return this.getHistoricalTVL().map(s => ({
+      timestamp: s.timestamp,
+      stakers: s.stakers,
+    }));
+  }
+
+  /** Clear all stored snapshots. */
+  clearSnapshots() {
+    this.tvlSnapshots = [];
+  }
 }
 
 module.exports = { StakingStats };
