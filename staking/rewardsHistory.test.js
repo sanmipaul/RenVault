@@ -261,4 +261,37 @@ describe('RewardsHistory', () => {
       expect(rh.size).toBe(2);
     });
   });
+
+  // ─── snapshot / restoreFromSnapshot ──────────────────────────────────────
+
+  describe('snapshot and restoreFromSnapshot', () => {
+    it('snapshot returns a deep copy of entries', () => {
+      rh.addEntry('SP1', 100);
+      const snap = rh.snapshot();
+      snap[0].amount = 9999;
+      expect(rh.entries[0].amount).toBe(100); // original unchanged
+    });
+
+    it('restoreFromSnapshot replaces entries', () => {
+      rh.addEntry('SP1', 100);
+      const snap = rh.snapshot();
+      rh.clear();
+      rh.restoreFromSnapshot(snap);
+      expect(rh.size).toBe(1);
+      expect(rh.entries[0].staker).toBe('SP1');
+    });
+
+    it('restoreFromSnapshot updates nextEpoch correctly', () => {
+      rh.addEntry('SP1', 100); // epoch 1
+      const snap = rh.snapshot();
+      const fresh = new (require('./rewardsHistory').RewardsHistory)();
+      fresh.restoreFromSnapshot(snap);
+      const next = fresh.addEntry('SP2', 200);
+      expect(next.epoch).toBe(2);
+    });
+
+    it('restoreFromSnapshot throws for non-array', () => {
+      expect(() => rh.restoreFromSnapshot('bad')).toThrow('must be an array');
+    });
+  });
 });
