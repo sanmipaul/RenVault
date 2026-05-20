@@ -151,6 +151,29 @@ class RewardsAnalytics {
     if (entries.length === 0) return null;
     return entries.reduce((max, e) => (e.amount > max.amount ? e : max), entries[0]);
   }
+
+  /**
+   * Compare two stakers: returns positive if stakerA earned more, negative if less.
+   * @param {string} stakerA
+   * @param {string} stakerB
+   */
+  compareStakers(stakerA, stakerB) {
+    return this.history.getTotalForStaker(stakerA) - this.history.getTotalForStaker(stakerB);
+  }
+
+  /**
+   * Return sorted leaderboard of all stakers by total earnings.
+   * @param {'asc'|'desc'} [order='desc']
+   */
+  getLeaderboard(order = 'desc') {
+    const stakers = this.history.getUniqueStakers();
+    const ranked = stakers.map(s => ({
+      staker: s,
+      total: this.history.getTotalForStaker(s),
+    }));
+    ranked.sort((a, b) => order === 'desc' ? b.total - a.total : a.total - b.total);
+    return ranked.map((r, i) => ({ rank: i + 1, ...r }));
+  }
 }
 
 module.exports = { RewardsAnalytics };
