@@ -220,4 +220,45 @@ describe('RewardsHistory', () => {
       expect(next.epoch).toBe(1);
     });
   });
+
+  // ─── merge ────────────────────────────────────────────────────────────────
+
+  describe('merge', () => {
+    it('combines entries from two instances without duplicating epochs', () => {
+      const { RewardsHistory: RH } = require('./rewardsHistory');
+      const other = new RH();
+      rh.addEntry('SP1', 100);
+      other.addEntry('SP2', 200);
+      rh.merge(other);
+      expect(rh.size).toBe(2);
+    });
+
+    it('does not re-add entries with duplicate epochs', () => {
+      const { RewardsHistory: RH } = require('./rewardsHistory');
+      const other = new RH();
+      const e = rh.addEntry('SP1', 100);
+      // Manually inject same epoch into other
+      other.entries.push({ ...e });
+      rh.merge(other);
+      expect(rh.size).toBe(1);
+    });
+
+    it('throws when argument is not a RewardsHistory', () => {
+      expect(() => rh.merge(null)).toThrow('merge: argument must be a RewardsHistory instance');
+    });
+  });
+
+  // ─── size getter ─────────────────────────────────────────────────────────
+
+  describe('size', () => {
+    it('returns 0 for empty history', () => {
+      expect(rh.size).toBe(0);
+    });
+
+    it('increments with each addEntry', () => {
+      rh.addEntry('SP1', 100);
+      rh.addEntry('SP2', 200);
+      expect(rh.size).toBe(2);
+    });
+  });
 });
