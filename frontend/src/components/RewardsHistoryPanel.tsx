@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useRewardsHistory } from '../hooks/useRewardsHistory';
-import { RewardEntry } from '../services/RewardsHistoryService';
+import { RewardEntry, RewardsHistoryService } from '../services/RewardsHistoryService';
 
 interface Props {
   staker: string | null;
+  typeFilter?: 'distribution' | 'claim' | 'bonus' | 'all';
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -41,19 +42,42 @@ function ErrorRow({ message }: { message: string }) {
   );
 }
 
-export function RewardsHistoryPanel({ staker }: Props) {
+export function RewardsHistoryPanel({ staker, typeFilter = 'all' }: Props) {
   const [pageNum, setPageNum] = useState(1);
   const [pageSize] = useState(20);
-  const { entries, page, loading, error, refresh } = useRewardsHistory(
+  const [activeFilter, setActiveFilter] = useState<typeof typeFilter>(typeFilter);
+  const { entries: raw, page, loading, error, refresh } = useRewardsHistory(
     staker,
     pageNum,
     pageSize
   );
 
+  const entries = useMemo(
+    () => (activeFilter === 'all' ? raw : raw.filter(e => e.type === activeFilter)),
+    [raw, activeFilter]
+  );
+  const totalFiltered = entries.length;
+  const service = RewardsHistoryService.getInstance();
+  const totalAmount = service.sumRewards(entries);
+
   return (
     <div className="rewards-history-panel">
       <div className="rewards-history-panel__header">
         <h3>Rewards History</h3>
+        <span className="rewards-history-panel__summary">
+          {totalFiltered} events · {totalAmount.toLocaleString()} µSTX total
+        </span>
+        <div className="rewards-history-panel__filters">
+          {(['all', 'distribution', 'claim', 'bonus'] as const).map(t => (
+            <button
+              key={t}
+              className={activeFilter === t ? 'filter-btn filter-btn--active' : 'filter-btn'}
+              onClick={() => { setActiveFilter(t); setPageNum(1); }}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
         <button onClick={refresh} disabled={loading}>
           {loading ? 'Refreshing…' : 'Refresh'}
         </button>
