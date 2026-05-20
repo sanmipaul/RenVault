@@ -80,6 +80,32 @@ class StakingStats {
   clearSnapshots() {
     this.tvlSnapshots = [];
   }
+
+  /**
+   * Compare TVL between two time windows.
+   * @param {number} windowAStart
+   * @param {number} windowAEnd
+   * @param {number} windowBStart
+   * @param {number} windowBEnd
+   * @returns {{windowA:number, windowB:number, delta:number, percentChange:number|null}}
+   */
+  comparePeriods(windowAStart, windowAEnd, windowBStart, windowBEnd) {
+    function avgTVLInWindow(snaps, start, end) {
+      const inWindow = snaps.filter(s => s.timestamp >= start && s.timestamp <= end);
+      if (inWindow.length === 0) return 0;
+      return inWindow.reduce((s, x) => s + x.tvl, 0) / inWindow.length;
+    }
+    const snaps = this.getHistoricalTVL();
+    const avgA = avgTVLInWindow(snaps, windowAStart, windowAEnd);
+    const avgB = avgTVLInWindow(snaps, windowBStart, windowBEnd);
+    const delta = avgB - avgA;
+    return {
+      windowA: avgA,
+      windowB: avgB,
+      delta,
+      percentChange: avgA !== 0 ? (delta / avgA) : null,
+    };
+  }
 }
 
 module.exports = { StakingStats };
