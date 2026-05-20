@@ -151,6 +151,27 @@ class RewardsHistory {
   get size() {
     return this.entries.length;
   }
+
+  /**
+   * Snapshot the current entries as a plain array (deep copy).
+   */
+  snapshot() {
+    return this.entries.map(e => ({ ...e }));
+  }
+
+  /**
+   * Restore entries from a snapshot, replacing current state.
+   * @param {Array} snap
+   */
+  restoreFromSnapshot(snap) {
+    if (!Array.isArray(snap)) {
+      throw new Error('restoreFromSnapshot: argument must be an array');
+    }
+    this.entries = snap.map(e => ({ ...e }));
+    this.nextEpoch = this.entries.length > 0
+      ? Math.max(...this.entries.map(e => e.epoch)) + 1
+      : 1;
+  }
 }
 
 module.exports = { RewardsHistory };
