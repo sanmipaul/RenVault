@@ -114,6 +114,43 @@ class RewardsAnalytics {
       averagePerStaker: uniqueStakers > 0 ? total / uniqueStakers : 0,
     };
   }
+
+  /**
+   * Bucket rewards into time slots and return totals per bucket.
+   * @param {number} bucketMs  - bucket width in ms (e.g. 86400000 for daily)
+   * @param {string} [staker]  - optional: scope to one staker
+   * @returns {Array<{bucketStart:number,total:number,count:number}>}
+   */
+  getTimeSeries(bucketMs, staker) {
+    if (!Number.isFinite(bucketMs) || bucketMs <= 0) {
+      throw new Error('getTimeSeries: bucketMs must be a positive number');
+    }
+    const entries = staker
+      ? this.history.getByStaker(staker)
+      : this.history.getHistory();
+
+    const buckets = new Map();
+    for (const e of entries) {
+      const key = Math.floor(e.timestamp / bucketMs) * bucketMs;
+      const b = buckets.get(key) || { bucketStart: key, total: 0, count: 0 };
+      b.total += e.amount;
+      b.count += 1;
+      buckets.set(key, b);
+    }
+    return [...buckets.values()].sort((a, b) => a.bucketStart - b.bucketStart);
+  }
+
+  /**
+   * Return the highest single reward event recorded globally or for one staker.
+   * @param {string} [staker]
+   */
+  getPeakReward(staker) {
+    const entries = staker
+      ? this.history.getByStaker(staker)
+      : this.history.getHistory();
+    if (entries.length === 0) return null;
+    return entries.reduce((max, e) => (e.amount > max.amount ? e : max), entries[0]);
+  }
 }
 
 module.exports = { RewardsAnalytics };
