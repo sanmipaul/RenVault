@@ -39,8 +39,8 @@ function buildCSVRow(tx: TransactionHistoryItem): string[] {
 
 export function toCSV(transactions: TransactionHistoryItem[]): string {
   const rows = [CSV_HEADERS, ...transactions.map(buildCSVRow)];
-  return rows.map(row => row.map(cell => escapeCSVCell(String(cell))).join(',')).join('
-');
+  return rows.map(row => row.map(cell => escapeCSVCell(String(cell))).join(',')).join('\n');
+}
 }
 
 export interface JSONExportRecord {

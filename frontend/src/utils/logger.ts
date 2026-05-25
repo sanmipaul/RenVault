@@ -10,6 +10,14 @@ const LEVEL_RANK: Record<LogLevel, number> = {
   silent: 4,
 };
 
+const LEVEL_NAMES: Record<LogLevel, string> = {
+  debug: 'DEBUG',
+  info: 'INFO',
+  warn: 'WARN',
+  error: 'ERROR',
+  silent: 'SILENT',
+};
+
 const LOG_LEVELS = {
   ERROR: 'ERROR',
   WARN: 'WARN',
@@ -21,9 +29,36 @@ const DEFAULT_MIN_LEVEL_DEV = LogLevel.DEBUG;
 const DEFAULT_MIN_LEVEL_PROD = LogLevel.WARN;
 const DEFAULT_BUFFER_SIZE = 200;
 
+export interface LogEntry {
+  level: LogLevel;
+  levelName: string;
+  message: string;
+  context?: string;
+  data?: unknown;
+  error?: Error;
+  timestamp: string;
+}
+
+export interface LogTransport {
+  write(entry: LogEntry): void;
+}
+
+export interface LoggerOptions {
+  minLevel?: LogLevel;
+  bufferSize?: number;
+  enableBuffer?: boolean;
+  transports?: LogTransport[];
+  context?: string;
+}
+
 class Logger {
   private isDev = environment.isDev;
   private minLevel: LogLevel = environment.isDev ? 'debug' : 'info';
+  private bufferSize: number = DEFAULT_BUFFER_SIZE;
+  private enableBuffer: boolean = true;
+  private transports: LogTransport[] = [];
+  private context: string = '';
+  private buffer: LogEntry[] = [];
 
   private shouldLog(level: LogLevel): boolean {
     return LEVEL_RANK[level] >= LEVEL_RANK[this.minLevel];
@@ -45,8 +80,12 @@ class Logger {
     return this.minLevel;
   }
 
-  private shouldLog(level: LogLevel): boolean {
-    return level >= this.minLevel;
+  setLevel(level: LogLevel): void {
+    this.minLevel = level;
+  }
+
+  silence(): void {
+    this.minLevel = 'silent';
   }
 
   private record(entry: LogEntry): void {
@@ -78,56 +117,30 @@ class Logger {
         // never let a transport crash the app
       }
     }
-  setLevel(level: LogLevel): void {
-    this.minLevel = level;
   }
 
-  silence(): void {
-    this.minLevel = 'silent';
+  private formatMessage(levelName: string, message: string): string {
+    return `[${new Date().toISOString()}] ${levelName}: ${message}`;
   }
 
-  error(message: string, error?: unknown): void {
-    if (!this.shouldLog('error')) return;
-    const msg = this.formatMessage(LOG_LEVELS.ERROR, message);
-    console.error(msg, error);
-  }
-
-  warn(message: string, extra?: unknown): void {
-    if (!this.shouldLog('warn')) return;
-    const msg = this.formatMessage(LOG_LEVELS.WARN, message);
-    console.warn(msg, extra);
+  debug(message: string): void {
+    if (!this.shouldLog('debug')) return;
+    console.debug(this.formatMessage(LOG_LEVELS.DEBUG, message));
   }
 
   info(message: string): void {
     if (!this.shouldLog('info')) return;
-    const msg = this.formatMessage(LOG_LEVELS.INFO, message);
-    console.log(msg);
+    console.log(this.formatMessage(LOG_LEVELS.INFO, message));
   }
 
-  debug(message: string, data?: unknown): void {
-    if (!this.isDev || !this.shouldLog('debug')) return;
-    const msg = this.formatMessage(LOG_LEVELS.DEBUG, message);
-    console.debug(msg, data);
+  warn(message: string): void {
+    if (!this.shouldLog('warn')) return;
+    console.warn(this.formatMessage(LOG_LEVELS.WARN, message));
   }
 
-  debug(message: string, data?: unknown): void {
-    if (!this.shouldLog(LogLevel.DEBUG)) return;
-    this.dispatch(this.buildEntry(LogLevel.DEBUG, message, data));
-  }
-
-  info(message: string, data?: unknown): void {
-    if (!this.shouldLog(LogLevel.INFO)) return;
-    this.dispatch(this.buildEntry(LogLevel.INFO, message, data));
-  }
-
-  warn(message: string, data?: unknown): void {
-    if (!this.shouldLog(LogLevel.WARN)) return;
-    this.dispatch(this.buildEntry(LogLevel.WARN, message, data));
-  }
-
-  error(message: string, error?: Error, data?: unknown): void {
-    if (!this.shouldLog(LogLevel.ERROR)) return;
-    this.dispatch(this.buildEntry(LogLevel.ERROR, message, data, error));
+  error(message: string, error?: unknown): void {
+    if (!this.shouldLog('error')) return;
+    console.error(this.formatMessage(LOG_LEVELS.ERROR, message), error);
   }
 
   getBuffer(): ReadonlyArray<LogEntry> {
@@ -163,10 +176,6 @@ class Logger {
       ...options,
       context: this.context ? `${this.context}:${context}` : context,
     });
-  }
-
-  silence(): void {
-    this.minLevel = LogLevel.SILENT;
   }
 
   getLogStats(): Record<string, number> {
