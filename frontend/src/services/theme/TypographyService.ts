@@ -130,7 +130,7 @@ export class TypographyService {
    * Get font size
    */
   static getFontSize(size: 'xs' | 'sm' | 'base' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl'): string {
-    return (typography.fontSize as any)[size];
+    return typography.fontSize[size];
   }
 
   /**
@@ -144,7 +144,7 @@ export class TypographyService {
    * Get line height
    */
   static getLineHeight(height: 'tight' | 'normal' | 'relaxed' | 'loose'): number {
-    return (typography.lineHeight as any)[height];
+    return typography.lineHeight[height];
   }
 
   /**
