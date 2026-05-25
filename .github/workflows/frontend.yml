@@ -1,42 +1,57 @@
-name: Frontend Build & Deploy
+name: CI
 
 on:
   push:
-    branches: [ main ]
-    paths: [ 'frontend/**' ]
-  pull_request:
-    paths: [ 'frontend/**' ]
+    branches: [main, master]
+  schedule:
+    - cron: '0 0,12 * * *'
+  workflow_dispatch:
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-    
-    - name: Install root dependencies
-      run: npm install
+  install-sdks:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node-version: ['18', '20', '22']
 
-    - name: Install dependencies
-      run: |
-        cd frontend
-        npm ci
-    
-    - name: Build frontend
-      run: |
-        cd frontend
-        npm run build
-    
-    - name: Deploy to Vercel
-      if: github.ref == 'refs/heads/main'
-      uses: amondnet/vercel-action@v25
-      with:
-        vercel-token: ${{ secrets.VERCEL_TOKEN }}
-        vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-        vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-        working-directory: frontend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install project dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Install RenVault packages
+        run: |
+          npm install --no-audit --no-fund \
+            renvault-admin@^1.0.2 \
+            renvault-analytics@^1.0.2 \
+            renvault-backup@^1.0.2 \
+            renvault-bridge@^1.0.2 \
+            renvault-chainhooks-realtime@^1.0.2 \
+            renvault-emergency@^1.0.2 \
+            renvault-gateway@^1.0.2 \
+            renvault-governance@^1.0.2 \
+            renvault-leaderboard@^1.0.2 \
+            renvault-liquidity@^1.0.2 \
+            renvault-mobile@^1.0.2 \
+            renvault-monitoring@^1.0.2 \
+            renvault-multi-asset@^1.0.2 \
+            renvault-nft-rewards@^1.0.2 \
+            renvault-notifications@^1.0.2 \
+            renvault-oracle@^1.0.2 \
+            renvault-referral@^1.0.2 \
+            renvault-security-audit@^1.0.2 \
+            renvault-staking@^1.0.2 \
+            renvault-timelock@^1.0.1 \
+            renvault-yield@^1.0.1
+
+      - name: Verify RenVault packages
+        run: npm list renvault-admin renvault-analytics renvault-backup
