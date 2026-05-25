@@ -25,6 +25,11 @@ import { FocusTrapWrapper } from './components/FocusTrapWrapper';
 import AmountInput from './components/AmountInput';
 import { useAmountValidation } from './hooks/useAmountValidation';
 import { validateDepositAmount, validateWithdrawAmount, parseSTXInput } from './utils/amountValidator';
+import { TwoFactorSecureStorage } from './services/security/TwoFactorSecureStorage';
+import { TwoFactorMigration } from './services/security/TwoFactorMigration';
+import { ContractErrorMapper, ContractError } from './utils/contractErrorMapper';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import { ErrorFallback } from './components/ErrorFallback';
 
 const appConfig = new AppConfig(['store_write', 'publish_data']);
 const userSession = new UserSession({ appConfig });
@@ -87,32 +92,24 @@ function AppContent() {
   const [withdrawTxDetails, setWithdrawTxDetails] = useState<WithdrawTxDetails | null>(null);
   const [connectionMethod, setConnectionMethod] = useState<'stacks' | 'walletconnect' | null>(null);
   const [showConnectionOptions, setShowConnectionOptions] = useState<boolean>(false);
-  const [walletConnectSession, setWalletConnectSession] = useState<WalletConnectSession | null>(null);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [connectionError, setConnectionError] = useState<string | null>(null);
-  const [, setRetryCount] = useState<number>(0);
-  const [showHelp, setShowHelp] = useState<boolean>(false);
-  const [currentTransaction, setCurrentTransaction] = useState<any>(null);
+const [walletConnectSession, setWalletConnectSession] = useState<WalletConnectSession | null>(null);
+   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Modal visibility state
-  const [show2FASetup, setShow2FASetup] = useState<boolean>(false);
-  const [show2FAVerify, setShow2FAVerify] = useState<boolean>(false);
-  const [showBackupCodes, setShowBackupCodes] = useState<boolean>(false);
-  const [showNotificationCenter, setShowNotificationCenter] = useState<boolean>(false);
-  const [showWalletBackup, setShowWalletBackup] = useState<boolean>(false);
-  const [showWalletRecovery, setShowWalletRecovery] = useState<boolean>(false);
-  const [showMultiSigSetup, setShowMultiSigSetup] = useState<boolean>(false);
-  const [showCoSignerManagement, setShowCoSignerManagement] = useState<boolean>(false);
-  const [showMultiSigSigner, setShowMultiSigSigner] = useState<boolean>(false);
-  const [currentTransaction, setCurrentTransaction] = useState<StacksContractCallOptions | null>(null);
-  const [showPerformanceMonitor, setShowPerformanceMonitor] = useState<boolean>(false);
-  const [tfaSecret, setTfaSecret] = useState<string>('');
-  const [tfaEnabled, setTfaEnabled] = useState<boolean>(TwoFactorSecureStorage.hasSecret());
-  const [connectionError, setConnectionError] = useState<string | null>(null);
-  const [retryCount, setRetryCount] = useState<number>(0);
-  const [showHelp, setShowHelp] = useState<boolean>(false);
+   // Modal visibility state
+   const [show2FASetup, setShow2FASetup] = useState<boolean>(false);
+   const [show2FAVerify, setShow2FAVerify] = useState<boolean>(false);
+   const [showBackupCodes, setShowBackupCodes] = useState<boolean>(false);
+   const [showNotificationCenter, setShowNotificationCenter] = useState<boolean>(false);
+   const [showWalletBackup, setShowWalletBackup] = useState<boolean>(false);
+   const [showWalletRecovery, setShowWalletRecovery] = useState<boolean>(false);
+   const [showMultiSigSetup, setShowMultiSigSetup] = useState<boolean>(false);
+   const [showCoSignerManagement, setShowCoSignerManagement] = useState<boolean>(false);
+   const [showMultiSigSigner, setShowMultiSigSigner] = useState<boolean>(false);
+   const [showPerformanceMonitor, setShowPerformanceMonitor] = useState<boolean>(false);
+   const [tfaSecret, setTfaSecret] = useState<string>('');
+   const [tfaEnabled, setTfaEnabled] = useState<boolean>(false);
 
-  // ── Real-time amount validation ─────────────────────────────────────────
+   // ── Real-time amount validation ─────────────────────────────────────────
   const balanceNum = parseFloat(balance) || 0;
   const depositValidation = useAmountValidation('deposit');
   const withdrawValidation = useAmountValidation('withdraw', balanceNum);
@@ -193,7 +190,7 @@ function AppContent() {
     if (notificationService) {
       notificationService.testTwoFactorDisabledNotification();
     }
-  }, [userAddress, detectFromAddress]);
+  };
 
   const handleMultiSigSetupComplete = () => {
     setShowMultiSigSetup(false);
@@ -319,54 +316,6 @@ function AppContent() {
   const connectWithWalletConnect = () => {
     setConnectionMethod('walletconnect');
     setShowConnectionOptions(false);
-  };
-
-  const disconnectWallet = () => {
-    if (connectionMethod === 'stacks') {
-      userSession.signUserOut();
-    }
-    setUserData(null);
-    setConnectionMethod(null);
-    setWalletConnectSession(null);
-    resetStats();
-    resetNetwork();
-    disable2FA();
-  };
-
-  const handle2FASetupComplete = (secret: string, backupCodes: string[]) => {
-    enable2FA(secret, backupCodes);
-    setShow2FASetup(false);
-    setStatus('Two-factor authentication enabled successfully!');
-    notificationService?.testTwoFactorEnabledNotification();
-  };
-
-  const handle2FAVerify = async (code: string): Promise<boolean> => {
-    try {
-      const response = await fetch('/api/2fa/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: 'current-user', code }),
-      });
-
-      // Assuming result is a UIntCV
-      // @ts-ignore
-      setBalance((parseInt(balanceResult.value) / 1000000).toFixed(6));
-      // @ts-ignore
-      setPoints(pointsResult.value);
-      
-      const duration = Date.now() - startTime;
-      trackAnalytics('performance', { operation: 'fetch-user-stats', duration });
-    } catch (error: unknown) {
-      if (networkMismatch) {
-        setStatus('Unable to fetch data: Please switch to mainnet');
-      } else if (ContractErrorMapper.isContractError(error)) {
-        logger.warn('Contract error fetching stats:', ContractErrorMapper.toStatusMessage(error, CONTRACT_NAME));
-      } else {
-        logger.error('Error fetching stats:', error);
-      }
-      const duration = Date.now() - startTime;
-      trackAnalytics('performance', { operation: 'fetch-user-stats', duration });
-    }
   };
 
   const handleDeposit = async () => {
