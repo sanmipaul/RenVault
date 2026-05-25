@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * Secure encryption utilities for RenVault
  * Uses Web Crypto API with AES-GCM for authenticated encryption
