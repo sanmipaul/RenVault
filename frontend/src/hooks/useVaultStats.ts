@@ -1,9 +1,9 @@
-// hooks/useVaultStats.ts
 import { useState, useCallback } from 'react';
-import { callReadOnlyFunction, standardPrincipalCV } from '@stacks/transactions';
+import { callReadOnlyFunction, standardPrincipalCV, ClarityValue } from '@stacks/transactions';
 import { StacksMainnet } from '@stacks/network';
 import { CONTRACT_ADDRESS, CONTRACT_NAME } from '../constants/app';
 import { trackAnalytics } from '../utils/analytics';
+import { logger } from '../utils/logger';
 
 interface VaultStats {
   balance: string;
@@ -18,6 +18,20 @@ interface UseVaultStatsResult {
 }
 
 const network = new StacksMainnet();
+
+interface UIntCV extends ClarityValue {
+  type: 'uint';
+  value: string;
+}
+
+interface IntCV extends ClarityValue {
+  type: 'int';
+  value: string;
+}
+
+function isUIntCV(value: ClarityValue): value is UIntCV {
+  return value.type === 'uint';
+}
 
 export const useVaultStats = (): UseVaultStatsResult => {
   const [balance, setBalance] = useState<string>('0');
@@ -46,10 +60,12 @@ export const useVaultStats = (): UseVaultStatsResult => {
         senderAddress: address,
       });
 
-      // @ts-ignore
-      setBalance((parseInt(balanceResult.value) / 1000000).toFixed(6));
-      // @ts-ignore
-      setPoints(pointsResult.value);
+      if (isUIntCV(balanceResult)) {
+        setBalance((parseInt(balanceResult.value) / 1000000).toFixed(6));
+      }
+      if (isUIntCV(pointsResult)) {
+        setPoints(pointsResult.value);
+      }
 
       trackAnalytics('performance', { operation: 'fetch-user-stats', duration: Date.now() - startTime });
     } catch (error) {
