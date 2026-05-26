@@ -11,13 +11,20 @@ import { WalletErrorHandler, WalletErrorType } from '../services/wallet/WalletEr
 import { WalletFallbackManager } from '../services/wallet/WalletFallbackManager';
 import { WalletProviderLoader } from '../services/wallet/WalletProviderLoader';
 
+interface AppKitWallet {
+  id: string;
+  name: string;
+  isInstalled?: boolean;
+  icon?: string;
+}
+
 interface WalletContextType {
   currentProvider: WalletProviderBase | null;
   selectedProviderType: WalletProviderType | null;
   setSelectedProvider: (type: WalletProviderType) => void;
-  connect: (walletId?: string) => Promise<any>;
+  connect: (walletId?: string) => Promise<{ address: string; publicKey: string }>;
   disconnect: () => Promise<void>;
-  signTransaction: (tx: any) => Promise<any>;
+  signTransaction: (tx: Record<string, unknown>) => Promise<Record<string, unknown>>;
   signMessage: (message: string) => Promise<string>;
   isLoading: boolean;
   error: Error | null;
@@ -33,16 +40,16 @@ interface WalletContextType {
   sponsorshipQuota: SponsorshipQuota | null;
   isEligibleForSponsorship: (operation: string, value?: number) => Promise<boolean>;
   // AppKit Custom Wallet Support
-  appKitWallets: any[];
-  availableWallets: any[];
-  installedWallets: any[];
+  appKitWallets: AppKitWallet[];
+  availableWallets: AppKitWallet[];
+  installedWallets: AppKitWallet[];
   isWalletInstalled: (walletId: string) => boolean;
-  connectWithFallback: (walletId: string) => Promise<any>;
+  connectWithFallback: (walletId: string) => Promise<{ address: string }>;
   // Wallet installation
   getInstallationLink: (walletId: string) => string;
   openWalletInstallation: (walletId: string) => Promise<void>;
   // Error handling
-  walletError: any;
+  walletError: Error | null;
   clearError: () => void;
   // Deep linking
   handleDeepLinkReturn: () => void;
@@ -59,9 +66,9 @@ export const WalletProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   const userId = address ?? fallbackId;
   const [sponsorshipQuota, setSponsorshipQuota] = useState<SponsorshipQuota | null>(null);
   const [currentStacksAdapter, setCurrentStacksAdapter] = useState<StacksConnectorAdapter | null>(null);
-  const [appKitWallets, setAppKitWallets] = useState<any[]>([]);
-  const [installedWallets, setInstalledWallets] = useState<any[]>([]);
-  const [walletError, setWalletError] = useState<any>(null);
+  const [appKitWallets, setAppKitWallets] = useState<AppKitWallet[]>([]);
+  const [installedWallets, setInstalledWallets] = useState<AppKitWallet[]>([]);
+  const [walletError, setWalletError] = useState<Error | null>(null);
   const [isLoadingWallets, setIsLoadingWallets] = useState(false);
 
   // Initialize AppKit wallets
@@ -186,27 +193,27 @@ export const WalletProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     logger.info('Provider selection:', type);
   };
 
-  const connect = async (walletId?: string) => {
-    const middleware = WalletErrorHandler.createMiddleware({
-      walletId: walletId || 'unknown',
-      operation: 'connect',
-    });
+const connect = async (walletId?: string): Promise<{ address: string; publicKey: string }> => {
+     const middleware = WalletErrorHandler.createMiddleware({
+       walletId: walletId || 'unknown',
+       operation: 'connect',
+     });
 
-    return middleware.wrap(async () => {
-      if (walletId) {
-        // Use Stacks connector adapter for custom wallets
-        const adapter = new StacksConnectorAdapter(walletId);
-        const connectionState = await adapter.connect();
-        setCurrentStacksAdapter(adapter);
-        return { address: connectionState.address, publicKey: connectionState.publicKey };
-      }
+     return middleware.wrap(async () => {
+       if (walletId) {
+         // Use Stacks connector adapter for custom wallets
+         const adapter = new StacksConnectorAdapter(walletId);
+         const connectionState = await adapter.connect();
+         setCurrentStacksAdapter(adapter);
+         return { address: connectionState.address, publicKey: connectionState.publicKey };
+       }
 
-      // Fall back to AppKit connection
-      return { address, publicKey: '' };
-    });
-  };
+       // Fall back to AppKit connection
+       return { address: address || '', publicKey: '' };
+     });
+   };
 
-  const connectWithFallback = async (walletId: string) => {
+  const connectWithFallback = async (walletId: string): Promise<{ address: string }> => {
     const middleware = WalletErrorHandler.createMiddleware({
       walletId,
       operation: 'connect',
@@ -243,19 +250,19 @@ export const WalletProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     });
   };
 
-  const signTransaction = async (tx: any) => {
-    const middleware = WalletErrorHandler.createMiddleware({
-      walletId: currentStacksAdapter?.getWalletId() || 'unknown',
-      operation: 'sign',
-    });
+const signTransaction = async (tx: Record<string, unknown>) => {
+     const middleware = WalletErrorHandler.createMiddleware({
+       walletId: currentStacksAdapter?.getWalletId() || 'unknown',
+       operation: 'sign',
+     });
 
-    return middleware.wrap(async () => {
-      if (!currentStacksAdapter) {
-        throw new Error('No wallet connected');
-      }
-      return await currentStacksAdapter.signTransaction(tx);
-    });
-  };
+     return middleware.wrap(async () => {
+       if (!currentStacksAdapter) {
+         throw new Error('No wallet connected');
+       }
+       return await currentStacksAdapter.signTransaction(tx);
+     });
+   };
 
   const signMessage = async (message: string): Promise<string> => {
     const middleware = WalletErrorHandler.createMiddleware({
