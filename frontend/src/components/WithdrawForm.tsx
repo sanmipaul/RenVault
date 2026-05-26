@@ -72,8 +72,9 @@ const WithdrawForm: React.FC<WithdrawFormProps> = ({
         fee: 'Network fee: ~0.001 STX (estimated)',
         estimatedFee: '0.001 STX',
       });
-    } catch (error: any) {
-      onStatusChange(`Error preparing transaction: ${error.message}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      onStatusChange(`Error preparing transaction: ${message}`);
     } finally {
       setLoading(false);
     }
@@ -122,9 +123,10 @@ const WithdrawForm: React.FC<WithdrawFormProps> = ({
           setTxDetails(null);
         },
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       clearTimeout(signingTimeout);
-      onStatusChange(`Error signing transaction: ${error.message}`);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      onStatusChange(`Error signing transaction: ${message}`);
       setTxDetails(null);
     } finally {
       setLoading(false);

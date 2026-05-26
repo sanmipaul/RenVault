@@ -78,9 +78,10 @@ const DepositPanel: React.FC<DepositPanelProps> = ({
       }
 
       setTimeout(onRefreshStats, 3000);
-    } catch (error: any) {
-      onStatusChange(`Error: ${error.message}`);
-      trackAnalytics('wallet-error', { user: userAddress, method: connectionMethod ?? 'unknown', errorType: error.message });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      onStatusChange(`Error: ${message}`);
+      trackAnalytics('wallet-error', { user: userAddress, method: connectionMethod ?? 'unknown', errorType: message });
     } finally {
       setLoading(false);
     }
