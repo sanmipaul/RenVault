@@ -5,7 +5,7 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
 import { ChainSwitchService } from '../services/chain/ChainSwitchService';
-import { MultiChainTransactionService } from '../services/chain/MultiChainTransactionService';
+import { MultiChainTransactionService, Transaction } from '../services/chain/MultiChainTransactionService';
 import { MultiChainBalanceService } from '../services/chain/MultiChainBalanceService';
 import { MultiChainWalletProviderService } from '../services/chain/MultiChainWalletProviderService';
 import { NetworkValidationService } from '../services/chain/NetworkValidationService';
@@ -213,7 +213,7 @@ export function useTransactionTracking(address?: string) {
   }, [address]);
 
   const addTransaction = useCallback(
-    (tx: any) => {
+    (tx: Omit<Transaction, 'id' | 'timestamp'>) => {
       const newTx = MultiChainTransactionService.createTransaction(tx);
       setTransactions(prev => [newTx, ...prev]);
 
@@ -222,8 +222,8 @@ export function useTransactionTracking(address?: string) {
     []
   );
 
-  const updateStatus = useCallback((txId: string, status: string) => {
-    MultiChainTransactionService.updateTransactionStatus(txId, status as any);
+  const updateStatus = useCallback((txId: string, status: Transaction['status']) => {
+    MultiChainTransactionService.updateTransactionStatus(txId, status);
     setTransactions(prev =>
       prev.map(tx => (tx.id === txId ? { ...tx, status } : tx))
     );
@@ -370,11 +370,22 @@ export function useMultiChainState() {
 /**
  * useErrorHandler Hook - Handle errors with recovery
  */
-export function useErrorHandler() {
-  const [errors, setErrors] = useState<any[]>([]);
+export interface ErrorEntry {
+  message: string;
+  timestamp: number;
+  stack?: string;
+}
 
-  const handleError = useCallback((error: any) => {
-    setErrors(prev => [error, ...prev].slice(0, 10));
+export function useErrorHandler() {
+  const [errors, setErrors] = useState<ErrorEntry[]>([]);
+
+  const handleError = useCallback((error: unknown) => {
+    const errorEntry: ErrorEntry = {
+      message: error instanceof Error ? error.message : String(error),
+      timestamp: Date.now(),
+      stack: error instanceof Error ? error.stack : undefined
+    };
+    setErrors(prev => [errorEntry, ...prev].slice(0, 10));
   }, []);
 
   const clearError = useCallback((index: number) => {
