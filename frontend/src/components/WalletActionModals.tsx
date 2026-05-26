@@ -9,6 +9,7 @@ import { MultiSigTransactionSigner } from './MultiSigTransactionSigner';
 import { PerformanceMonitor } from './PerformanceMonitor';
 import { WalletManager } from '../services/wallet/WalletManager';
 import { FocusTrapWrapper } from './FocusTrapWrapper';
+import { SignedTransactionResult, StacksContractCallOptions } from '../types/wallet';
 
 interface WalletActionModalsProps {
   walletManager: WalletManager;
@@ -18,12 +19,12 @@ interface WalletActionModalsProps {
   showCoSignerManagement: boolean;
   showMultiSigSigner: boolean;
   showPerformanceMonitor: boolean;
-  currentTransaction: any;
+  currentTransaction: StacksContractCallOptions | null;
   onBackupComplete: (data: string) => void;
   onRecoveryComplete: () => void;
   onMultiSigSetupComplete: () => void;
   onCoSignerUpdate: () => void;
-  onMultiSigTransactionSigned: (signedTx: any) => void;
+  onMultiSigTransactionSigned: (signedTx: SignedTransactionResult) => void;
   onCloseBackup: () => void;
   onCloseRecovery: () => void;
   onCloseMultiSigSetup: () => void;
