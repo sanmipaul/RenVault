@@ -32,8 +32,7 @@ class EmailService {
   }
 
   async sendDepositAlert(userEmail, amount, balance) {
-    const template = this.loadTemplate('deposit.html');
-    const html = this.renderTemplate(template, { amount, balance });
+    const html = this.templateEngine.render('deposit.html', { amount, balance });
 
     const mailOptions = {
       from: process.env.FROM_EMAIL || 'noreply@renvault.com',
