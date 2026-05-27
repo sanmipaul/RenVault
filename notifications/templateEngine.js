@@ -30,12 +30,16 @@ class TemplateEngine {
       return this.cache.get(templateName);
     }
 
-    const templatePath = path.join(this.templateDir, templateName);
-    if (!fs.existsSync(templatePath)) {
+    const resolved = path.resolve(this.templateDir, templateName);
+    if (!resolved.startsWith(path.resolve(this.templateDir) + path.sep)) {
+      throw new Error(`Invalid template name: ${templateName}`);
+    }
+
+    if (!fs.existsSync(resolved)) {
       throw new Error(`Template not found: ${templateName}`);
     }
 
-    const content = fs.readFileSync(templatePath, 'utf8');
+    const content = fs.readFileSync(resolved, 'utf8');
     this.cache.set(templateName, content);
     return content;
   }
