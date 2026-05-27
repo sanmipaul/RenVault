@@ -77,10 +77,21 @@ class TemplateEngine {
   }
 
   _resolveBlocks(template, data) {
-    return template.replace(
+    let out = template.replace(
       /\{\{#if\s+(\w+)\}\}([\s\S]*?)\{\{\/if\}\}/g,
       (_, key, inner) => (data[key] ? inner : '')
     );
+
+    out = out.replace(
+      /\{\{#each\s+(\w+)\}\}([\s\S]*?)\{\{\/each\}\}/g,
+      (_, key, inner) => {
+        const items = data[key];
+        if (!Array.isArray(items)) return '';
+        return items.map(item => inner.replace(/\{\{this\}\}/g, escapeHtml(item))).join('');
+      }
+    );
+
+    return out;
   }
 
   clearCache(templateName) {
