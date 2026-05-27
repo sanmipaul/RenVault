@@ -38,6 +38,7 @@ class EmailService {
   }
 
   async sendDepositAlert(userEmail, amount, balance) {
+    if (!userEmail) return;
     const html = this.templateEngine.render('deposit.html', { amount, balance });
 
     const mailOptions = {
