@@ -114,16 +114,13 @@ class EmailService {
   }
 
   async sendLiquidityRewardAlert(userEmail, amount, poolName) {
+    const html = this.templateEngine.render('liquidity-reward.html', { amount, poolName });
+
     const mailOptions = {
       from: process.env.FROM_EMAIL || 'noreply@renvault.com',
       to: userEmail,
-      subject: '💧 RenVault Liquidity Reward Earned',
-      html: `
-        <h2>Liquidity Reward Received!</h2>
-        <p>You've earned <strong>${amount} STX</strong> from liquidity provision!</p>
-        <p>Pool: <strong>${poolName}</strong></p>
-        <p>Thank you for providing liquidity to RenVault!</p>
-      `
+      subject: '&#x1F4A7; RenVault Liquidity Reward Earned',
+      html
     };
 
     try {
