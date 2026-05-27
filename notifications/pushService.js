@@ -1,6 +1,11 @@
+const { FilePersistence } = require('../shared/persistence');
+const Logger = require('./logger');
+
 class PushNotificationService {
   constructor() {
-    this.subscribers = new Map();
+    this.logger = new Logger('PushService');
+    this.persistence = new FilePersistence('push-subscriptions');
+    this.subscribers = this.persistence.toMap();
   }
 
   subscribe(userId, endpoint, keys) {
