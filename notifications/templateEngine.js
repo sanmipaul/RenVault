@@ -76,6 +76,13 @@ class TemplateEngine {
     return rendered;
   }
 
+  _resolveBlocks(template, data) {
+    return template.replace(
+      /\{\{#if\s+(\w+)\}\}([\s\S]*?)\{\{\/if\}\}/g,
+      (_, key, inner) => (data[key] ? inner : '')
+    );
+  }
+
   clearCache(templateName) {
     if (templateName) {
       this.cache.delete(templateName);
