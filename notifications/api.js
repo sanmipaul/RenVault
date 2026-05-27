@@ -111,7 +111,13 @@ app.post('/api/notifications/test-liquidity-reward', async (req, res) => {
 
 app.post('/api/notifications/test-failed-login', async (req, res) => {
   const { userId, ipAddress, userAgent } = req.body;
-  
+
+  const userIdErr = validateUserId(userId);
+  if (userIdErr) return res.status(400).json({ error: userIdErr });
+
+  const ipErr = validateIpAddress(ipAddress);
+  if (ipErr) return res.status(400).json({ error: `ipAddress: ${ipErr}` });
+
   await notificationManager.notifyFailedLogin(userId, ipAddress, userAgent);
   res.json({ success: true, message: 'Test failed login notification sent' });
 });
