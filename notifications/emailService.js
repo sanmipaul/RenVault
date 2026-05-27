@@ -49,9 +49,9 @@ class EmailService {
 
     try {
       await this.sendWithRetry(mailOptions);
-      this.logger.info(`Deposit alert sent to ${userEmail}`);
+      this.logger.info('Deposit alert sent', { recipient: this._maskEmail(userEmail) });
     } catch (error) {
-      this.logger.error('Email send failed after retries', { error: error.message, userEmail });
+      this.logger.error('Email send failed after retries', { error: error.message, recipient: this._maskEmail(userEmail) });
     }
   }
 
@@ -67,9 +67,9 @@ class EmailService {
 
     try {
       await this.sendWithRetry(mailOptions);
-      this.logger.info(`Withdrawal alert sent to ${userEmail}`);
+      this.logger.info('Withdrawal alert sent', { recipient: this._maskEmail(userEmail) });
     } catch (error) {
-      this.logger.error('Email send failed after retries', { error: error.message, userEmail });
+      this.logger.error('Email send failed after retries', { error: error.message, recipient: this._maskEmail(userEmail) });
     }
   }
 
@@ -85,9 +85,9 @@ class EmailService {
 
     try {
       await this.sendWithRetry(mailOptions);
-      this.logger.info(`Leaderboard update sent to ${userEmail}`);
+      this.logger.info('Leaderboard update sent', { recipient: this._maskEmail(userEmail) });
     } catch (error) {
-      this.logger.error('Email send failed after retries', { error: error.message, userEmail });
+      this.logger.error('Email send failed after retries', { error: error.message, recipient: this._maskEmail(userEmail) });
     }
   }
 
@@ -101,15 +101,15 @@ class EmailService {
     const mailOptions = {
       from: process.env.FROM_EMAIL || 'noreply@renvault.com',
       to: userEmail,
-      subject: '🌱 RenVault Staking Reward Earned',
+      subject: '&#x1F331; RenVault Staking Reward Earned',
       html
     };
 
     try {
       await this.sendWithRetry(mailOptions);
-      this.logger.info(`Staking reward alert sent to ${userEmail}`);
+      this.logger.info('Staking reward alert sent', { recipient: this._maskEmail(userEmail) });
     } catch (error) {
-      this.logger.error('Email send failed after retries', { error: error.message, userEmail });
+      this.logger.error('Email send failed after retries', { error: error.message, recipient: this._maskEmail(userEmail) });
     }
   }
 
@@ -125,9 +125,9 @@ class EmailService {
 
     try {
       await this.sendWithRetry(mailOptions);
-      this.logger.info(`Liquidity reward alert sent to ${userEmail}`);
+      this.logger.info('Liquidity reward alert sent', { recipient: this._maskEmail(userEmail) });
     } catch (error) {
-      this.logger.error('Email send failed after retries', { error: error.message, userEmail });
+      this.logger.error('Email send failed after retries', { error: error.message, recipient: this._maskEmail(userEmail) });
     }
   }
 
@@ -141,15 +141,15 @@ class EmailService {
     const mailOptions = {
       from: process.env.FROM_EMAIL || 'noreply@renvault.com',
       to: userEmail,
-      subject: '🚨 RenVault Security Alert: Failed Login Attempt',
+      subject: '&#x1F6A8; RenVault Security Alert: Failed Login Attempt',
       html
     };
 
     try {
       await this.sendWithRetry(mailOptions);
-      this.logger.info(`Failed login alert sent to ${userEmail}`);
+      this.logger.info('Failed login alert sent', { recipient: this._maskEmail(userEmail) });
     } catch (error) {
-      this.logger.error('Email send failed after retries', { error: error.message, userEmail });
+      this.logger.error('Email send failed after retries', { error: error.message, recipient: this._maskEmail(userEmail) });
     }
   }
 
@@ -169,9 +169,9 @@ class EmailService {
 
     try {
       await this.sendWithRetry(mailOptions);
-      this.logger.info(`Suspicious activity alert sent to ${userEmail}`);
+      this.logger.info('Suspicious activity alert sent', { recipient: this._maskEmail(userEmail) });
     } catch (error) {
-      this.logger.error('Email send failed after retries', { error: error.message, userEmail });
+      this.logger.error('Email send failed after retries', { error: error.message, recipient: this._maskEmail(userEmail) });
     }
   }
 
@@ -186,15 +186,15 @@ class EmailService {
     const mailOptions = {
       from: process.env.FROM_EMAIL || 'noreply@renvault.com',
       to: userEmail,
-      subject: '🔐 RenVault Security: 2FA Enabled',
+      subject: '&#x1F510; RenVault Security: 2FA Enabled',
       html
     };
 
     try {
       await this.sendWithRetry(mailOptions);
-      this.logger.info(`2FA enabled alert sent to ${userEmail}`);
+      this.logger.info('2FA enabled alert sent', { recipient: this._maskEmail(userEmail) });
     } catch (error) {
-      this.logger.error('Email send failed after retries', { error: error.message, userEmail });
+      this.logger.error('Email send failed after retries', { error: error.message, recipient: this._maskEmail(userEmail) });
     }
   }
 
@@ -209,15 +209,15 @@ class EmailService {
     const mailOptions = {
       from: process.env.FROM_EMAIL || 'noreply@renvault.com',
       to: userEmail,
-      subject: '⚠️ RenVault Security: 2FA Disabled',
+      subject: '&#x26A0;&#xFE0F; RenVault Security: 2FA Disabled',
       html
     };
 
     try {
       await this.sendWithRetry(mailOptions);
-      this.logger.info(`2FA disabled alert sent to ${userEmail}`);
+      this.logger.info('2FA disabled alert sent', { recipient: this._maskEmail(userEmail) });
     } catch (error) {
-      this.logger.error('Email send failed after retries', { error: error.message, userEmail });
+      this.logger.error('Email send failed after retries', { error: error.message, recipient: this._maskEmail(userEmail) });
     }
   }
 
