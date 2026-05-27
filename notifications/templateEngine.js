@@ -53,8 +53,8 @@ class TemplateEngine {
       throw new Error('Template data must be a plain object');
     }
     const template = this.loadTemplate(templateName);
+    let rendered = this._resolveBlocks(template, data);
     const safe = escapeAll(data);
-    let rendered = template;
 
     for (const [key, value] of Object.entries(safe)) {
       const regex = new RegExp(`{{${key}}}`, 'g');
