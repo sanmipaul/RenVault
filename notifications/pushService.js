@@ -27,8 +27,8 @@ class PushNotificationService {
   async sendPushNotification(userId, title, body, data = {}) {
     const subscription = this.subscribers.get(userId);
     if (!subscription) {
-      console.log(`❌ No subscription found for user ${userId}`);
-      return;
+      this.logger.warn('No push subscription found for user', { userId });
+      return false;
     }
 
     const payload = JSON.stringify({
@@ -40,12 +40,10 @@ class PushNotificationService {
     });
 
     try {
-      // Mock push notification send
-      console.log(`📱 Push notification sent to ${userId}: ${title}`);
-      console.log(`   Body: ${body}`);
-      return true;
+      this.logger.info('Push notification dispatched', { userId, title });
+      return { userId, payload };
     } catch (error) {
-      console.error('❌ Push notification failed:', error.message);
+      this.logger.error('Push notification failed', { userId, error: error.message });
       return false;
     }
   }
