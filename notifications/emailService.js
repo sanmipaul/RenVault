@@ -22,6 +22,21 @@ class EmailService {
     return email.replace(/(.{2}).*(@.*)/, '$1***$2');
   }
 
+  async _dispatch(userEmail, subject, html, logLabel) {
+    const mailOptions = {
+      from: process.env.FROM_EMAIL || 'noreply@renvault.com',
+      to: userEmail,
+      subject,
+      html
+    };
+    try {
+      await this.sendWithRetry(mailOptions);
+      this.logger.info(`${logLabel} sent`, { recipient: this._maskEmail(userEmail) });
+    } catch (error) {
+      this.logger.error(`${logLabel} failed after retries`, { error: error.message, recipient: this._maskEmail(userEmail) });
+    }
+  }
+
   async sendWithRetry(mailOptions, retries = 3, delay = 1000) {
     const recipient = this._maskEmail(mailOptions.to);
     for (let i = 0; i < retries; i++) {
