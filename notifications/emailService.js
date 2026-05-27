@@ -95,11 +95,10 @@ class EmailService {
   }
 
   async sendStakingRewardAlert(userEmail, amount, stakedAmount) {
-    const template = this.loadTemplate('staking-reward.html');
-    const html = this.renderTemplate(template, {
+    const html = this.templateEngine.render('staking-reward.html', {
       amount,
       stakedAmount,
-      rewardRate: '12.5' // This could be dynamic based on current rates
+      rewardRate: '12.5'
     });
 
     const mailOptions = {
