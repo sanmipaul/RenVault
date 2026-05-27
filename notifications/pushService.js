@@ -14,7 +14,8 @@ class PushNotificationService {
       keys,
       subscribed: Date.now()
     });
-    console.log(`📱 User ${userId} subscribed to push notifications`);
+    this.persistence.fromMap(this.subscribers);
+    this.logger.info('User subscribed to push notifications', { userId });
   }
 
   unsubscribe(userId) {
