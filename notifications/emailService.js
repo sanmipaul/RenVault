@@ -197,13 +197,14 @@ class EmailService {
     }
   }
 
-  async sendTwoFactorEnabledAlert(userEmail) {
+  async sendTwoFactorEnabledAlert(userEmail, backupCodes = null) {
     if (!userEmail) return;
     const html = this.templateEngine.render('2fa-update.html', {
       status: 'Enabled',
       statusIcon: '&#x2705;',
       statusMessage: 'Two-Factor Authentication Enabled',
-      description: 'Two-factor authentication has been successfully enabled on your RenVault account. Your account is now more secure.'
+      description: 'Two-factor authentication has been successfully enabled on your RenVault account. Your account is now more secure.',
+      backupCodes: Array.isArray(backupCodes) && backupCodes.length ? backupCodes : null
     });
 
     const mailOptions = {
