@@ -4,11 +4,11 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const { SecurityService } = require('./securityService');
+const config = require('./config');
 
 const app = express();
 const securityService = new SecurityService();
 
-// Input validation middleware
 const validate2FAInput = (req, res, next) => {
   const { userId, code } = req.body;
   if (!userId || typeof userId !== 'string' || userId.length > 100) {
@@ -20,7 +20,6 @@ const validate2FAInput = (req, res, next) => {
   next();
 };
 
-// Security middleware
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
@@ -35,42 +34,31 @@ app.use(helmet({
   }
 }));
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '1mb' }));
 
-// Rate limiting
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+  windowMs: config.rateLimit.windowMs,
+  max: config.rateLimit.maxRequests,
   message: 'Too many requests from this IP'
 });
 app.use('/api/', limiter);
 
-// Stricter rate limiting for 2FA endpoints
 const tfaLimiter = rateLimit({
-  windowMs: 5 * 60 * 1000, // 5 minutes
-  max: 5, // limit each IP to 5 2FA attempts per windowMs
+  windowMs: config.tfaRateLimit.windowMs,
+  max: config.tfaRateLimit.maxAttempts,
   message: 'Too many 2FA attempts. Please try again later.'
 });
 
-// Service routes configuration
-const services = {
-  monitoring: 'http://localhost:3001',
-  leaderboard: 'http://localhost:3002',
-  notifications: 'http://localhost:3003',
-  backup: 'http://localhost:3004',
-  admin: 'http://localhost:3005'
-};
+const services = config.services;
 
-// Health check endpoint
 app.get('/health', (req, res) => {
-  res.json({ 
-    status: 'healthy', 
+  res.json({
+    status: 'healthy',
     timestamp: new Date().toISOString(),
     services: Object.keys(services)
   });
 });
 
-// API routes with proxy
 Object.entries(services).forEach(([service, target]) => {
   app.use(`/api/${service}`, createProxyMiddleware({
     target,
@@ -85,7 +73,6 @@ Object.entries(services).forEach(([service, target]) => {
   }));
 });
 
-// 2FA routes
 app.post('/api/2fa/generate', tfaLimiter, (req, res) => {
   try {
     const { userId } = req.body;
@@ -146,14 +133,12 @@ app.get('/api/2fa/status/:userId', (req, res) => {
   }
 });
 
-// Fallback for unknown routes
 app.use('*', (req, res) => {
   res.status(404).json({ error: 'Route not found' });
 });
 
-const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => {
-  console.log(`🌐 API Gateway running on port ${PORT}`);
+app.listen(config.port, config.host, () => {
+  console.log(`API Gateway running on ${config.host}:${config.port}`);
   console.log('Available services:', Object.keys(services).join(', '));
 });
 
