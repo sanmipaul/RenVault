@@ -1,5 +1,6 @@
 const express = require('express');
 const NotificationManager = require('./notificationManager');
+const { validateUserId, validateEmail, validateAmount, validateIpAddress, validateEndpoint } = require('./validators');
 
 const app = express();
 const notificationManager = new NotificationManager();
