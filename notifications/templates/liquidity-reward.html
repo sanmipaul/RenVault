@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>RenVault Liquidity Reward</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 8px; }
+        .header { background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%); color: white; padding: 30px; text-align: center; }
+        .content { padding: 30px; }
+        .amount { font-size: 28px; font-weight: bold; color: #3182ce; text-align: center; margin: 20px 0; }
+        .pool-box { background: #ebf8ff; border: 1px solid #90cdf4; border-radius: 6px; padding: 15px; margin: 20px 0; text-align: center; }
+        .pool-name { font-size: 18px; font-weight: bold; color: #2b6cb0; }
+        .footer { background: #f8f9fa; padding: 20px; text-align: center; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>&#x1F4A7; RenVault Liquidity</h1>
+            <h2>Reward Received!</h2>
+        </div>
+        <div class="content">
+            <p>You've earned a liquidity provision reward from RenVault!</p>
+            <div class="amount">{{amount}} STX</div>
+            <div class="pool-box">
+                <p style="color: #718096; margin: 0 0 5px;">Pool</p>
+                <div class="pool-name">{{poolName}}</div>
+            </div>
+            <p>Thank you for providing liquidity to RenVault. Your contribution helps the protocol grow!</p>
+        </div>
+        <div class="footer">
+            <p>RenVault - Earn by Providing Liquidity</p>
+        </div>
+    </div>
+</body>
+</html>
