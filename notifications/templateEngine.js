@@ -65,8 +65,12 @@ class TemplateEngine {
     return rendered;
   }
 
-  clearCache() {
-    this.cache.clear();
+  clearCache(templateName) {
+    if (templateName) {
+      this.cache.delete(templateName);
+    } else {
+      this.cache.clear();
+    }
   }
 }
 
