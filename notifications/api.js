@@ -32,10 +32,12 @@ app.post('/api/notifications/preferences', (req, res) => {
 
 app.post('/api/notifications/subscribe-push', (req, res) => {
   const { userId, endpoint, keys } = req.body;
-  
-  if (!userId || !endpoint) {
-    return res.status(400).json({ error: 'User ID and endpoint required' });
-  }
+
+  const userIdErr = validateUserId(userId);
+  if (userIdErr) return res.status(400).json({ error: userIdErr });
+
+  const endpointErr = validateEndpoint(endpoint);
+  if (endpointErr) return res.status(400).json({ error: endpointErr });
 
   notificationManager.subscribeToPush(userId, endpoint, keys);
   res.json({ success: true, message: 'Push subscription added' });
