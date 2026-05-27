@@ -18,13 +18,14 @@ class EmailService {
   }
 
   async sendWithRetry(mailOptions, retries = 3, delay = 1000) {
+    const recipient = mailOptions.to ? mailOptions.to.replace(/(.{2}).*(@.*)/, '$1***$2') : 'unknown';
     for (let i = 0; i < retries; i++) {
       try {
         await this.transporter.sendMail(mailOptions);
         return true;
       } catch (error) {
         if (i === retries - 1) throw error;
-        this.logger.warn(`Email retry ${i + 1}/${retries} after error: ${error.message}`);
+        this.logger.warn(`Email retry ${i + 1}/${retries} for ${recipient}: ${error.message}`);
         await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, i)));
       }
     }
