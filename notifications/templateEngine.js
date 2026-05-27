@@ -1,6 +1,16 @@
 const fs = require('fs');
 const path = require('path');
 
+function escapeHtml(value) {
+  if (value === null || value === undefined) return '';
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;');
+}
+
 class TemplateEngine {
   constructor(templateDir) {
     this.templateDir = templateDir || path.join(__dirname, 'templates');
