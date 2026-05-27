@@ -138,8 +138,7 @@ class EmailService {
   }
 
   async sendFailedLoginAlert(userEmail, ipAddress, userAgent) {
-    const template = this.loadTemplate('security-alert.html');
-    const html = this.renderTemplate(template, {
+    const html = this.templateEngine.render('security-alert.html', {
       ipAddress,
       userAgent,
       timestamp: new Date().toLocaleString()
