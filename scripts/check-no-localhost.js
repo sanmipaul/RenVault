@@ -17,17 +17,23 @@ function walk(dir) {
 }
 
 const files = walk(ROOT).filter(f => f.endsWith('.js') || f.endsWith('.html') || f.endsWith('.ts'));
-let found = [];
+const found = [];
 files.forEach(f => {
   const content = fs.readFileSync(f, 'utf8');
-  if (/http:\/\/localhost|ws:\/\/localhost/.test(content)) {
-    found.push(f);
-  }
+  const lines = content.split('\n');
+  lines.forEach((line, idx) => {
+    const localhostMatch = line.match(/https?:\/\/localhost(:\d+)?/g);
+    if (localhostMatch) {
+      found.push({ file: f, line: idx + 1, matches: localhostMatch });
+    }
+  });
 });
 
 if (found.length) {
-  console.error('Found hardcoded localhost occurrences in files:');
-  found.forEach(f => console.error(' -', f));
+  console.error('Found hardcoded localhost occurrences:');
+  found.forEach(({ file, line, matches }) => {
+    console.error(`  ${file}:${line} -> ${matches.join(', ')}`);
+  });
   process.exit(2);
 } else {
   console.log('No hardcoded localhost occurrences found.');
