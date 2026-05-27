@@ -57,6 +57,7 @@ class EmailService {
   }
 
   async sendWithdrawAlert(userEmail, amount, balance) {
+    if (!userEmail) return;
     const html = this.templateEngine.render('withdrawal.html', { amount, balance });
 
     const mailOptions = {
@@ -75,6 +76,7 @@ class EmailService {
   }
 
   async sendLeaderboardUpdate(userEmail, rank, score) {
+    if (!userEmail) return;
     const html = this.templateEngine.render('leaderboard.html', { rank, score });
 
     const mailOptions = {
@@ -93,6 +95,7 @@ class EmailService {
   }
 
   async sendStakingRewardAlert(userEmail, amount, stakedAmount) {
+    if (!userEmail) return;
     const html = this.templateEngine.render('staking-reward.html', {
       amount,
       stakedAmount,
@@ -115,6 +118,7 @@ class EmailService {
   }
 
   async sendLiquidityRewardAlert(userEmail, amount, poolName) {
+    if (!userEmail) return;
     const html = this.templateEngine.render('liquidity-reward.html', { amount, poolName });
 
     const mailOptions = {
@@ -133,6 +137,7 @@ class EmailService {
   }
 
   async sendFailedLoginAlert(userEmail, ipAddress, userAgent) {
+    if (!userEmail) return;
     const html = this.templateEngine.render('security-alert.html', {
       ipAddress,
       userAgent,
@@ -155,6 +160,7 @@ class EmailService {
   }
 
   async sendSuspiciousActivityAlert(userEmail, activity, ipAddress) {
+    if (!userEmail) return;
     const html = this.templateEngine.render('suspicious-activity.html', {
       activity,
       ipAddress,
@@ -177,6 +183,7 @@ class EmailService {
   }
 
   async sendTwoFactorEnabledAlert(userEmail) {
+    if (!userEmail) return;
     const html = this.templateEngine.render('2fa-update.html', {
       status: 'Enabled',
       statusIcon: '&#x2705;',
@@ -200,6 +207,7 @@ class EmailService {
   }
 
   async sendTwoFactorDisabledAlert(userEmail) {
+    if (!userEmail) return;
     const html = this.templateEngine.render('2fa-update.html', {
       status: 'Disabled',
       statusIcon: '&#x26A0;&#xFE0F;',
