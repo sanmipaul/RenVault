@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>RenVault Security Alert: Suspicious Activity</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 8px; }
+        .header { background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%); color: white; padding: 30px; text-align: center; }
+        .content { padding: 30px; }
+        .alert-box { background: #fed7d7; border: 1px solid #feb2b2; border-radius: 6px; padding: 20px; margin: 20px 0; }
+        .alert-title { color: #c53030; font-weight: bold; margin-bottom: 10px; }
+        .details { background: #f7fafc; padding: 15px; border-radius: 4px; margin: 15px 0; }
+        .warning { color: #d69e2e; font-weight: bold; }
+        .footer { background: #f8f9fa; padding: 20px; text-align: center; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>&#x1F6A8; RenVault Security Alert</h1>
+            <h2>Suspicious Activity Detected</h2>
+        </div>
+        <div class="content">
+            <div class="alert-box">
+                <div class="alert-title">&#x26A0;&#xFE0F; Immediate Attention Required</div>
+                <p>We detected suspicious activity on your RenVault account. Please review the details below and take action if this was not you.</p>
+            </div>
+
+            <div class="details">
+                <p><strong>Activity:</strong> {{activity}}</p>
+                <p><strong>IP Address:</strong> {{ipAddress}}</p>
+                <p><strong>Time:</strong> {{timestamp}}</p>
+            </div>
+
+            <div class="warning">
+                <p>&#x1F512; <strong>Recommended Actions:</strong></p>
+                <ul>
+                    <li>Change your password immediately</li>
+                    <li>Enable two-factor authentication if not already active</li>
+                    <li>Review all recent account transactions</li>
+                    <li>Contact support if you did not perform this action</li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer">
+            <p>RenVault - Your Security is Our Priority</p>
+            <p>Contact support immediately if you have any concerns.</p>
+        </div>
+    </div>
+</body>
+</html>
