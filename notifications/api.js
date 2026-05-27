@@ -55,14 +55,26 @@ app.delete('/api/notifications/unsubscribe-push/:userId', (req, res) => {
 
 app.post('/api/notifications/test-deposit', async (req, res) => {
   const { userId, amount, balance } = req.body;
-  
+
+  const userIdErr = validateUserId(userId);
+  if (userIdErr) return res.status(400).json({ error: userIdErr });
+
+  const amountErr = validateAmount(amount);
+  if (amountErr) return res.status(400).json({ error: `amount: ${amountErr}` });
+
   await notificationManager.notifyDeposit(userId, amount, balance);
   res.json({ success: true, message: 'Test deposit notification sent' });
 });
 
 app.post('/api/notifications/test-withdrawal', async (req, res) => {
   const { userId, amount, balance } = req.body;
-  
+
+  const userIdErr = validateUserId(userId);
+  if (userIdErr) return res.status(400).json({ error: userIdErr });
+
+  const amountErr = validateAmount(amount);
+  if (amountErr) return res.status(400).json({ error: `amount: ${amountErr}` });
+
   await notificationManager.notifyWithdrawal(userId, amount, balance);
   res.json({ success: true, message: 'Test withdrawal notification sent' });
 });
