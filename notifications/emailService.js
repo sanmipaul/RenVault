@@ -5,6 +5,7 @@ const TemplateEngine = require('./templateEngine');
 class EmailService {
   constructor() {
     this.logger = new Logger('EmailService');
+    this.templateEngine = new TemplateEngine();
     this.transporter = nodemailer.createTransporter({
       host: process.env.SMTP_HOST || 'smtp.gmail.com',
       port: 587,
