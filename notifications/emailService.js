@@ -1,7 +1,6 @@
 const nodemailer = require('nodemailer');
-const fs = require('fs');
-const path = require('path');
 const Logger = require('./logger');
+const TemplateEngine = require('./templateEngine');
 
 class EmailService {
   constructor() {
