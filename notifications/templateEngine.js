@@ -49,6 +49,9 @@ class TemplateEngine {
   }
 
   render(templateName, data) {
+    if (!data || typeof data !== 'object' || Array.isArray(data)) {
+      throw new Error('Template data must be a plain object');
+    }
     const template = this.loadTemplate(templateName);
     const safe = escapeAll(data);
     let rendered = template;
