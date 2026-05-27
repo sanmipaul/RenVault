@@ -228,19 +228,6 @@ class EmailService {
     }
   }
 
-  loadTemplate(templateName) {
-    const templatePath = path.join(__dirname, 'templates', templateName);
-    return fs.readFileSync(templatePath, 'utf8');
-  }
-
-  renderTemplate(template, data) {
-    let rendered = template;
-    for (const [key, value] of Object.entries(data)) {
-      const regex = new RegExp(`{{${key}}}`, 'g');
-      rendered = rendered.replace(regex, value);
-    }
-    return rendered;
-  }
 }
 
 module.exports = EmailService;
