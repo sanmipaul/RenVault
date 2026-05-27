@@ -23,7 +23,7 @@ class EmailService {
   }
 
   async sendWithRetry(mailOptions, retries = 3, delay = 1000) {
-    const recipient = mailOptions.to ? mailOptions.to.replace(/(.{2}).*(@.*)/, '$1***$2') : 'unknown';
+    const recipient = this._maskEmail(mailOptions.to);
     for (let i = 0; i < retries; i++) {
       try {
         await this.transporter.sendMail(mailOptions);
