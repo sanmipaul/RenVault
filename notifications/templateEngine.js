@@ -78,8 +78,8 @@ class TemplateEngine {
 
   _resolveBlocks(template, data) {
     let out = template.replace(
-      /\{\{#if\s+(\w+)\}\}([\s\S]*?)\{\{\/if\}\}/g,
-      (_, key, inner) => (data[key] ? inner : '')
+      /\{\{#if\s+(\w+)\}\}([\s\S]*?)(?:\{\{else\}\}([\s\S]*?))?\{\{\/if\}\}/g,
+      (_, key, ifBlock, elseBlock = '') => (data[key] ? ifBlock : elseBlock)
     );
 
     out = out.replace(
