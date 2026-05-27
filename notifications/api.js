@@ -94,7 +94,17 @@ app.post('/api/notifications/test-staking-reward', async (req, res) => {
 
 app.post('/api/notifications/test-liquidity-reward', async (req, res) => {
   const { userId, amount, poolName } = req.body;
-  
+
+  const userIdErr = validateUserId(userId);
+  if (userIdErr) return res.status(400).json({ error: userIdErr });
+
+  const amountErr = validateAmount(amount);
+  if (amountErr) return res.status(400).json({ error: `amount: ${amountErr}` });
+
+  if (!poolName || typeof poolName !== 'string' || poolName.trim().length === 0) {
+    return res.status(400).json({ error: 'poolName must be a non-empty string' });
+  }
+
   await notificationManager.notifyLiquidityReward(userId, amount, poolName);
   res.json({ success: true, message: 'Test liquidity reward notification sent' });
 });
