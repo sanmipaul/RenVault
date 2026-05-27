@@ -51,19 +51,13 @@ class EmailService {
   }
 
   async sendWithdrawAlert(userEmail, amount, balance) {
-    const template = this.loadTemplate('deposit.html'); // Reuse deposit template structure
-    const html = this.renderTemplate(template, {
-      amount,
-      balance,
-      title: 'Withdrawal Confirmed',
-      message: 'Your STX withdrawal has been processed successfully.'
-    });
+    const html = this.templateEngine.render('withdrawal.html', { amount, balance });
 
     const mailOptions = {
       from: process.env.FROM_EMAIL || 'noreply@renvault.com',
       to: userEmail,
-      subject: '💰 RenVault Withdrawal Confirmed',
-      html: html.replace('Deposit Confirmed', 'Withdrawal Confirmed').replace('Deposit Successful', 'Withdrawal Successful')
+      subject: '&#x1F4B0; RenVault Withdrawal Confirmed',
+      html
     };
 
     try {
