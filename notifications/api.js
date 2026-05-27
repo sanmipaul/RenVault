@@ -141,14 +141,20 @@ app.post('/api/notifications/test-suspicious-activity', async (req, res) => {
 
 app.post('/api/notifications/test-2fa-enabled', async (req, res) => {
   const { userId } = req.body;
-  
+
+  const userIdErr = validateUserId(userId);
+  if (userIdErr) return res.status(400).json({ error: userIdErr });
+
   await notificationManager.notifyTwoFactorEnabled(userId);
   res.json({ success: true, message: 'Test 2FA enabled notification sent' });
 });
 
 app.post('/api/notifications/test-2fa-disabled', async (req, res) => {
   const { userId } = req.body;
-  
+
+  const userIdErr = validateUserId(userId);
+  if (userIdErr) return res.status(400).json({ error: userIdErr });
+
   await notificationManager.notifyTwoFactorDisabled(userId);
   res.json({ success: true, message: 'Test 2FA disabled notification sent' });
 });
@@ -158,9 +164,14 @@ app.get('/api/notifications/stats', (req, res) => {
   res.json(stats);
 });
 
+app.use((err, req, res, _next) => {
+  console.error('Unhandled API error:', err.message);
+  res.status(500).json({ error: 'Internal server error' });
+});
+
 const PORT = process.env.PORT || 3003;
 app.listen(PORT, () => {
-  console.log(`🔔 Notification API running on port ${PORT}`);
+  console.log('Notification API running on port', PORT);
 });
 
 module.exports = app;
