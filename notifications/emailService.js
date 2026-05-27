@@ -74,16 +74,13 @@ class EmailService {
   }
 
   async sendLeaderboardUpdate(userEmail, rank, score) {
+    const html = this.templateEngine.render('leaderboard.html', { rank, score });
+
     const mailOptions = {
       from: process.env.FROM_EMAIL || 'noreply@renvault.com',
       to: userEmail,
-      subject: '🏆 RenVault Leaderboard Update',
-      html: `
-        <h2>Leaderboard Position Update!</h2>
-        <p>Your current rank: <strong>#${rank}</strong></p>
-        <p>Your score: <strong>${score}</strong></p>
-        <p>Keep saving to climb higher!</p>
-      `
+      subject: '&#x1F3C6; RenVault Leaderboard Update',
+      html
     };
 
     try {
