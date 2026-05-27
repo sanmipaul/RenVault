@@ -81,7 +81,13 @@ app.post('/api/notifications/test-withdrawal', async (req, res) => {
 
 app.post('/api/notifications/test-staking-reward', async (req, res) => {
   const { userId, amount, stakedAmount } = req.body;
-  
+
+  const userIdErr = validateUserId(userId);
+  if (userIdErr) return res.status(400).json({ error: userIdErr });
+
+  const amountErr = validateAmount(amount);
+  if (amountErr) return res.status(400).json({ error: `amount: ${amountErr}` });
+
   await notificationManager.notifyStakingReward(userId, amount, stakedAmount);
   res.json({ success: true, message: 'Test staking reward notification sent' });
 });
