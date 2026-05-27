@@ -9,13 +9,25 @@ app.use(express.json());
 
 app.post('/api/notifications/preferences', (req, res) => {
   const { userId, preferences } = req.body;
-  
-  if (!userId) {
-    return res.status(400).json({ error: 'User ID required' });
+
+  const userIdErr = validateUserId(userId);
+  if (userIdErr) return res.status(400).json({ error: userIdErr });
+
+  if (!preferences || typeof preferences !== 'object' || Array.isArray(preferences)) {
+    return res.status(400).json({ error: 'preferences must be a plain object' });
   }
 
-  notificationManager.setUserPreferences(userId, preferences);
-  res.json({ success: true, message: 'Preferences updated' });
+  if (preferences.emailEnabled && preferences.email) {
+    const emailErr = validateEmail(preferences.email);
+    if (emailErr) return res.status(400).json({ error: emailErr });
+  }
+
+  try {
+    notificationManager.setUserPreferences(userId, preferences);
+    res.json({ success: true, message: 'Preferences updated' });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
 });
 
 app.post('/api/notifications/subscribe-push', (req, res) => {
