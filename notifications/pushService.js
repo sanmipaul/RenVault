@@ -9,9 +9,16 @@ class PushNotificationService {
   }
 
   subscribe(userId, endpoint, keys) {
+    if (!userId || typeof userId !== 'string') {
+      throw new Error('userId must be a non-empty string');
+    }
+    if (!endpoint || typeof endpoint !== 'string' || !endpoint.startsWith('https://')) {
+      throw new Error('endpoint must be a valid HTTPS URL');
+    }
+
     this.subscribers.set(userId, {
       endpoint,
-      keys,
+      keys: keys || {},
       subscribed: Date.now()
     });
     this.persistence.fromMap(this.subscribers);
