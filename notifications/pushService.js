@@ -20,7 +20,8 @@ class PushNotificationService {
 
   unsubscribe(userId) {
     this.subscribers.delete(userId);
-    console.log(`📱 User ${userId} unsubscribed from push notifications`);
+    this.persistence.fromMap(this.subscribers);
+    this.logger.info('User unsubscribed from push notifications', { userId });
   }
 
   async sendPushNotification(userId, title, body, data = {}) {
