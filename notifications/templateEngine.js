@@ -71,3 +71,4 @@ class TemplateEngine {
 }
 
 module.exports = TemplateEngine;
+module.exports.escapeHtml = escapeHtml;
