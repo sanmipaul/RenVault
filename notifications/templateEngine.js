@@ -65,8 +65,11 @@ class TemplateEngine {
   }
 
   renderRaw(templateName, data) {
+    if (!data || typeof data !== 'object' || Array.isArray(data)) {
+      throw new Error('Template data must be a plain object');
+    }
     const template = this.loadTemplate(templateName);
-    let rendered = template;
+    let rendered = this._resolveBlocks(template, data);
 
     for (const [key, value] of Object.entries(data)) {
       const regex = new RegExp(`{{${key}}}`, 'g');
