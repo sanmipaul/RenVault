@@ -17,6 +17,11 @@ class EmailService {
     });
   }
 
+  _maskEmail(email) {
+    if (!email || typeof email !== 'string') return 'unknown';
+    return email.replace(/(.{2}).*(@.*)/, '$1***$2');
+  }
+
   async sendWithRetry(mailOptions, retries = 3, delay = 1000) {
     const recipient = mailOptions.to ? mailOptions.to.replace(/(.{2}).*(@.*)/, '$1***$2') : 'unknown';
     for (let i = 0; i < retries; i++) {
