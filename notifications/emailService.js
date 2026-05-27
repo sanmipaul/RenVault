@@ -206,10 +206,9 @@ class EmailService {
   }
 
   async sendTwoFactorDisabledAlert(userEmail) {
-    const template = this.loadTemplate('2fa-update.html');
-    const html = this.renderTemplate(template, {
+    const html = this.templateEngine.render('2fa-update.html', {
       status: 'Disabled',
-      statusIcon: '⚠️',
+      statusIcon: '&#x26A0;&#xFE0F;',
       statusMessage: 'Two-Factor Authentication Disabled',
       description: 'Two-factor authentication has been disabled on your RenVault account. Your account now has reduced security protection.'
     });
