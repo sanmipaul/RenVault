@@ -42,13 +42,26 @@ class TemplateEngine {
 
   render(templateName, data) {
     const template = this.loadTemplate(templateName);
+    const safe = escapeAll(data);
     let rendered = template;
-    
-    for (const [key, value] of Object.entries(data)) {
+
+    for (const [key, value] of Object.entries(safe)) {
       const regex = new RegExp(`{{${key}}}`, 'g');
       rendered = rendered.replace(regex, value);
     }
-    
+
+    return rendered;
+  }
+
+  renderRaw(templateName, data) {
+    const template = this.loadTemplate(templateName);
+    let rendered = template;
+
+    for (const [key, value] of Object.entries(data)) {
+      const regex = new RegExp(`{{${key}}}`, 'g');
+      rendered = rendered.replace(regex, value === null || value === undefined ? '' : value);
+    }
+
     return rendered;
   }
 
