@@ -154,18 +154,17 @@ class EmailService {
   }
 
   async sendSuspiciousActivityAlert(userEmail, activity, ipAddress) {
+    const html = this.templateEngine.render('suspicious-activity.html', {
+      activity,
+      ipAddress,
+      timestamp: new Date().toLocaleString()
+    });
+
     const mailOptions = {
       from: process.env.FROM_EMAIL || 'noreply@renvault.com',
       to: userEmail,
-      subject: '🚨 RenVault Security Alert: Suspicious Activity',
-      html: `
-        <h2>Security Alert: Suspicious Activity Detected</h2>
-        <p>We detected suspicious activity on your RenVault account.</p>
-        <p><strong>Activity:</strong> ${activity}</p>
-        <p><strong>IP Address:</strong> ${ipAddress}</p>
-        <p><strong>Time:</strong> ${new Date().toLocaleString()}</p>
-        <p>If this wasn't you, please contact support immediately.</p>
-      `
+      subject: '&#x1F6A8; RenVault Security Alert: Suspicious Activity',
+      html
     };
 
     try {
