@@ -26,6 +26,10 @@ class TemplateEngine {
   }
 
   loadTemplate(templateName) {
+    if (!templateName || typeof templateName !== 'string') {
+      throw new Error('Template name must be a non-empty string');
+    }
+
     if (this.cache.has(templateName)) {
       return this.cache.get(templateName);
     }
