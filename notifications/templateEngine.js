@@ -11,6 +11,14 @@ function escapeHtml(value) {
     .replace(/'/g, '&#x27;');
 }
 
+function escapeAll(data) {
+  const out = {};
+  for (const [key, value] of Object.entries(data)) {
+    out[key] = escapeHtml(value);
+  }
+  return out;
+}
+
 class TemplateEngine {
   constructor(templateDir) {
     this.templateDir = templateDir || path.join(__dirname, 'templates');
