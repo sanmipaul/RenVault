@@ -45,7 +45,10 @@ app.post('/api/notifications/subscribe-push', (req, res) => {
 
 app.delete('/api/notifications/unsubscribe-push/:userId', (req, res) => {
   const { userId } = req.params;
-  
+
+  const userIdErr = validateUserId(userId);
+  if (userIdErr) return res.status(400).json({ error: userIdErr });
+
   notificationManager.unsubscribeFromPush(userId);
   res.json({ success: true, message: 'Push subscription removed' });
 });
