@@ -124,7 +124,17 @@ app.post('/api/notifications/test-failed-login', async (req, res) => {
 
 app.post('/api/notifications/test-suspicious-activity', async (req, res) => {
   const { userId, activity, ipAddress } = req.body;
-  
+
+  const userIdErr = validateUserId(userId);
+  if (userIdErr) return res.status(400).json({ error: userIdErr });
+
+  if (!activity || typeof activity !== 'string' || activity.trim().length === 0) {
+    return res.status(400).json({ error: 'activity must be a non-empty string' });
+  }
+
+  const ipErr = validateIpAddress(ipAddress);
+  if (ipErr) return res.status(400).json({ error: `ipAddress: ${ipErr}` });
+
   await notificationManager.notifySuspiciousActivity(userId, activity, ipAddress);
   res.json({ success: true, message: 'Test suspicious activity notification sent' });
 });
