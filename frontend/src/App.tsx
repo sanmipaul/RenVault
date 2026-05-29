@@ -46,11 +46,6 @@ const APP_CONFIG = {
   tfaBackupCodesKey: 'tfa-backup-codes',
 } as const;
 
-const detectNetworkFromAddress = (address: string): 'mainnet' | 'testnet' => {
-  // Stacks mainnet addresses start with 'SP', testnet with 'ST'
-  return address.startsWith('SP') ? 'mainnet' : 'testnet';
-};
-
 const getCurrentNetwork = () => {
   // Always return mainnet for RenVault operations
   return new StacksMainnet();
