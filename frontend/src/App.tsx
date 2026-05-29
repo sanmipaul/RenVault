@@ -4,12 +4,10 @@ import { useDebounce } from './hooks/useDebounce';
 import { AppConfig, UserSession, showConnect, UserData, openContractCall } from '@stacks/connect';
 import { StacksMainnet } from '@stacks/network';
 import { 
-  callReadOnlyFunction, 
   makeContractCall,
   broadcastTransaction,
   AnchorMode,
-  uintCV,
-  standardPrincipalCV
+  uintCV
 } from '@stacks/transactions';
 import { WalletConnect } from './components/WalletConnect';
 import { WithdrawTxDetails, WalletConnectSession, WalletConnectTransactionParams, SignedTransactionResult, StacksContractCallOptions } from './types/wallet';
@@ -29,6 +27,7 @@ import { ContractErrorMapper, ContractError } from './utils/contractErrorMapper'
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ErrorFallback } from './components/ErrorFallback';
 import { WalletManager } from './services/wallet/WalletManager';
+import { getAnalyticsUrl } from './config/api';
 
 const appConfig = new AppConfig(['store_write', 'publish_data']);
 const userSession = new UserSession({ appConfig });
