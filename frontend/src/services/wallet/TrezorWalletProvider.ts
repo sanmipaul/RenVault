@@ -3,11 +3,11 @@ import TrezorConnect from '@trezor/connect-web';
 import { BaseWalletProvider } from './BaseWalletProvider';
 import { WalletConnection, StacksContractCallOptions, SignedTransactionResult } from '../../types/wallet';
 import { WalletError, WalletErrorCode } from '../../utils/wallet-errors';
+import { makeContractCall, StacksTransaction } from '@stacks/transactions';
 
 export class TrezorWalletProvider extends BaseWalletProvider {
   id = 'trezor';
   name = 'Trezor';
-  icon = 'trezor-icon.png'; // Add icon later
 
   async connect(): Promise<WalletConnection> {
     try {
@@ -42,18 +42,32 @@ export class TrezorWalletProvider extends BaseWalletProvider {
   }
 
   async signTransaction(tx: StacksContractCallOptions): Promise<SignedTransactionResult> {
-    // For Stacks transactions, we need to sign the serialized transaction
-    const serializedTx = tx.serialize();
+    // Build the Stacks transaction from call options
+    const transaction: StacksTransaction = await makeContractCall({
+      contractAddress: tx.contractAddress,
+      contractName: tx.contractName,
+      functionName: tx.functionName,
+      functionArgs: tx.functionArgs,
+      senderKey: tx.senderKey || '',
+      network: tx.network,
+      anchorMode: tx.anchorMode,
+      postConditionMode: tx.postConditionMode,
+      sponsored: tx.sponsored,
+    });
 
+    // Serialize and request on-device signing via Trezor
+    const serializedTx = transaction.serialize();
     const result = await (TrezorConnect as any).stacksSignTransaction({
       path: "m/44'/5757'/0'/0/0",
       transaction: serializedTx.toString('hex'),
     });
 
     if (result.success) {
-      // Attach signature
-      tx.auth.spendingCondition.signature = Buffer.from(result.payload.signature, 'hex');
-      return tx;
+      return {
+        txId: transaction.txid(),
+        txRaw: transaction.serialize().toString('hex'),
+        transaction,
+      };
     } else {
       throw new Error(result.payload.error);
     }
