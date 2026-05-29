@@ -86,6 +86,10 @@ function AppContent() {
   const [showConnectionOptions, setShowConnectionOptions] = useState<boolean>(false);
 const [walletConnectSession, setWalletConnectSession] = useState<WalletConnectSession | null>(null);
    const [toastMessage, setToastMessage] = useState<string | null>(null);
+   const [connectionError, setConnectionError] = useState<string | null>(null);
+   const [retryCount, setRetryCount] = useState<number>(0);
+   const [showHelp, setShowHelp] = useState<boolean>(false);
+   const [currentTransaction, setCurrentTransaction] = useState<WalletConnectTransactionParams | null>(null);
 
    // Modal visibility state
    const [show2FASetup, setShow2FASetup] = useState<boolean>(false);
