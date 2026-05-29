@@ -10,7 +10,7 @@ import {
   uintCV
 } from '@stacks/transactions';
 import { WalletConnect } from './components/WalletConnect';
-import { WithdrawTxDetails, WalletConnectSession, WalletConnectTransactionParams, SignedTransactionResult, StacksContractCallOptions } from './types/wallet';
+import { WithdrawTxDetails, WalletConnectSession, WalletConnectTransactionParams, SignedTransactionResult } from './types/wallet';
 import { AppKit } from '@reown/appkit/react';
 import ConnectionStatus from './components/ConnectionStatus';
 import { SessionStatus } from './components/SessionStatus';
@@ -23,7 +23,7 @@ import { useAmountValidation } from './hooks/useAmountValidation';
 import { validateDepositAmount, validateWithdrawAmount, parseSTXInput } from './utils/amountValidator';
 import { TwoFactorSecureStorage } from './services/security/TwoFactorSecureStorage';
 import { TwoFactorMigration } from './services/security/TwoFactorMigration';
-import { ContractErrorMapper, ContractError } from './utils/contractErrorMapper';
+import { ContractErrorMapper } from './utils/contractErrorMapper';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ErrorFallback } from './components/ErrorFallback';
 import { WalletManager } from './services/wallet/WalletManager';
