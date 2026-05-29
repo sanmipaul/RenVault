@@ -162,6 +162,14 @@ const [walletConnectSession, setWalletConnectSession] = useState<WalletConnectSe
     }
   };
 
+  const validateNetwork = (): boolean => {
+    if (networkMismatch) {
+      setStatus('Network mismatch detected. Please switch your wallet to mainnet.');
+      return false;
+    }
+    return true;
+  };
+
   const promptSwitch = (): string => {
     const msg = detectedNetwork === 'testnet'
       ? 'You are connected to testnet. Mainnet is recommended for real transactions.'
