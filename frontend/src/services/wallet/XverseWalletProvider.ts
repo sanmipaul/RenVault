@@ -5,14 +5,12 @@ import { WalletConnection, StacksContractCallOptions, SignedTransactionResult } 
 export class XverseWalletProvider extends BaseWalletProvider {
   id = 'xverse';
   name = 'Xverse';
-  icon = 'xverse-icon.png'; // placeholder
 
   async connect(): Promise<WalletConnection> {
-    // Xverse specific connection logic
-    // Assuming similar to Leather but with Xverse API
     return new Promise((resolve, reject) => {
-      if ((window as any).XverseWallet) {
-        (window as any).XverseWallet.request('connect', {
+      const provider = (window as any).XverseProvider || (window as any).XverseWallet;
+      if (provider) {
+        provider.request('connect', {
           appDetails: {
             name: 'RenVault',
             icon: window.location.origin + '/favicon.ico',
@@ -31,16 +29,29 @@ export class XverseWalletProvider extends BaseWalletProvider {
 
   async disconnect(): Promise<void> {
     // Clear Xverse session data
-    if ((window as any).XverseWallet) {
-      // Assuming Xverse has a disconnect method
-      await (window as any).XverseWallet.disconnect?.();
+    const provider = (window as any).XverseProvider || (window as any).XverseWallet;
+    if (provider) {
+      await provider.request('disconnect', {}).catch(() => {});
     }
-    // Clear any stored session data
     localStorage.removeItem('xverse-session');
   }
 
   async signTransaction(tx: StacksContractCallOptions): Promise<SignedTransactionResult> {
-    // Implement signing
-    return tx;
+    const provider = (window as any).XverseProvider || (window as any).XverseWallet;
+    if (!provider) {
+      throw new Error('Xverse wallet not installed');
+    }
+    // Use the Stacks Provider API to request transaction signing
+    const response = await provider.request('stx_signTransaction', {
+      contractAddress: tx.contractAddress,
+      contractName: tx.contractName,
+      functionName: tx.functionName,
+      functionArgs: tx.functionArgs.map((arg: unknown) => arg),
+      network: tx.network,
+    });
+    return {
+      txId: response.txId || response.txid || '',
+      txRaw: response.txRaw,
+    };
   }
 }
