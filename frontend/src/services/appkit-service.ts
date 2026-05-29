@@ -111,6 +111,7 @@ export class AppKitService {
             blockExplorers: {
               default: { name: 'Stacks Explorer', url: 'https://explorer.stacks.co' },
             },
+            testnet: false,
           } as any,
         ],
         metadata: walletConnectConfig.metadata,
@@ -119,21 +120,13 @@ export class AppKitService {
         themeVariables: walletConnectConfig.appKit.themeVariables,
         termsConditionsUrl: walletConnectConfig.termsConditionsUrl,
         privacyPolicyUrl: walletConnectConfig.privacyPolicyUrl,
-        featuredWalletIds: ['hiro', 'leather', 'xverse'],
         features: {
           analytics: true,
-          // Enable email login for Web2 users
           email: authConfig.email.enabled,
-          // Enable social login with specified providers
           socials: authConfig.social.enabled ? authConfig.social.providers : false,
           history: true,
           onramp: true,
-          swaps: true,
         },
-        enableWalletConnect: true,
-        enableInjected: true,
-        enableEIP6963: true,
-        enableCoinbase: true,
       });
 
       AppKitService.instance = new AppKitService(appKit, authConfig);

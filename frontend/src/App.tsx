@@ -1,16 +1,13 @@
 import { logger } from './utils/logger';
 import React, { useState, useEffect, useMemo } from 'react';
 import { useDebounce } from './hooks/useDebounce';
-import { useLocalStorage } from './hooks/useLocalStorage';
 import { AppConfig, UserSession, showConnect, UserData, openContractCall } from '@stacks/connect';
-import { StacksMainnet, StacksTestnet } from '@stacks/network';
+import { StacksMainnet } from '@stacks/network';
 import { 
-  callReadOnlyFunction, 
   makeContractCall,
   broadcastTransaction,
   AnchorMode,
-  uintCV,
-  standardPrincipalCV
+  uintCV
 } from '@stacks/transactions';
 import { WalletConnect } from './components/WalletConnect';
 import { WithdrawTxDetails, WalletConnectSession, WalletConnectTransactionParams, SignedTransactionResult, StacksContractCallOptions } from './types/wallet';
@@ -21,15 +18,16 @@ import { AutoReconnect } from './components/AutoReconnect';
 import NotificationService from './services/notificationService';
 import TransactionHistory from './components/TransactionHistory';
 import NotificationCenter from './components/NotificationCenter';
-import { FocusTrapWrapper } from './components/FocusTrapWrapper';
 import AmountInput from './components/AmountInput';
 import { useAmountValidation } from './hooks/useAmountValidation';
 import { validateDepositAmount, validateWithdrawAmount, parseSTXInput } from './utils/amountValidator';
 import { TwoFactorSecureStorage } from './services/security/TwoFactorSecureStorage';
 import { TwoFactorMigration } from './services/security/TwoFactorMigration';
-import { ContractErrorMapper, ContractError } from './utils/contractErrorMapper';
+import { ContractErrorMapper } from './utils/contractErrorMapper';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ErrorFallback } from './components/ErrorFallback';
+import { WalletManager } from './services/wallet/WalletManager';
+import { getAnalyticsUrl } from './config/api';
 
 const appConfig = new AppConfig(['store_write', 'publish_data']);
 const userSession = new UserSession({ appConfig });
@@ -47,11 +45,6 @@ const APP_CONFIG = {
   tfaSecretKey: 'tfa-secret',
   tfaBackupCodesKey: 'tfa-backup-codes',
 } as const;
-
-const detectNetworkFromAddress = (address: string): 'mainnet' | 'testnet' => {
-  // Stacks mainnet addresses start with 'SP', testnet with 'ST'
-  return address.startsWith('SP') ? 'mainnet' : 'testnet';
-};
 
 const getCurrentNetwork = () => {
   // Always return mainnet for RenVault operations
@@ -83,7 +76,6 @@ function AppContent() {
   const [depositAmount, setDepositAmount] = useState<string>('');
   const [withdrawAmount, setWithdrawAmount] = useState<string>('');
   const debouncedDepositAmount = useDebounce(depositAmount, 300);
-  const debouncedWithdrawAmount = useDebounce(withdrawAmount, 300);
   const [status, setStatus] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const [detectedNetwork, setDetectedNetwork] = useState<'mainnet' | 'testnet' | null>(null);
@@ -94,6 +86,11 @@ function AppContent() {
   const [showConnectionOptions, setShowConnectionOptions] = useState<boolean>(false);
 const [walletConnectSession, setWalletConnectSession] = useState<WalletConnectSession | null>(null);
    const [toastMessage, setToastMessage] = useState<string | null>(null);
+   const [connectionError, setConnectionError] = useState<string | null>(null);
+   const [retryCount, setRetryCount] = useState<number>(0);
+   const [showHelp, setShowHelp] = useState<boolean>(false);
+   const [currentTransaction, setCurrentTransaction] = useState<WalletConnectTransactionParams | null>(null);
+   const [walletManager] = useState<WalletManager>(() => new WalletManager());
 
    // Modal visibility state
    const [show2FASetup, setShow2FASetup] = useState<boolean>(false);
@@ -137,6 +134,60 @@ const [walletConnectSession, setWalletConnectSession] = useState<WalletConnectSe
     userData?.profile?.stxAddress?.testnet ??
     '';
 
+  const fetchUserStats = async (): Promise<void> => {
+    if (!userAddress) return;
+    try {
+      const response = await fetch(`/api/stats/${userAddress}`);
+      if (response.ok) {
+        const stats = await response.json();
+        if (stats.balance !== undefined) setBalance(stats.balance);
+        if (stats.points !== undefined) setPoints(stats.points);
+      }
+    } catch (error) {
+      logger.warn('Failed to fetch user stats:', error);
+    }
+  };
+
+  const fetchStats = async (address: string, _mismatch: boolean): Promise<void> => {
+    try {
+      const response = await fetch(`/api/stats/${address}`);
+      if (response.ok) {
+        const stats = await response.json();
+        if (stats.balance !== undefined) setBalance(stats.balance);
+        if (stats.points !== undefined) setPoints(stats.points);
+      }
+    } catch (error) {
+      logger.warn('Failed to fetch stats:', error);
+    }
+  };
+
+  const validateNetwork = (): boolean => {
+    if (networkMismatch) {
+      setStatus('Network mismatch detected. Please switch your wallet to mainnet.');
+      return false;
+    }
+    return true;
+  };
+
+  const promptSwitch = (): string => {
+    const msg = detectedNetwork === 'testnet'
+      ? 'You are connected to testnet. Mainnet is recommended for real transactions.'
+      : 'Network mismatch detected. Please switch your wallet network.';
+    return msg;
+  };
+
+  const handleWalletBackupComplete = (_data: string): void => {
+    setShowWalletBackup(false);
+    setStatus('Wallet backup completed successfully.');
+    setTimeout(() => setStatus(''), 5000);
+  };
+
+  const handleWalletRecoveryComplete = (): void => {
+    setShowWalletRecovery(false);
+    setStatus('Wallet recovery completed successfully.');
+    setTimeout(() => setStatus(''), 5000);
+  };
+
   const handle2FASetupComplete = async (secret: string, backupCodes: string[]) => {
     setTfaSecret(secret);
     localStorage.setItem(APP_CONFIG.tfaEnabledKey, 'true');
@@ -163,8 +214,12 @@ const [walletConnectSession, setWalletConnectSession] = useState<WalletConnectSe
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: 'current-user', code })
       });
+      if (!response.ok) {
+        logger.warn('2FA verification failed with status:', response.status);
+      }
       return response.ok;
     } catch (error) {
+      logger.error('2FA verification network error:', error);
       return false;
     }
   };
@@ -446,33 +501,58 @@ const [walletConnectSession, setWalletConnectSession] = useState<WalletConnectSe
     if (!walletConnectSession) return;
     
     try {
-      // Create transaction payload for WalletConnect
-      const txPayload = {
+      setLoading(true);
+      const amount = params.amount;
+      const network = getCurrentNetwork();
+
+      // Build transaction using the WalletConnect provider
+      const walletConnectProvider = new (await import('./services/wallet/WalletConnectProvider')).WalletConnectProvider();
+      const txOptions: StacksContractCallOptions = {
         contractAddress: CONTRACT_ADDRESS,
         contractName: CONTRACT_NAME,
         functionName: action,
-        functionArgs: action === 'deposit' ? [uintCV(params.amount)] : [uintCV(params.amount)],
-        network: 'stacks:1', // Stacks mainnet
+        functionArgs: [uintCV(amount)],
+        network,
+        anchorMode: AnchorMode.Any,
       };
-      
-      // Use WalletConnect to sign and send the transaction
-      // This would typically involve calling walletKit.request() with the appropriate method
-      // For now, show a placeholder message
-      setStatus(`WalletConnect ${action} transaction initiated. Please check your wallet app.`);
-      
+
+      const signedResult = await walletConnectProvider.signTransaction(txOptions);
+
+      // Broadcast the signed transaction
+      if (signedResult.transaction) {
+        const broadcastResponse = await broadcastTransaction(signedResult.transaction, network);
+        setStatus(`${action} transaction submitted: ${broadcastResponse.txid}`);
+      } else {
+        setStatus(`${action} transaction signed. Broadcasting via wallet...`);
+      }
+
       // Clear form
       if (action === 'deposit') {
         setDepositAmount('');
+        depositValidation.reset();
       } else {
         setWithdrawAmount('');
+        withdrawValidation.reset();
       }
-      
-      setTimeout(fetchUserStats, 5000); // Longer delay for WalletConnect
+
+      // Send notification
+      if (notificationService) {
+        if (action === 'deposit') {
+          notificationService.testDepositNotification(amount, parseFloat(balance) + amount);
+        } else {
+          notificationService.testWithdrawalNotification(amount, parseFloat(balance) - amount);
+        }
+      }
+
+      trackAnalytics(action, { user: userAddress ?? 'anonymous', amount });
+      setTimeout(fetchUserStats, 3000);
     } catch (error: unknown) {
       const friendlyMsg = ContractErrorMapper.isContractError(error)
         ? ContractErrorMapper.toStatusMessage(error, CONTRACT_NAME)
         : error instanceof Error ? error.message : 'Unknown error';
       setStatus(`❌ WalletConnect error: ${friendlyMsg}`);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -480,23 +560,30 @@ const [walletConnectSession, setWalletConnectSession] = useState<WalletConnectSe
     // Extract Stacks account from WalletConnect session
     const stacksAccount = session.namespaces.stacks?.accounts?.[0];
     if (stacksAccount) {
-      // Create a mock userData object compatible with @stacks/connect
-      const mockUserData = {
+      const addressParts = stacksAccount.split(':');
+      const walletAddress = addressParts.length >= 3 ? addressParts[2] : null;
+      if (!walletAddress) {
+        setStatus('❌ Invalid WalletConnect session: missing address');
+        return;
+      }
+      // Create a userData object compatible with @stacks/connect
+      const mockUserData: Partial<UserData> = {
         profile: {
           stxAddress: {
-            mainnet: stacksAccount.split(':')[2], // Extract address from stacks:1:address
-            testnet: stacksAccount.split(':')[2],
+            mainnet: walletAddress,
+            testnet: walletAddress,
           },
           name: 'WalletConnect User',
         },
         appPrivateKey: '', // WalletConnect handles signing
       };
       
-      setUserData(mockUserData as any);
+      setUserData(mockUserData as UserData);
       setWalletConnectSession(session);
       setStatus('✅ Connected via WalletConnect');
-      trackAnalytics('wallet-connect', { user: stacksAccount.split(':')[2], method: 'walletconnect', success: true });
+      trackAnalytics('wallet-connect', { user: walletAddress, method: 'walletconnect', success: true });
     } else {
+      setStatus('❌ No Stacks accounts found in WalletConnect session');
       trackAnalytics('wallet-connect', { user: 'anonymous', method: 'walletconnect', success: false });
     }
   };
@@ -549,10 +636,6 @@ const [walletConnectSession, setWalletConnectSession] = useState<WalletConnectSe
       setLoading(false);
     }
     trackAnalytics('withdrawal', { user: userAddress ?? 'anonymous', amount });
-  };
-
-  const handleRefreshStats = () => {
-    if (userAddress) fetchStats(userAddress, networkMismatch);
   };
 
   if (!userData) {
@@ -761,7 +844,6 @@ const [walletConnectSession, setWalletConnectSession] = useState<WalletConnectSe
           </button>
         </div>
       </div>
-      </ErrorBoundary>
 
       {status && (
         <div className={`status ${status.toLowerCase().includes('error') ? 'error' : 'success'}`}>

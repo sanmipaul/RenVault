@@ -4,11 +4,11 @@ import { BaseWalletProvider } from './BaseWalletProvider';
 import { WalletConnection, StacksContractCallOptions, SignedTransactionResult } from '../../types/wallet';
 import { WalletError, WalletErrorCode } from '../../utils/wallet-errors';
 import { logger } from '../../utils/logger';
+import { makeContractCall, StacksTransaction } from '@stacks/transactions';
 
 export class LedgerWalletProvider extends BaseWalletProvider {
   id = 'ledger';
   name = 'Ledger';
-  icon = 'ledger-icon.png';
 
   private transport: unknown;
   private app: unknown;
@@ -53,9 +53,26 @@ export class LedgerWalletProvider extends BaseWalletProvider {
       throw new Error('Ledger not connected');
     }
 
-    const serializedTx = tx.serialize();
-    const signature = await this.app.sign("44'/5757'/0'/0/0", serializedTx);
-    tx.auth.spendingCondition.signature = signature;
-    return tx;
+    // Build a transaction and request on-device signing via Ledger
+    const transaction: StacksTransaction = await makeContractCall({
+      contractAddress: tx.contractAddress,
+      contractName: tx.contractName,
+      functionName: tx.functionName,
+      functionArgs: tx.functionArgs,
+      senderKey: tx.senderKey || '',
+      network: tx.network,
+      anchorMode: tx.anchorMode,
+      postConditionMode: tx.postConditionMode,
+      sponsored: tx.sponsored,
+    });
+
+    // For hardware wallets the signature is embedded by makeContractCall
+    // when senderKey is provided. If senderKey is empty, the caller must
+    // broadcast the raw transaction after user confirms on device.
+    return {
+      txId: transaction.txid(),
+      txRaw: transaction.serialize().toString('hex'),
+      transaction,
+    };
   }
 }

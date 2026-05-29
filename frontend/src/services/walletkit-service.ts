@@ -186,6 +186,22 @@ export class WalletKitService {
     return WalletKitService.instance;
   }
 
+  async request(topic: string, method: string, params: unknown): Promise<unknown> {
+    try {
+      return await this.walletKit.request({
+        topic,
+        method,
+        params,
+      });
+    } catch (error) {
+      throw new WalletError(
+        WalletErrorCode.UNKNOWN_ERROR,
+        `WalletConnect request failed for method: ${method}`,
+        error
+      );
+    }
+  }
+
   public on<E extends WalletKitTypes.Event>(
     event: E,
     listener: (args: WalletKitTypes.EventArguments[E]) => void

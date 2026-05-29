@@ -1,17 +1,18 @@
 // services/wallet/HiroWalletProvider.ts
 import { BaseWalletProvider } from './BaseWalletProvider';
 import { WalletConnection, StacksContractCallOptions, SignedTransactionResult } from '../../types/wallet';
+import { openContractCall } from '@stacks/connect';
 
 export class HiroWalletProvider extends BaseWalletProvider {
   id = 'hiro';
   name = 'Hiro Wallet';
-  icon = 'hiro-icon.png'; // placeholder
 
   async connect(): Promise<WalletConnection> {
     // Hiro wallet connection logic
     return new Promise((resolve, reject) => {
-      if ((window as any).HiroWallet) {
-        (window as any).HiroWallet.request('connect', {
+      const provider = (window as any).StacksProvider || (window as any).HiroWallet;
+      if (provider) {
+        provider.request('connect', {
           appDetails: {
             name: 'RenVault',
             icon: window.location.origin + '/favicon.ico',
@@ -30,16 +31,35 @@ export class HiroWalletProvider extends BaseWalletProvider {
 
   async disconnect(): Promise<void> {
     // Clear Hiro session data
-    if ((window as any).HiroWallet) {
-      // Assuming Hiro has a disconnect method
-      await (window as any).HiroWallet.disconnect?.();
+    const provider = (window as any).StacksProvider || (window as any).HiroWallet;
+    if (provider) {
+      await provider.request('disconnect', {}).catch(() => {});
     }
-    // Clear any stored session data
     localStorage.removeItem('hiro-session');
   }
 
   async signTransaction(tx: StacksContractCallOptions): Promise<SignedTransactionResult> {
-    // Implement signing
-    return tx;
+    return new Promise((resolve, reject) => {
+      openContractCall({
+        contractAddress: tx.contractAddress,
+        contractName: tx.contractName,
+        functionName: tx.functionName,
+        functionArgs: tx.functionArgs,
+        network: tx.network,
+        anchorMode: tx.anchorMode,
+        postConditionMode: tx.postConditionMode,
+        appDetails: {
+          name: 'RenVault',
+          icon: window.location.origin + '/favicon.ico',
+        },
+        onFinish: (data) => {
+          resolve({
+            txId: data.txId,
+            txRaw: data.txRaw,
+          });
+        },
+        onCancel: () => reject(new Error('User cancelled transaction signing')),
+      });
+    });
   }
 }

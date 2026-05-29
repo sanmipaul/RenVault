@@ -213,13 +213,19 @@ class NotificationService {
       return false;
     }
 
+    const vapidKey = process.env.REACT_APP_VAPID_PUBLIC_KEY;
+    if (!vapidKey) {
+      logger.warn('VAPID public key not configured; push notifications unavailable');
+      return false;
+    }
+
     try {
       const registration = await navigator.serviceWorker.register('/sw.js');
       await navigator.serviceWorker.ready;
 
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: this.urlBase64ToUint8Array(process.env.REACT_APP_VAPID_PUBLIC_KEY || '') as unknown as BufferSource
+        applicationServerKey: this.urlBase64ToUint8Array(vapidKey) as unknown as BufferSource
       });
 
       const response = await fetch(`${this.baseUrl}/subscribe-push`, {

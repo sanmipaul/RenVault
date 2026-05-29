@@ -1,12 +1,11 @@
 // services/wallet/LeatherWalletProvider.ts
 import { BaseWalletProvider } from './BaseWalletProvider';
 import { WalletConnection, StacksContractCallOptions, SignedTransactionResult } from '../../types/wallet';
-import { showConnect as stacksConnect, disconnect as stacksDisconnect } from '@stacks/connect';
+import { showConnect as stacksConnect, disconnect as stacksDisconnect, openContractCall } from '@stacks/connect';
 
 export class LeatherWalletProvider extends BaseWalletProvider {
   id = 'leather';
   name = 'Leather';
-  icon = 'leather-icon.png'; // placeholder
 
   async connect(): Promise<WalletConnection> {
     return new Promise((resolve, reject) => {
@@ -31,7 +30,28 @@ export class LeatherWalletProvider extends BaseWalletProvider {
   }
 
   async signTransaction(tx: StacksContractCallOptions): Promise<SignedTransactionResult> {
-    // Implement signing logic
-    return tx; // placeholder
+    return new Promise((resolve, reject) => {
+      openContractCall({
+        contractAddress: tx.contractAddress,
+        contractName: tx.contractName,
+        functionName: tx.functionName,
+        functionArgs: tx.functionArgs,
+        network: tx.network,
+        anchorMode: tx.anchorMode,
+        postConditionMode: tx.postConditionMode,
+        sponsored: tx.sponsored,
+        appDetails: {
+          name: 'RenVault',
+          icon: window.location.origin + '/favicon.ico',
+        },
+        onFinish: (data) => {
+          resolve({
+            txId: data.txId,
+            txRaw: data.txRaw,
+          });
+        },
+        onCancel: () => reject(new Error('User cancelled transaction signing')),
+      });
+    });
   }
 }
