@@ -57,17 +57,9 @@ export class MultiSigWalletProvider implements WalletProvider {
 
     // Check if we have enough signatures
     if (existing.signatures.length >= existing.required) {
-      // Combine signatures and return final transaction
       return this.combineSignatures(tx, existing.signatures);
-    } else {
-      // Return pending status
-      return {
-        status: 'pending',
-        currentSignatures: existing.signatures.length,
-        requiredSignatures: existing.required,
-        txId
-      };
     }
+    return { txId };
   }
 
   // Multi-sig specific methods
@@ -124,10 +116,10 @@ export class MultiSigWalletProvider implements WalletProvider {
 
   private combineSignatures(tx: StacksContractCallOptions, signatures: string[]): SignedTransactionResult {
     // Combine multiple signatures into final transaction
+    const txId = this.generateTxId(tx);
     return {
-      ...tx,
-      multiSigSignatures: signatures,
-      status: 'signed'
+      txId,
+      txRaw: JSON.stringify({ tx, signatures }),
     };
   }
 }
