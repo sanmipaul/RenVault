@@ -28,6 +28,7 @@ import { TwoFactorMigration } from './services/security/TwoFactorMigration';
 import { ContractErrorMapper, ContractError } from './utils/contractErrorMapper';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ErrorFallback } from './components/ErrorFallback';
+import { WalletManager } from './services/wallet/WalletManager';
 
 const appConfig = new AppConfig(['store_write', 'publish_data']);
 const userSession = new UserSession({ appConfig });
@@ -90,6 +91,7 @@ const [walletConnectSession, setWalletConnectSession] = useState<WalletConnectSe
    const [retryCount, setRetryCount] = useState<number>(0);
    const [showHelp, setShowHelp] = useState<boolean>(false);
    const [currentTransaction, setCurrentTransaction] = useState<WalletConnectTransactionParams | null>(null);
+   const [walletManager] = useState<WalletManager>(() => new WalletManager());
 
    // Modal visibility state
    const [show2FASetup, setShow2FASetup] = useState<boolean>(false);
