@@ -543,10 +543,6 @@ const [walletConnectSession, setWalletConnectSession] = useState<WalletConnectSe
     trackAnalytics('withdrawal', { user: userAddress ?? 'anonymous', amount });
   };
 
-  const handleRefreshStats = () => {
-    if (userAddress) fetchStats(userAddress, networkMismatch);
-  };
-
   if (!userData) {
     return (
       <>
