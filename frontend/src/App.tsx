@@ -207,8 +207,12 @@ const [walletConnectSession, setWalletConnectSession] = useState<WalletConnectSe
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: 'current-user', code })
       });
+      if (!response.ok) {
+        logger.warn('2FA verification failed with status:', response.status);
+      }
       return response.ok;
     } catch (error) {
+      logger.error('2FA verification network error:', error);
       return false;
     }
   };
