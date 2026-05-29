@@ -10,7 +10,7 @@ import {
   uintCV
 } from '@stacks/transactions';
 import { WalletConnect } from './components/WalletConnect';
-import { WithdrawTxDetails, WalletConnectSession, WalletConnectTransactionParams, SignedTransactionResult } from './types/wallet';
+import { WithdrawTxDetails, WalletConnectSession, WalletConnectTransactionParams, SignedTransactionResult, StacksContractCallOptions } from './types/wallet';
 import { AppKit } from '@reown/appkit/react';
 import ConnectionStatus from './components/ConnectionStatus';
 import { SessionStatus } from './components/SessionStatus';
@@ -501,33 +501,58 @@ const [walletConnectSession, setWalletConnectSession] = useState<WalletConnectSe
     if (!walletConnectSession) return;
     
     try {
-      // Create transaction payload for WalletConnect
-      const txPayload = {
+      setLoading(true);
+      const amount = params.amount;
+      const network = getCurrentNetwork();
+
+      // Build transaction using the WalletConnect provider
+      const walletConnectProvider = new (await import('./services/wallet/WalletConnectProvider')).WalletConnectProvider();
+      const txOptions: StacksContractCallOptions = {
         contractAddress: CONTRACT_ADDRESS,
         contractName: CONTRACT_NAME,
         functionName: action,
-        functionArgs: action === 'deposit' ? [uintCV(params.amount)] : [uintCV(params.amount)],
-        network: 'stacks:1', // Stacks mainnet
+        functionArgs: [uintCV(amount)],
+        network,
+        anchorMode: AnchorMode.Any,
       };
-      
-      // Use WalletConnect to sign and send the transaction
-      // This would typically involve calling walletKit.request() with the appropriate method
-      // For now, show a placeholder message
-      setStatus(`WalletConnect ${action} transaction initiated. Please check your wallet app.`);
-      
+
+      const signedResult = await walletConnectProvider.signTransaction(txOptions);
+
+      // Broadcast the signed transaction
+      if (signedResult.transaction) {
+        const broadcastResponse = await broadcastTransaction(signedResult.transaction, network);
+        setStatus(`${action} transaction submitted: ${broadcastResponse.txid}`);
+      } else {
+        setStatus(`${action} transaction signed. Broadcasting via wallet...`);
+      }
+
       // Clear form
       if (action === 'deposit') {
         setDepositAmount('');
+        depositValidation.reset();
       } else {
         setWithdrawAmount('');
+        withdrawValidation.reset();
       }
-      
-      setTimeout(fetchUserStats, 5000); // Longer delay for WalletConnect
+
+      // Send notification
+      if (notificationService) {
+        if (action === 'deposit') {
+          notificationService.testDepositNotification(amount, parseFloat(balance) + amount);
+        } else {
+          notificationService.testWithdrawalNotification(amount, parseFloat(balance) - amount);
+        }
+      }
+
+      trackAnalytics(action, { user: userAddress ?? 'anonymous', amount });
+      setTimeout(fetchUserStats, 3000);
     } catch (error: unknown) {
       const friendlyMsg = ContractErrorMapper.isContractError(error)
         ? ContractErrorMapper.toStatusMessage(error, CONTRACT_NAME)
         : error instanceof Error ? error.message : 'Unknown error';
       setStatus(`❌ WalletConnect error: ${friendlyMsg}`);
+    } finally {
+      setLoading(false);
     }
   };
 
