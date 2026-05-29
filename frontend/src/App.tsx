@@ -135,6 +135,52 @@ const [walletConnectSession, setWalletConnectSession] = useState<WalletConnectSe
     userData?.profile?.stxAddress?.testnet ??
     '';
 
+  const fetchUserStats = async (): Promise<void> => {
+    if (!userAddress) return;
+    try {
+      const response = await fetch(`/api/stats/${userAddress}`);
+      if (response.ok) {
+        const stats = await response.json();
+        if (stats.balance !== undefined) setBalance(stats.balance);
+        if (stats.points !== undefined) setPoints(stats.points);
+      }
+    } catch (error) {
+      logger.warn('Failed to fetch user stats:', error);
+    }
+  };
+
+  const fetchStats = async (address: string, _mismatch: boolean): Promise<void> => {
+    try {
+      const response = await fetch(`/api/stats/${address}`);
+      if (response.ok) {
+        const stats = await response.json();
+        if (stats.balance !== undefined) setBalance(stats.balance);
+        if (stats.points !== undefined) setPoints(stats.points);
+      }
+    } catch (error) {
+      logger.warn('Failed to fetch stats:', error);
+    }
+  };
+
+  const promptSwitch = (): string => {
+    const msg = detectedNetwork === 'testnet'
+      ? 'You are connected to testnet. Mainnet is recommended for real transactions.'
+      : 'Network mismatch detected. Please switch your wallet network.';
+    return msg;
+  };
+
+  const handleWalletBackupComplete = (_data: string): void => {
+    setShowWalletBackup(false);
+    setStatus('Wallet backup completed successfully.');
+    setTimeout(() => setStatus(''), 5000);
+  };
+
+  const handleWalletRecoveryComplete = (): void => {
+    setShowWalletRecovery(false);
+    setStatus('Wallet recovery completed successfully.');
+    setTimeout(() => setStatus(''), 5000);
+  };
+
   const handle2FASetupComplete = async (secret: string, backupCodes: string[]) => {
     setTfaSecret(secret);
     localStorage.setItem(APP_CONFIG.tfaEnabledKey, 'true');
