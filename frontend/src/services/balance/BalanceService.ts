@@ -136,36 +136,7 @@ export class BalanceService {
       this.websockets.delete(address);
     }
     this.balanceCallbacks.delete(address);
-  }
-
-  setRefreshInterval(address: string, intervalMs: number): void {
-    // Clear existing interval
-    const existingInterval = this.refreshIntervals.get(address);
-    if (existingInterval) {
-      clearInterval(existingInterval);
-    }
-
-    // Set new interval
-    const interval = setInterval(async () => {
-      try {
-        const provider = this.getProviderForAddress(address);
-        if (provider) {
-          await this.getBalance(address, provider);
-        }
-      } catch (error) {
-        logger.error('Error refreshing balance:', error);
-      }
-    }, intervalMs);
-
-    this.refreshIntervals.set(address, interval);
-  }
-
-  getRefreshInterval(address: string): number {
-    return this.refreshIntervals.has(address) ? this.DEFAULT_REFRESH_INTERVAL : 0;
-  }
-
-  getDefaultRefreshInterval(): number {
-    return this.DEFAULT_REFRESH_INTERVAL;
+    this.stopRefresh(address);
   }
 
   stopRefresh(address: string): void {
