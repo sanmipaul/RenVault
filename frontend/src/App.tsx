@@ -801,7 +801,6 @@ const [walletConnectSession, setWalletConnectSession] = useState<WalletConnectSe
           </button>
         </div>
       </div>
-      </ErrorBoundary>
 
       {status && (
         <div className={`status ${status.toLowerCase().includes('error') ? 'error' : 'success'}`}>
