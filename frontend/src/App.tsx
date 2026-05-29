@@ -528,23 +528,30 @@ const [walletConnectSession, setWalletConnectSession] = useState<WalletConnectSe
     // Extract Stacks account from WalletConnect session
     const stacksAccount = session.namespaces.stacks?.accounts?.[0];
     if (stacksAccount) {
-      // Create a mock userData object compatible with @stacks/connect
-      const mockUserData = {
+      const addressParts = stacksAccount.split(':');
+      const walletAddress = addressParts.length >= 3 ? addressParts[2] : null;
+      if (!walletAddress) {
+        setStatus('❌ Invalid WalletConnect session: missing address');
+        return;
+      }
+      // Create a userData object compatible with @stacks/connect
+      const mockUserData: Partial<UserData> = {
         profile: {
           stxAddress: {
-            mainnet: stacksAccount.split(':')[2], // Extract address from stacks:1:address
-            testnet: stacksAccount.split(':')[2],
+            mainnet: walletAddress,
+            testnet: walletAddress,
           },
           name: 'WalletConnect User',
         },
         appPrivateKey: '', // WalletConnect handles signing
       };
       
-      setUserData(mockUserData as any);
+      setUserData(mockUserData as UserData);
       setWalletConnectSession(session);
       setStatus('✅ Connected via WalletConnect');
-      trackAnalytics('wallet-connect', { user: stacksAccount.split(':')[2], method: 'walletconnect', success: true });
+      trackAnalytics('wallet-connect', { user: walletAddress, method: 'walletconnect', success: true });
     } else {
+      setStatus('❌ No Stacks accounts found in WalletConnect session');
       trackAnalytics('wallet-connect', { user: 'anonymous', method: 'walletconnect', success: false });
     }
   };
