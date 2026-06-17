@@ -23,12 +23,16 @@ Clarinet.test({
     const user = accounts.get('wallet_1')!;
     const voter = accounts.get('wallet_2')!;
     
-    chain.mineBlock([
+    // Setup: Capture the mined block for the proposal creation
+    let setupBlock = chain.mineBlock([
       Tx.contractCall('governance', 'create-proposal', [
         types.ascii('Test Proposal'),
         types.ascii('Test description')
       ], user.address)
     ]);
+    
+    // Actively assert the setup succeeded so we know the proposal actually exists
+    setupBlock.receipts[0].result.expectOk();
     
     let block = chain.mineBlock([
       Tx.contractCall('governance', 'vote', [
