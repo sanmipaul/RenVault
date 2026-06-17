@@ -1,62 +1,89 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { Cl, ClarityValue } from "@stacks/transactions";
+import { Cl } from "@stacks/transactions";
+// Import simnet to interact with the simulated Stacks blockchain
+import { simnet } from "@hirosystems/clarinet-sdk";
 
 // Mock principals for testing
 const deployer = "ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM";
 const user1 = "ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5";
 const user2 = "ST2CY5V39NHDPWSXMW9QDT3HC3GD6Q6XX4CFRK9AG";
 
+// Define the contract name for easy referencing
+const CONTRACT_NAME = "multi-asset-vault";
+
 describe("Multi-Asset Vault Contract", () => {
   describe("Contract Info", () => {
     it("should return correct contract version", () => {
-      // Test get-contract-version returns "2.0.0"
-      expect(true).toBe(true);
+      const { result } = simnet.callReadOnlyFn(CONTRACT_NAME, "get-contract-version", [], deployer);
+      expect(result).toStrictEqual(Cl.stringAscii("2.0.0"));
     });
 
     it("should return correct contract name", () => {
-      // Test get-contract-name returns "multi-asset-vault"
-      expect(true).toBe(true);
+      const { result } = simnet.callReadOnlyFn(CONTRACT_NAME, "get-contract-name", [], deployer);
+      expect(result).toStrictEqual(Cl.stringAscii("multi-asset-vault"));
     });
 
     it("should return correct contract owner", () => {
-      // Test get-contract-owner returns deployer
-      expect(true).toBe(true);
+      const { result } = simnet.callReadOnlyFn(CONTRACT_NAME, "get-contract-owner", [], deployer);
+      expect(result).toStrictEqual(Cl.principal(deployer));
     });
   });
 
   describe("STX Deposits", () => {
     it("should allow STX deposits", () => {
-      // Test deposit-stx with valid amount
-      // Expected: (ok user-amount) where user-amount = amount - 1% fee
-      expect(true).toBe(true);
+      const depositAmount = 1000000;
+      const expectedUserAmount = 990000; // amount - 1% fee
+
+      const { result } = simnet.callPublicFn(CONTRACT_NAME, "deposit-stx", [Cl.uint(depositAmount)], user1);
+      
+      expect(result).toStrictEqual(Cl.ok(Cl.uint(expectedUserAmount)));
     });
 
     it("should reject zero amount deposits", () => {
-      // Test deposit-stx with 0 amount
-      // Expected: (err u101) - err-invalid-amount
-      expect(true).toBe(true);
+      const { result } = simnet.callPublicFn(CONTRACT_NAME, "deposit-stx", [Cl.uint(0)], user1);
+      
+      // u101 is err-invalid-amount
+      expect(result).toStrictEqual(Cl.error(Cl.uint(101))); 
     });
 
     it("should reject deposits when paused", () => {
-      // Pause contract, then try deposit
-      // Expected: (err u106) - err-contract-paused
-      expect(true).toBe(true);
+      // First, owner pauses the contract
+      simnet.callPublicFn(CONTRACT_NAME, "pause-contract", [], deployer);
+      
+      // Then user tries to deposit
+      const { result } = simnet.callPublicFn(CONTRACT_NAME, "deposit-stx", [Cl.uint(1000000)], user1);
+      
+      // u106 is err-contract-paused
+      expect(result).toStrictEqual(Cl.error(Cl.uint(106))); 
     });
 
     it("should enforce max deposit limit", () => {
-      // Set max limit, try to exceed it
-      // Expected: (err u107) - err-exceeds-max-deposit
-      expect(true).toBe(true);
+      // Setup: owner sets max limit to 500,000
+      simnet.callPublicFn(CONTRACT_NAME, "set-max-deposit-limit", [Cl.uint(500000)], deployer);
+      
+      // User tries to deposit 1,000,000
+      const { result } = simnet.callPublicFn(CONTRACT_NAME, "deposit-stx", [Cl.uint(1000000)], user1);
+      
+      // u107 is err-exceeds-max-deposit
+      expect(result).toStrictEqual(Cl.error(Cl.uint(107)));
     });
 
     it("should track total deposits correctly", () => {
-      // Deposit, check get-total-stx-deposits
-      expect(true).toBe(true);
+      // Deposit 1,000,000
+      simnet.callPublicFn(CONTRACT_NAME, "deposit-stx", [Cl.uint(1000000)], user1);
+      
+      // Check total
+      const { result } = simnet.callReadOnlyFn(CONTRACT_NAME, "get-total-stx-deposits", [], deployer);
+      expect(result).toStrictEqual(Cl.uint(1000000));
     });
 
     it("should accumulate fees correctly", () => {
-      // Deposit 100 STX, check fees = 1 STX
-      expect(true).toBe(true);
+      // Deposit 100 STX (100,000,000 uSTX)
+      simnet.callPublicFn(CONTRACT_NAME, "deposit-stx", [Cl.uint(100000000)], user1);
+      
+      // Check fees (1% of 100,000,000 = 1,000,000)
+      const { result } = simnet.callReadOnlyFn(CONTRACT_NAME, "get-stx-fees", [], deployer);
+      expect(result).toStrictEqual(Cl.uint(1000000));
     });
   });
 
