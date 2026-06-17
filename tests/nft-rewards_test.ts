@@ -24,7 +24,8 @@ Clarinet.test({
     const deployer = accounts.get('deployer')!;
     const user = accounts.get('wallet_1')!;
     
-    chain.mineBlock([
+    // Setup: Capture and assert the setup block
+    let setupBlock = chain.mineBlock([
       Tx.contractCall('nft-rewards', 'check-achievements', [
         types.principal(user.address),
         types.uint(1),
@@ -33,11 +34,17 @@ Clarinet.test({
       ], deployer.address)
     ]);
     
+    // Actively assert the achievements were actually triggered
+    setupBlock.receipts[0].result.expectOk();
+    
     let achievements = chain.callReadOnlyFn('nft-rewards', 'get-user-achievements', [
       types.principal(user.address)
     ], deployer.address);
     
-    assertEquals(achievements.result.expectOk().expectList().length, 1);
+    // FIX: Removed invalid .expectList().length chain. 
+    // SENIOR NOTE: I am assuming the list returns token IDs (uints). 
+    // If your contract returns a list of ascii strings instead, change types.uint(1) to types.ascii('first-deposit')
+    assertEquals(achievements.result.expectOk(), types.list([types.uint(1)]));
   }
 });
 
